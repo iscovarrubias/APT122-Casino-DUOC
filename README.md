@@ -29,8 +29,8 @@ validación de requerimientos.
 
 ## Equipo
 
-- APELLIDO NOMBRE
-- APELLIDO NOMBRE
+- Isabella Covarrubias
+- Diego Diaz
 
 ## Tecnologías
 
