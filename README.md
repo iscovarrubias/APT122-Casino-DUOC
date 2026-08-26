@@ -1,42 +1,59 @@
-# APT122-Casino-DUOC
-
 # Proyecto APT122 - Sistema de Gestión y Consulta del Casino
 
 ## Descripción
 
 Proyecto desarrollado para la asignatura Capstone APT122.
 
-El proyecto busca desarrollar una plataforma web para mejorar la gestión,
-actualización y consulta de la información relacionada con la oferta
-gastronómica del casino de DUOC.
+El proyecto propone desarrollar una plataforma web orientada a mejorar la
+gestión y consulta de la información relacionada con la oferta gastronómica
+del casino de DUOC.
 
-La propuesta contempla inicialmente dos tipos de usuarios:
+La solución busca facilitar el acceso de los estudiantes a información
+actualizada sobre las preparaciones disponibles, además de apoyar al
+personal del casino en la gestión de la información asociada al menú.
 
-- Personal del casino: gestión de menús, preparaciones y disponibilidad.
-- Estudiantes: consulta del menú y disponibilidad de las preparaciones.
-
-Como línea de innovación, se evalúa la posibilidad de integrar información
+Como línea de innovación, se evaluará la posibilidad de utilizar información
 proveniente del sistema de ventas para actualizar automáticamente la
-disponibilidad, analizar el historial de consumo y estimar el agotamiento
-de determinadas preparaciones.
+disponibilidad de las preparaciones. A partir del historial de ventas,
+también se estudiará la posibilidad de estimar el ritmo de consumo y
+anticipar el agotamiento de determinadas preparaciones.
+
+El alcance definitivo de estas funcionalidades será determinado mediante
+el levantamiento de requerimientos y el análisis de los sistemas actualmente
+utilizados por el casino.
 
 ## Estado del proyecto
 
-Fase 1 - Definición del Proyecto APT.
+**Fase 1 - Definición del Proyecto APT**
 
-Actualmente se encuentra en etapa de levantamiento de información y
-validación de requerimientos.
+Actualmente el proyecto se encuentra en etapa de levantamiento de
+información, identificación de la problemática y validación de
+requerimientos con el personal del casino.
 
 ## Equipo
 
-- Isabella Covarrubias
-- Diego Diaz
+- ISABELLA COVARRUBIAS
+- DIEGO DIAZ
 
 ## Tecnologías
 
-Por definir durante la etapa de análisis y diseño.
+Por definir durante la etapa de análisis y diseño, de acuerdo con los
+requerimientos y la factibilidad técnica del proyecto.
 
 ## Documentación
 
-La documentación del proyecto se encuentra organizada dentro del
-repositorio según las fases establecidas para la asignatura.
+La documentación y las evidencias del proyecto se encuentran organizadas
+dentro del repositorio de acuerdo con las fases establecidas para la
+asignatura.
+
+## Objetivo preliminar
+
+Desarrollar una plataforma web que permita mejorar la gestión y consulta
+de la oferta gastronómica del casino, facilitando el acceso a información
+actualizada para los estudiantes y apoyando la gestión de disponibilidad
+de las preparaciones.
+
+> **Nota:** El objetivo, alcance y funcionalidades del proyecto podrán
+> modificarse durante la etapa de levantamiento de requerimientos, de
+> acuerdo con las necesidades reales del casino y la factibilidad de
+> integración con sus sistemas existentes.
