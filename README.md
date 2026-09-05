@@ -44,11 +44,10 @@ Avances confirmados hasta ahora:
 
 Pendiente para cerrar la Fase 1:
 
-- Entrevista con la nutricionista de contacto (agendada, respuesta en curso).
+- Segunda entrevista con la nutricionista de contacto (agendada, respuesta en curso).
 - Contacto con el administrador de Campomar a cargo del casino, para evaluar
   el escenario de datos de venta viable (visita presencial sugerida por el
   jefe de carrera).
-- Ampliar la muestra de la encuesta específicamente en Valparaíso/Viña del Mar.
 
 ## Equipo
 
