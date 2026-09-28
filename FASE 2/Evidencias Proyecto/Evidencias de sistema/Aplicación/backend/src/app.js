@@ -29,12 +29,9 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/preparaciones', preparacionesRoutes);
 app.use('/api/menu', menuRoutes);
-
-
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada.' });
 });
-
 
 app.use(errorHandler);
 

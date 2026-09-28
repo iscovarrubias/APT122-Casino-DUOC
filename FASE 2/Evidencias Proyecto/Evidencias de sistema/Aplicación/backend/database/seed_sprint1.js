@@ -1,5 +1,3 @@
-// Crea un usuario de prueba por rol, con contraseña "Test1234" para los tres.
-// Solo para desarrollo/pruebas de Sprint 1, no usar en producción.
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const pool = require('../src/config/db');

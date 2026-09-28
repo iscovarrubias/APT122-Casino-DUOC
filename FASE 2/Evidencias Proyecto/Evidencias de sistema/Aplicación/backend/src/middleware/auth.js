@@ -1,6 +1,3 @@
-// Verifica que la solicitud traiga un token JWT válido y adjunta el usuario
-// autenticado a req.user, para que las rutas y controladores lo usen sin
-// tener que volver a consultar la base de datos.
 const jwt = require('jsonwebtoken');
 
 function autenticar(req, res, next) {

@@ -72,7 +72,6 @@ module.exports = {
   actualizarNutricion,
 };
 
-
 async function listarAlergenos(req, res, next) {
   try {
     const catalogo = await preparacionModel.listarCatalogoAlergenos();

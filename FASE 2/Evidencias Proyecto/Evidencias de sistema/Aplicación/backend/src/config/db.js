@@ -1,4 +1,3 @@
-// Conexión a PostgreSQL mediante un pool para manejar múltiples solicitudes.
 const { Pool } = require('pg');
 
 const pool = new Pool({

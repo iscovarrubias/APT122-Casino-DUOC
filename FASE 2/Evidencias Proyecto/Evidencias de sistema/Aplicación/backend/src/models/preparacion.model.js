@@ -98,7 +98,6 @@ module.exports = {
   actualizarNutricion,
 };
 
-
 async function listarCatalogoAlergenos() {
   const { rows } = await pool.query('SELECT id_alergeno, nombre FROM alergeno ORDER BY nombre');
   return rows;

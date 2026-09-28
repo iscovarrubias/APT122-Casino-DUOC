@@ -2,6 +2,9 @@
 -- PROYECTO APT122 · Plataforma de Gestión y Análisis de la Oferta Gastronómica
 --                    del Casino DUOC UC (sede Valparaíso)
 -- =============================================================================
+-- Motor objetivo: PostgreSQL 14+ (compatible con MySQL 8+ salvo notas puntuales
+-- marcadas como "MySQL:" en los comentarios).
+--
 -- Este script traduce a SQL el modelo de datos preliminar del Documento de
 -- Alcance del Proyecto, sección 8, ya validado con:
 --   - Entrevista 01 con la encargada del casino.

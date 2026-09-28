@@ -18,7 +18,18 @@ async function menuDelDia(fecha, categoria) {
         t.nombre AS componente,
         mp.cantidad_planificada,
         COALESCE(d.estado, 'disponible') AS disponibilidad,
-        d.registrado_en AS disponibilidad_actualizada_en
+        d.registrado_en AS disponibilidad_actualizada_en,
+        COALESCE(ing.lista, '[]') AS ingredientes,
+        COALESCE(al.lista, '[]') AS alergenos,
+        CASE WHEN n.validado THEN
+          json_build_object(
+            'calorias', n.calorias,
+            'proteinas_g', n.proteinas_g,
+            'carbohidratos_g', n.carbohidratos_g,
+            'grasas_g', n.grasas_g,
+            'fuente', n.fuente
+          )
+        ELSE NULL END AS informacion_nutricional
      FROM menu m
      JOIN menu_preparacion mp ON mp.id_menu = m.id_menu
      JOIN preparacion p ON p.id_preparacion = mp.id_preparacion
@@ -30,6 +41,17 @@ async function menuDelDia(fecha, categoria) {
         ORDER BY registrado_en DESC
         LIMIT 1
      ) d ON TRUE
+     LEFT JOIN LATERAL (
+        SELECT json_agg(i.nombre) AS lista
+        FROM preparacion_ingrediente pi JOIN ingrediente i ON i.id_ingrediente = pi.id_ingrediente
+        WHERE pi.id_preparacion = p.id_preparacion
+     ) ing ON TRUE
+     LEFT JOIN LATERAL (
+        SELECT json_agg(a.nombre) AS lista
+        FROM preparacion_alergeno pa JOIN alergeno a ON a.id_alergeno = pa.id_alergeno
+        WHERE pa.id_preparacion = p.id_preparacion
+     ) al ON TRUE
+     LEFT JOIN informacion_nutricional n ON n.id_preparacion = p.id_preparacion
      WHERE m.fecha = $1 AND m.publicado = TRUE
      ${filtroCategoria}
      ORDER BY t.id_tipo_componente`,
@@ -38,7 +60,11 @@ async function menuDelDia(fecha, categoria) {
   return rows;
 }
 
-module.exports = { menuDelDia, obtenerOCrearMenu, agregarComponente, publicar, listarPorFecha };
+module.exports = {
+  menuDelDia, obtenerOCrearMenu, agregarComponente, publicar, listarPorFecha,
+  actualizarDisponibilidad, historialDisponibilidad, historialMenus,
+};
+
 async function obtenerOCrearMenu(fecha, id_sede = 1) {
   const existente = await pool.query(
     'SELECT id_menu, fecha, publicado FROM menu WHERE fecha = $1 AND id_sede = $2',
@@ -114,6 +140,73 @@ async function listarPorFecha(fecha, id_sede = 1) {
      WHERE m.fecha = $1 AND m.id_sede = $2
      ORDER BY t.id_tipo_componente, c.nombre NULLS FIRST`,
     [fecha, id_sede]
+  );
+  return rows;
+}
+
+const ESTADOS_VALIDOS = ['disponible', 'baja_disponibilidad', 'agotado'];
+
+async function actualizarDisponibilidad(id_menu_preparacion, { estado, observacion, id_usuario }) {
+  if (!ESTADOS_VALIDOS.includes(estado)) {
+    const err = new Error(`Estado inválido. Debe ser uno de: ${ESTADOS_VALIDOS.join(', ')}.`);
+    err.status = 400;
+    throw err;
+  }
+
+  const existe = await pool.query(
+    'SELECT id_menu_preparacion FROM menu_preparacion WHERE id_menu_preparacion = $1',
+    [id_menu_preparacion]
+  );
+  if (!existe.rows[0]) {
+    const err = new Error('El componente de menú indicado no existe.');
+    err.status = 404;
+    throw err;
+  }
+
+  const { rows } = await pool.query(
+    `INSERT INTO disponibilidad (id_menu_preparacion, estado, observacion, id_usuario)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id_disponibilidad, id_menu_preparacion, estado, observacion, registrado_en, id_usuario`,
+    [id_menu_preparacion, estado, observacion || null, id_usuario || null]
+  );
+  return rows[0];
+}
+
+
+async function historialDisponibilidad(id_menu_preparacion) {
+  const { rows } = await pool.query(
+    `SELECT d.id_disponibilidad, d.estado, d.observacion, d.registrado_en, u.nombre AS actualizado_por
+     FROM disponibilidad d
+     LEFT JOIN usuario u ON u.id_usuario = d.id_usuario
+     WHERE d.id_menu_preparacion = $1
+     ORDER BY d.registrado_en DESC`,
+    [id_menu_preparacion]
+  );
+  return rows;
+}
+
+
+async function historialMenus(desde, hasta, id_sede = 1) {
+  const { rows } = await pool.query(
+    `SELECT m.id_menu, m.fecha,
+            json_agg(
+              json_build_object(
+                'componente', t.nombre,
+                'categoria', c.nombre,
+                'preparacion', p.nombre
+              ) ORDER BY t.id_tipo_componente, c.nombre NULLS FIRST
+            ) AS componentes
+     FROM menu m
+     JOIN menu_preparacion mp ON mp.id_menu = m.id_menu
+     JOIN preparacion p ON p.id_preparacion = mp.id_preparacion
+     JOIN tipo_componente t ON t.id_tipo_componente = mp.id_tipo_componente
+     LEFT JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
+     WHERE m.publicado = TRUE
+       AND m.id_sede = $3
+       AND m.fecha BETWEEN $1 AND $2
+     GROUP BY m.id_menu, m.fecha
+     ORDER BY m.fecha DESC`,
+    [desde, hasta, id_sede]
   );
   return rows;
 }
