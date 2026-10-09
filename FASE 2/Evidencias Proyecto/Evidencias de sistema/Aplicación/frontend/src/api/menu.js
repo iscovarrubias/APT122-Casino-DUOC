@@ -19,3 +19,15 @@ export async function obtenerPreparaciones() {
   }
   return res.json();
 }
+
+export async function obtenerHistorialMenu(desde, hasta) {
+  const params = new URLSearchParams();
+  if (desde) params.set('desde', desde);
+  if (hasta) params.set('hasta', hasta);
+
+  const res = await fetch(`${API_URL}/api/menu/historial?${params.toString()}`);
+  if (!res.ok) {
+    throw new Error(`Error al consultar el historial (${res.status})`);
+  }
+  return res.json();
+}

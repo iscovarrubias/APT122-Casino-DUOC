@@ -1,4 +1,6 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+types.setTypeParser(1082, (valor) => valor);
+types.setTypeParser(1114, (valor) => valor.replace(' ', 'T'));
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

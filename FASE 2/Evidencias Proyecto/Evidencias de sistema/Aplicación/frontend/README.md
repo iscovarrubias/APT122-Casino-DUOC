@@ -11,15 +11,14 @@ Oferta Gastronómica del Casino DUOC UC. APT122, Fase 2.
 | HU-09 | Ingredientes de cada preparación |
 | HU-10 | Información nutricional y alérgenos, con "No disponible" si no está validada |
 | HU-11 | Filtro por categoría (Principal, JUNAEB, Vegetariano, Hipocalórico) |
+| HU-05 | Vista Semanal, usando el historial de menús publicados del backend |
+| — | Vista Preguntas frecuentes (contenido estático, sin backend) |
 
-Diseño basado en el mockup. Se actualiza solo
-cada 30 segundos (polling), sin necesitar WebSockets, tal como se definió
-en el Documento de Arquitectura.
 
 ## Requisitos
 
 - Node.js 18+
-- El backend (Sprint 1-3) corriendo en paralelo, ver su propio README.
+- El backend corriendo en paralelo, ver su propio README.
 
 ## Instalación
 
@@ -34,9 +33,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Abre `http://localhost:5173`. Necesita que el backend esté corriendo al
-mismo tiempo, en otra terminal (ver
-"Probar manualmente" en el README del backend).
+`http://localhost:5173`
 
 ## Compilar para producción
 
@@ -44,8 +41,6 @@ mismo tiempo, en otra terminal (ver
 npm run build
 ```
 
-Genera la carpeta `dist/`, lista para subir a Vercel o Netlify (ver
-Documento de Arquitectura, sección 7).
 
 ## Estructura del proyecto
 
@@ -53,30 +48,15 @@ Documento de Arquitectura, sección 7).
 src/
   api/menu.js                  # llamadas al backend (fetch)
   components/
-    Sidebar.jsx
+    Sidebar.jsx                # navegación entre Diario / Semanal / Preguntas
     CategoriaTabs.jsx          # HU-11: filtro por categoría
     MenuPrincipal.jsx          # arma el combo: principal + compartidos
+    VistaSemanal.jsx           # HU-05: usa GET /api/menu/historial
+    VistaPreguntas.jsx         # FAQ estático, sin backend
     TablaNutricional.jsx       # HU-10, regla de "no disponible"
     AlergenoPills.jsx          # HU-10
     EstadoBadge.jsx            # HU-08: disponibilidad
+    iconos.jsx                 # íconos SVG propios, sin emojis
   utils/formato.js             # precio, suma de calorías del combo
-  App.jsx                      # sondeo cada 30s, estado de categoría
+  App.jsx                      # sondeo cada 30s, navegación entre vistas
 ```
-
-## Decisiones de diseño
-
-- **Todo el consumo es a endpoints públicos** (`GET /api/menu/hoy`), sin
-  token, tal como quedó definido: la consulta de menú no requiere cuenta.
-- **Las calorías totales del combo son una suma, no un dato aparte.** Si
-  falta la validación nutricional de cualquiera de los componentes, el
-  total se muestra como "No disponible" en vez de un número parcial que
-  podría confundir.
-- **"Configuración", "Cuenta y perfil" y "Cerrar sesión" aparecen
-  deshabilitados**, con un tooltip explicando por qué: son funciones
-  condicionadas a la cuenta DUOC Microsoft (RF-18 a RF-20), que todavía
-  no está resuelta a nivel institucional.
-- **No hay fotos de los platos.** El modelo de datos de `preparacion` no
-  tiene un campo de imagen; se usa un ícono como espacio reservado. Si
-  quieren fotos reales, hay que agregar una columna `imagen_url` a la
-  tabla y decidir dónde alojarlas (ver "Pendientes" abajo).
-

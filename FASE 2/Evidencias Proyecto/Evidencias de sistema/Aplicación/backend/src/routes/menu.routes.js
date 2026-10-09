@@ -5,21 +5,17 @@ const { requiereRol } = require('../middleware/roles');
 
 const router = express.Router();
 
-// Público: sin autenticar, tal como quedó definido para RF-08.
+const PERSONAL = [autenticar, requiereRol('Personal Casino', 'Administrador')];
+
 router.get('/hoy', controller.hoy);
-
-// HU-05: historial de menús publicados, también público.
 router.get('/historial', controller.verHistorialMenus);
-
-// Gestión: solo Personal Casino o Administrador (HU-14 aplicado).
-router.get('/planificacion', autenticar, requiereRol('Personal Casino', 'Administrador'), controller.verPlanificacion);
-router.post('/planificacion', autenticar, requiereRol('Personal Casino', 'Administrador'), controller.planificarComponente);
-router.patch('/:id/publicar', autenticar, requiereRol('Personal Casino', 'Administrador'), controller.publicar);
-
-// HU-06: cambiar disponibilidad de un componente (id_menu_preparacion).
-router.patch('/componentes/:id/disponibilidad', autenticar, requiereRol('Personal Casino', 'Administrador'), controller.actualizarDisponibilidad);
-
-// Historial completo (gestión, para verificar que nada se sobrescribió).
-router.get('/componentes/:id/disponibilidad/historial', autenticar, requiereRol('Personal Casino', 'Administrador'), controller.verHistorialDisponibilidad);
+router.get('/planificacion', ...PERSONAL, controller.verPlanificacion);
+router.post('/planificacion', ...PERSONAL, controller.planificarComponente);
+router.patch('/componentes/:id', ...PERSONAL, controller.actualizarComponente);
+router.delete('/componentes/:id', ...PERSONAL, controller.eliminarComponente);
+router.patch('/:id/publicar', ...PERSONAL, controller.publicar);
+router.patch('/:id/despublicar', ...PERSONAL, controller.despublicar);
+router.patch('/componentes/:id/disponibilidad', ...PERSONAL, controller.actualizarDisponibilidad);
+router.get('/componentes/:id/disponibilidad/historial', ...PERSONAL, controller.verHistorialDisponibilidad);
 
 module.exports = router;

@@ -1,10 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+  try {
+    if (localStorage.getItem('casino_tema') === 'oscuro') {
+      document.documentElement.dataset.theme = 'oscuro';
+    }
+  } catch (e) {}
+</script>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>casino-duoc-frontend</title>
+    <title>Casinos DUOC UC</title>
   </head>
   <body>
     <div id="root"></div>

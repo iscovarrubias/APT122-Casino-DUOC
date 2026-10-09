@@ -1,34 +1,3 @@
--- =============================================================================
--- PROYECTO APT122 · Plataforma de Gestión y Análisis de la Oferta Gastronómica
---                    del Casino DUOC UC (sede Valparaíso)
--- =============================================================================
--- Motor objetivo: PostgreSQL 14+ (compatible con MySQL 8+ salvo notas puntuales
--- marcadas como "MySQL:" en los comentarios).
---
--- Este script traduce a SQL el modelo de datos preliminar del Documento de
--- Alcance del Proyecto, sección 8, ya validado con:
---   - Entrevista 01 con la encargada del casino.
---   - Encuesta a 31 estudiantes.
---   - Entrevista con Silvia Aguilera (nutricionista y administradora del casino).
---   - Afiche oficial de planificación mensual de Campomar Ltda.
---
--- Cada bloque de tablas incluye un comentario explicando en qué hallazgo
--- confirmado se basa la decisión de diseño, para que quede trazable como
--- evidencia de C3 (justificación de decisiones de modelo de datos).
--- =============================================================================
-
-
--- =============================================================================
--- BLOQUE 1: CATÁLOGOS Y CONTEXTO INSTITUCIONAL
--- =============================================================================
--- Decisión de diseño clave: el concesionario (Campomar) y la sede se modelan
--- como DATOS, no como reglas fijas del sistema. Esto responde directamente a
--- la sección 6.3 del Documento de Alcance: el proyecto no debe asumir
--- "Campomar" como una regla hardcodeada, para no cerrar la puerta a que en
--- el futuro (fuera del alcance de este semestre) el sistema pueda adaptarse
--- a otra sede u otro concesionario sin rediseñar el modelo.
--- =============================================================================
-
 CREATE TABLE concesionario (
     id_concesionario    SERIAL PRIMARY KEY,
     nombre              VARCHAR(150) NOT NULL,
@@ -68,34 +37,16 @@ CREATE TABLE usuario (
     id_sede             INT NOT NULL REFERENCES sede(id_sede),
     creado_en           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
--- Campo agregado en Sprint 1 (HU-15): no estaba en el modelo original del
--- Documento de Alcance porque el login se definio recien al escribir el
--- backlog. Se documenta aqui el cambio para que quede trazable.
 
-
--- =============================================================================
--- BLOQUE 2: CATÁLOGOS DEL MENÚ
--- =============================================================================
--- La categoría de menú (Principal, JUNAEB, Vegetariano, Hipocalórico) está
--- confirmada por el afiche oficial de Campomar "Planifica tu Almuerzo". Se
--- modela como catálogo propio y no como texto libre, porque el afiche muestra
--- que una misma sede ofrece varias categorías simultáneas por día.
---
--- El catálogo de alérgenos está confirmado directamente por la nutricionista:
--- gluten, lácteos, frutos secos, mariscos, huevo y soya.
--- =============================================================================
 
 CREATE TABLE categoria_menu (
     id_categoria_menu   SERIAL PRIMARY KEY,
     nombre              VARCHAR(50) NOT NULL UNIQUE
-    -- Valores confirmados por el afiche de Campomar (sept. 2026):
-    -- 'Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'.
 );
 
 CREATE TABLE tipo_componente (
     id_tipo_componente  SERIAL PRIMARY KEY,
     nombre              VARCHAR(50) NOT NULL UNIQUE
-    -- Valores: 'Entrada', 'Plato Principal', 'Postre', 'Bebida'.
 );
 COMMENT ON TABLE tipo_componente IS
     'No confundir con categoria_menu. categoria_menu clasifica la DIETA '
@@ -107,8 +58,6 @@ COMMENT ON TABLE tipo_componente IS
 CREATE TABLE alergeno (
     id_alergeno         SERIAL PRIMARY KEY,
     nombre              VARCHAR(50) NOT NULL UNIQUE
-    -- Catálogo confirmado por la nutricionista: 'Gluten', 'Lácteos',
-    -- 'Frutos secos', 'Mariscos', 'Huevo', 'Soya'.
 );
 
 CREATE TABLE ingrediente (
@@ -117,9 +66,6 @@ CREATE TABLE ingrediente (
 );
 
 
--- =============================================================================
--- BLOQUE 3: PREPARACIONES Y SUS RELACIONES
--- =============================================================================
 
 CREATE TABLE preparacion (
     id_preparacion      SERIAL PRIMARY KEY,
@@ -127,7 +73,8 @@ CREATE TABLE preparacion (
     descripcion         TEXT,
     precio              NUMERIC(8,0) NOT NULL CHECK (precio >= 0),
     activa              BOOLEAN NOT NULL DEFAULT TRUE,
-    creado_en           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    creado_en           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_tipo_componente  INT REFERENCES tipo_componente(id_tipo_componente)
 );
 COMMENT ON TABLE preparacion IS
     'Catálogo maestro de platos que el casino puede ofrecer. No lleva fecha '
@@ -171,13 +118,6 @@ COMMENT ON TABLE informacion_nutricional IS
     'proyecto, no solo una restricción técnica).';
 
 
--- =============================================================================
--- BLOQUE 4: PLANIFICACIÓN DEL MENÚ (la "minuta")
--- =============================================================================
--- Confirmado por la nutricionista: la minuta se define mensualmente, lo que
--- coincide con el afiche de Campomar (planificación de septiembre completa).
--- =============================================================================
-
 CREATE TABLE menu (
     id_menu             SERIAL PRIMARY KEY,
     id_sede             INT NOT NULL REFERENCES sede(id_sede),
@@ -216,29 +156,15 @@ COMMENT ON TABLE menu_preparacion IS
     'ensalada que se repite en distintos días no necesita volver a '
     'documentarse cada vez.';
 
--- Un plato principal por categoría y por día.
 CREATE UNIQUE INDEX ux_menu_prep_por_categoria
     ON menu_preparacion (id_menu, id_categoria_menu, id_tipo_componente)
     WHERE id_categoria_menu IS NOT NULL;
 
--- Un componente compartido (entrada/postre/bebida) por día, no por categoría.
 CREATE UNIQUE INDEX ux_menu_prep_compartido
     ON menu_preparacion (id_menu, id_tipo_componente)
     WHERE id_categoria_menu IS NULL;
 
 
--- =============================================================================
--- BLOQUE 5: DISPONIBILIDAD REAL (ejecución del día)
--- =============================================================================
--- Esta es la decisión de diseño más importante del modelo, y está confirmada
--- textualmente por la Entrevista 01, punto 8: "el menú que se planifica
--- inicialmente puede cambiar el mismo día, por lo que una publicación previa
--- del menú no necesariamente representa exactamente lo que estará disponible
--- posteriormente". Por eso disponibilidad es una tabla de eventos (log
--- histórico, append-only), no un simple campo de estado sobre menu_preparacion:
--- así se conserva el historial de cambios de disponibilidad durante el día,
--- en vez de perder esa información cada vez que se actualiza.
--- =============================================================================
 
 CREATE TABLE disponibilidad (
     id_disponibilidad   SERIAL PRIMARY KEY,
@@ -258,19 +184,6 @@ COMMENT ON TABLE disponibilidad IS
     'perder el historial de cambios durante la jornada.';
 
 
--- =============================================================================
--- BLOQUE 6: VENTAS (componente de innovación, condicionado)
--- =============================================================================
--- El origen de estos datos depende del escenario que resulte viable, según
--- la sección 7 del Documento de Alcance. La columna origen_dato deja esa
--- decisión explícita en el propio dato, en vez de asumir un único escenario:
---   - 'real'      -> Escenario A: integración directa con el sistema de caja
---                    de Campomar (requiere autorización institucional).
---   - 'importado' -> Escenario B: carga desde archivo exportado por Campomar.
---   - 'simulado'  -> Escenario C: datos de prueba generados por el equipo.
---                    Es el escenario base mientras no se resuelvan A o B.
--- =============================================================================
-
 CREATE TABLE venta (
     id_venta            SERIAL PRIMARY KEY,
     id_menu_preparacion INT NOT NULL REFERENCES menu_preparacion(id_menu_preparacion),
@@ -288,13 +201,6 @@ COMMENT ON TABLE venta IS
     'Campomar/administración de sede. El resto del sistema (menú, '
     'disponibilidad, consulta estudiantil) no depende de esta tabla.';
 
-
--- =============================================================================
--- DATOS DE CATÁLOGO INICIALES (seed)
--- =============================================================================
--- Solo catálogos confirmados por las entrevistas; no se insertan preparaciones
--- ni menús reales aquí, eso corresponde a la carga de datos de Fase 2.
--- =============================================================================
 
 INSERT INTO concesionario (nombre) VALUES ('Campomar Ltda.');
 

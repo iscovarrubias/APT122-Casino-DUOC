@@ -8,7 +8,7 @@ function errorHandler(err, req, res, next) {
   if (err.status) {
     return res.status(err.status).json({ error: err.message });
   }
-  
+
   if (err.code === '23505') {
     return res.status(409).json({ error: 'El registro ya existe (valor duplicado).' });
   }

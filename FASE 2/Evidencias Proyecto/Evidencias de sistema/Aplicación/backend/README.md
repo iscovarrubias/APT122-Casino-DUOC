@@ -20,97 +20,37 @@ Gastronómica del Casino DUOC UC. APT122, Fase 2.
 | HU-12 | Asignar alérgenos desde catálogo fijo | `PUT /api/preparaciones/:id/alergenos`, `GET /api/preparaciones/alergenos` |
 | HU-13 | Registrar información nutricional y marcarla como validada | `PUT /api/preparaciones/:id/nutricion` |
 
-Todas probadas de punta a punta antes de entregarse (ver sección de pruebas
-manuales más abajo).
 
 ## Requisitos
 
 - Node.js 18+
-- PostgreSQL 14+ (con la base de datos ya creada)
+- PostgreSQL 14+
 
 ## Instalación
 
 ```bash
 npm install
 cp .env.ejemplo .env
-# Edita .env con los datos reales de tu conexión a PostgreSQL
 ```
 
 ## Base de datos
 
 ```bash
-# Crear la base de datos (una sola vez)
 createdb casino_duoc
 
-# Cargar el esquema (16 tablas + catálogos iniciales)
 psql -d casino_duoc -f database/schema.sql
 
-# Crear usuarios de prueba (uno por rol, contraseña: Test1234)
 npm run seed
 ```
-
-> `schema.sql` corresponde al modelo del Documento de Alcance
-> (`modelo_datos_casino_duoc.sql`), con una diferencia: la columna
-> `password_hash` en `usuario`, que no estaba en el modelo original
-> porque el login se definió recién al armar el backlog. Queda
-> documentado aquí para que el cambio sea trazable.
 
 ## Levantar el servidor
 
 ```bash
 npm start
 ```
+`http://localhost:3000`
 
-Por defecto queda en `http://localhost:3000`.
 
-## Probar manualmente
-
-```bash
-# 1. Login
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"personal@duocuc.cl","password":"Test1234"}'
-# copia el "token" de la respuesta
-
-# 2. Crear una preparación (requiere rol Personal Casino o Administrador)
-curl -X POST http://localhost:3000/api/preparaciones \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer TOKEN" \
-  -d '{"nombre":"Charquicán","precio":2500,"ingredientes":["Zapallo","Papa","Choclo"]}'
-
-# 3. Listar preparaciones (acceso público, sin token)
-curl http://localhost:3000/api/preparaciones
-
-# 4. Menú del día con disponibilidad (acceso público, sin token)
-curl http://localhost:3000/api/menu/hoy
-curl "http://localhost:3000/api/menu/hoy?categoria=Vegetariano"
-
-# 5. Planificar un plato principal para una categoría
-curl -X POST http://localhost:3000/api/menu/planificacion \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer TOKEN" \
-  -d '{"fecha":"2026-09-20","id_preparacion":1,"tipo_componente":"Plato Principal","categoria":"Principal","cantidad_planificada":30}'
-
-# 6. Planificar un componente compartido (sin categoría)
-curl -X POST http://localhost:3000/api/menu/planificacion \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer TOKEN" \
-  -d '{"fecha":"2026-09-20","id_preparacion":5,"tipo_componente":"Entrada","cantidad_planificada":80}'
-
-# 7. Publicar el menú (usa el id_menu que devolvió el paso 5)
-curl -X PATCH http://localhost:3000/api/menu/1/publicar -H "Authorization: Bearer TOKEN"
-
-# 8. Asignar alérgenos desde el catálogo fijo
-curl -X PUT http://localhost:3000/api/preparaciones/5/alergenos \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer TOKEN" \
-  -d '{"alergenos":["Frutos secos"]}'
-
-# 9. Cargar información nutricional y marcarla como validada
-curl -X PUT http://localhost:3000/api/preparaciones/5/nutricion \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer TOKEN" \
-  -d '{"calorias":120,"proteinas_g":3,"carbohidratos_g":10,"grasas_g":5,"fuente":"Nutricionista Silvia Aguilera","validado":true}'
 ```
 
 ## Estructura del proyecto
@@ -137,41 +77,3 @@ database/
 schema.sql # esquema completo (16 tablas)
 seed_sprint1.js # usuarios de prueba
 
-
-## Decisiones de diseño (evidencia de C4)
-
-- **El control de acceso por rol vive en el backend, no en el frontend**
-  (middleware `requiereRol`), tal como se definió en el Documento de
-  Arquitectura: un usuario con rol incorrecto es rechazado por la API,
-  no solo "escondido" en la interfaz.
-- **El login no revela si un correo existe o no.** Contraseña incorrecta y
-  correo inexistente devuelven exactamente el mismo mensaje de error
-  (criterio de aceptación de HU-15).
-- **La consulta de menú (`GET /api/preparaciones`, `GET /api/menu/hoy`) es
-  pública, sin sesión.** Solo la gestión (crear, editar, desactivar,
-  cambiar disponibilidad) exige login y rol, según quedó definido al
-  aclarar que preferencias y opiniones sí requieren cuenta, pero la
-  consulta básica no.
-- **Desactivar una preparación no la elimina** (columna `activa`), solo deja
-  de ofrecerla; se puede reactivar más adelante sin perder su historial de
-  ingredientes o de menús pasados en los que apareció.
-- **Todos los errores pasan por un manejador central** (`errorHandler.js`),
-  que traduce errores de PostgreSQL (`23505` duplicado, `23503` llave
-  foránea inválida, `23502` campo obligatorio faltante, `23514` regla de
-  validación incumplida) y JSON malformado a mensajes claros para el
-  cliente, en vez de exponer el error técnico crudo.
-- **El servidor valida `.env` al arrancar** (`JWT_SECRET`, `DATABASE_URL`):
-  si falta alguno, falla de inmediato con un mensaje claro, en vez de
-  arrancar "bien" y recién romperse en el primer login.
-
-## Pendiente para próximos sprints
-
-- Endpoints de disponibilidad (HU-06, HU-07) — Sprint 3.
-- Registro de usuarios (`POST /api/auth/registro`), que no estaba en el
-  backlog original de este sprint. Falta evaluar si se necesita o si los
-  usuarios se cargan directamente por el administrador.
-- Pruebas automatizadas, por ahora las pruebas fueron manuales vía curl,
-  falta el plan de pruebas formal con matriz de trazabilidad, que
-  corresponde al Sprint 5 según el plan de trabajo.
-- Confirmar con administración de la sede si el stack definitivo será
-  este (Node.js/Express + PostgreSQL) o el alternativo (Laravel/MySQL).
