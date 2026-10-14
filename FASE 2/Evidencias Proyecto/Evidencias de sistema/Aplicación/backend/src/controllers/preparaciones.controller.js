@@ -1,4 +1,5 @@
 const preparacionModel = require('../models/preparacion.model');
+const estudianteModel = require('../models/estudiante.model');
 const { ApiError } = require('../middleware/errorHandler');
 
 const URL_VALIDA = /^https?:\/\/\S+$/i;
@@ -37,7 +38,7 @@ async function listarGestion(req, res, next) {
 
 async function crear(req, res, next) {
   try {
-    const { nombre, descripcion, precio, imagen_url, ingredientes, tipo } = req.body;
+    const { nombre, descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta } = req.body;
 
     if (typeof nombre !== 'string' || nombre.trim() === '') {
       throw new ApiError(400, 'El nombre de la preparación es obligatorio.');
@@ -52,7 +53,7 @@ async function crear(req, res, next) {
       throw new ApiError(400, 'tipo inválido. Debe ser Entrada, Postre, Bebida o Plato Principal.');
     }
 
-    const preparacion = await preparacionModel.crear({ nombre: nombre.trim(), descripcion, precio, imagen_url, ingredientes, tipo });
+    const preparacion = await preparacionModel.crear({ nombre: nombre.trim(), descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta });
     res.status(201).json(preparacion);
   } catch (err) {
     next(err);
@@ -61,7 +62,7 @@ async function crear(req, res, next) {
 
 async function actualizar(req, res, next) {
   try {
-    const { nombre, descripcion, precio, imagen_url, ingredientes, tipo } = req.body;
+    const { nombre, descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta } = req.body;
 
     if (nombre !== undefined && (typeof nombre !== 'string' || nombre.trim() === '')) {
       throw new ApiError(400, 'El nombre no puede quedar vacío.');
@@ -76,7 +77,7 @@ async function actualizar(req, res, next) {
     }
 
     const preparacion = await preparacionModel.actualizar(req.params.id, {
-      nombre: nombre?.trim(), descripcion, precio, imagen_url, ingredientes, tipo,
+      nombre: nombre?.trim(), descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta,
     });
     if (!preparacion) throw new ApiError(404, 'Preparación no encontrada.');
     res.json(preparacion);
@@ -158,19 +159,16 @@ async function asignarAlergenos(req, res, next) {
 
 async function actualizarNutricion(req, res, next) {
   try {
-    const { calorias, proteinas_g, carbohidratos_g, grasas_g, fuente, validado } = req.body;
+    const { calorias, proteinas_g, carbohidratos_g, grasas_g, origen } = req.body;
 
     for (const [campo, valor] of Object.entries({ calorias, proteinas_g, carbohidratos_g, grasas_g })) {
       if (valor !== undefined && valor !== null && !esNumeroValido(valor)) {
         throw new ApiError(400, `El campo "${campo}" debe ser un número no negativo.`);
       }
     }
-    if (validado === true && (calorias === undefined || calorias === null)) {
-      throw new ApiError(400, 'No se puede marcar como validado sin al menos el dato de calorías.');
-    }
-
     const nutricion = await preparacionModel.actualizarNutricion(req.params.id, {
-      calorias, proteinas_g, carbohidratos_g, grasas_g, fuente, validado,
+      calorias, proteinas_g, carbohidratos_g, grasas_g,
+      origen: origen === 'calculada' ? 'calculada' : 'manual',
     });
     res.json(nutricion);
   } catch (err) {
@@ -188,7 +186,32 @@ async function subirImagen(req, res, next) {
   }
 }
 
+async function calcularNutricion(req, res, next) {
+  try {
+    const { porciones_receta, ingredientes } = req.body;
+
+    if (!Array.isArray(ingredientes)) {
+      throw new ApiError(400, 'ingredientes debe ser una lista.');
+    }
+
+    const resultado = await preparacionModel.calcularNutricion({ porciones_receta, ingredientes });
+    res.json(resultado);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function opinionesDePreparacion(req, res, next) {
+  try {
+    const opiniones = await estudianteModel.opinionesDePreparacion(req.params.id);
+    res.json({ id_preparacion: Number(req.params.id), opiniones });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   listar, listarGestion, crear, actualizar, desactivar, reactivar, eliminar,
   listarAlergenos, asignarAlergenos, actualizarNutricion, subirImagen, listarTipos,
+  calcularNutricion, opinionesDePreparacion,
 };

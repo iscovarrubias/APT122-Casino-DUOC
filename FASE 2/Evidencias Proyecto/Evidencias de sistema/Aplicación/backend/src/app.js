@@ -6,9 +6,14 @@ const { errorHandler } = require('./middleware/errorHandler');
 const { RUTA_UPLOADS } = require('./middleware/subida');
 const authRoutes = require('./routes/auth.routes');
 const preparacionesRoutes = require('./routes/preparaciones.routes');
+const ingredientesRoutes = require('./routes/ingrediente.routes');
 const menuRoutes = require('./routes/menu.routes');
+const jornadaRoutes = require('./routes/jornada.routes');
 const usuariosRoutes = require('./routes/usuarios.routes');
 const analisisRoutes = require('./routes/analisis.routes');
+const estudianteRoutes = require('./routes/estudiante.routes');
+const opinionesRoutes = require('./routes/opiniones.routes');
+const prediccionRoutes = require('./routes/prediccion.routes');
 
 
 if (!process.env.JWT_SECRET) {
@@ -41,9 +46,14 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/preparaciones', preparacionesRoutes);
+app.use('/api/ingredientes', ingredientesRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/jornada', jornadaRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/analisis', analisisRoutes);
+app.use('/api/estudiante', estudianteRoutes);
+app.use('/api/opiniones', opinionesRoutes);
+app.use('/api/prediccion', prediccionRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada.' });

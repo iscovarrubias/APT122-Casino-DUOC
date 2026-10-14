@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
+import PerfilEstudianteModal from '../components/PerfilEstudianteModal';
+import { useEstudiante } from '../utils/estudiante';
 import CategoriaTabs from '../components/CategoriaTabs';
 import MenuPrincipal from '../components/MenuPrincipal';
 import VistaSemanal from '../components/VistaSemanal';
 import VistaPreguntas from '../components/VistaPreguntas';
 import { obtenerMenuHoy } from '../api/menu';
 import { hoyChile, parseFechaISO } from '../utils/formato';
+import { suscribirCambios } from '../utils/eventos';
 
 const INTERVALO_SONDEO_MS = 30000;
 
@@ -14,7 +17,12 @@ function formatearFechaLarga(fechaISO) {
 }
 
 function VistaDiario() {
-  const [categoria, setCategoria] = useState('Principal');
+  const { categoriaPreferida } = useEstudiante();
+  const [categoria, setCategoria] = useState(categoriaPreferida || 'Principal');
+  
+  useEffect(() => {
+    if (categoriaPreferida) setCategoria(categoriaPreferida);
+  }, [categoriaPreferida]);
   const [datos, setDatos] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -35,7 +43,9 @@ function VistaDiario() {
     setCargando(true);
     cargar();
     const intervalo = setInterval(cargar, INTERVALO_SONDEO_MS);
-    return () => clearInterval(intervalo);
+    // Tiempo real: el servidor avisa cuando cambia el stock; el sondeo queda de respaldo.
+    const cerrar = suscribirCambios(cargar);
+    return () => { clearInterval(intervalo); cerrar(); };
   }, [cargar]);
 
   return (
@@ -70,10 +80,15 @@ const TITULOS_VISTA = {
 
 export default function VistaPublica() {
   const [vista, setVista] = useState('diario');
+  const [perfilAbierto, setPerfilAbierto] = useState(false);
 
   return (
     <div className="app-layout">
-      <Sidebar vistaActiva={vista} onCambiarVista={setVista} />
+      <Sidebar
+        vistaActiva={vista}
+        onCambiarVista={setVista}
+        onAbrirPerfil={() => setPerfilAbierto(true)}
+      />
 
       <main className="main">
         {vista !== 'diario' && (
@@ -86,6 +101,10 @@ export default function VistaPublica() {
         {vista === 'semanal' && <VistaSemanal />}
         {vista === 'preguntas' && <VistaPreguntas />}
       </main>
+
+      {perfilAbierto && (
+        <PerfilEstudianteModal onCerrar={() => setPerfilAbierto(false)} />
+      )}
     </div>
   );
 }

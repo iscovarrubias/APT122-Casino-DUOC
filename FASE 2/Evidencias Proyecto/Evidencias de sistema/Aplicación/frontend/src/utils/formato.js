@@ -7,7 +7,7 @@ export function formatearPrecio(valor) {
 
 export const ESTADO_TEXTO = {
   disponible: 'Disponible',
-  baja_disponibilidad: 'Baja disponibilidad',
+  baja_disponibilidad: 'Quedan pocas unidades',
   agotado: 'Agotado',
 };
 

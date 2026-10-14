@@ -1,7 +1,7 @@
 const ZONA = 'America/Santiago';
 
 function aISOChile(fecha) {
-  return fecha.toLocaleDateString('en-CA', { timeZone: ZONA }); // YYYY-MM-DD
+  return fecha.toLocaleDateString('en-CA', { timeZone: ZONA }); 
 }
 
 function hoyChile() {

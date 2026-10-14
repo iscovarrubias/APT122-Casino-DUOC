@@ -16,15 +16,19 @@ async function menuDelDia(fecha, categoria) {
 
   const { rows } = await pool.query(
     `SELECT
-        mp.id_menu_preparacion, p.id_preparacion, p.nombre, p.descripcion, p.precio, p.imagen_url,
+        mp.id_menu_preparacion, p.id_preparacion, p.nombre, p.descripcion,
+        CASE WHEN mp.id_categoria_menu IS NULL THEN 0 ELSE COALESCE(mp.precio, p.precio) END AS precio, p.imagen_url,
         c.nombre AS categoria, t.nombre AS componente, mp.cantidad_planificada,
         COALESCE(d.estado, 'disponible') AS disponibilidad,
         d.registrado_en AS disponibilidad_actualizada_en,
+        CASE WHEN j.estado = 'abierta' THEN GREATEST(s.restante, 0) END AS cantidad_restante,
+        CASE WHEN j.estado = 'abierta' THEN s.actualizado END AS stock_actualizado_en,
+        cal.promedio AS calificacion_promedio, cal.total AS calificaciones_total,
         COALESCE(ing.lista, '[]') AS ingredientes,
         COALESCE(al.lista, '[]') AS alergenos,
-        CASE WHEN n.validado THEN
+        CASE WHEN n.calorias IS NOT NULL THEN
           json_build_object('calorias', n.calorias, 'proteinas_g', n.proteinas_g,
-                            'carbohidratos_g', n.carbohidratos_g, 'grasas_g', n.grasas_g, 'fuente', n.fuente)
+                            'carbohidratos_g', n.carbohidratos_g, 'grasas_g', n.grasas_g)
         ELSE NULL END AS informacion_nutricional
      FROM menu m
      JOIN menu_preparacion mp ON mp.id_menu = m.id_menu
@@ -47,6 +51,15 @@ async function menuDelDia(fecha, categoria) {
         WHERE pa.id_preparacion = p.id_preparacion
      ) al ON TRUE
      LEFT JOIN informacion_nutricional n ON n.id_preparacion = p.id_preparacion
+     LEFT JOIN jornada j ON j.id_menu = m.id_menu
+     LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(delta), 0)::int AS restante, MAX(registrado_en) AS actualizado
+        FROM movimiento_stock WHERE id_menu_preparacion = mp.id_menu_preparacion
+     ) s ON TRUE
+     LEFT JOIN LATERAL (
+        SELECT ROUND(AVG(estrellas), 1)::float8 AS promedio, COUNT(*)::int AS total
+        FROM calificacion WHERE id_preparacion = p.id_preparacion
+     ) cal ON TRUE
      WHERE m.fecha = $1 AND m.publicado = TRUE
      ${filtroCategoria}
      ORDER BY t.id_tipo_componente`,
@@ -77,7 +90,29 @@ async function obtenerMenuPorFecha(fecha, id_sede = 1) {
   return rows[0] || null;
 }
 
-async function agregarComponente(id_menu, { id_preparacion, tipo_componente, categoria, cantidad_planificada }) {
+async function precioReciente(id_categoria_menu) {
+  const { rows } = await pool.query(
+    `SELECT mp.precio FROM menu_preparacion mp JOIN menu m ON m.id_menu = mp.id_menu
+     WHERE mp.id_categoria_menu = $1 AND mp.precio IS NOT NULL AND m.fecha <= CURRENT_DATE
+     ORDER BY m.fecha DESC, mp.id_menu_preparacion DESC LIMIT 1`,
+    [id_categoria_menu]
+  );
+  return rows[0] ? Number(rows[0].precio) : 0;
+}
+
+async function preciosRecientes() {
+  const { rows } = await pool.query(
+    `SELECT DISTINCT ON (c.nombre) c.nombre AS categoria, mp.precio
+     FROM menu_preparacion mp
+     JOIN menu m ON m.id_menu = mp.id_menu
+     JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
+     WHERE mp.precio IS NOT NULL AND m.fecha <= CURRENT_DATE
+     ORDER BY c.nombre, m.fecha DESC, mp.id_menu_preparacion DESC`
+  );
+  return Object.fromEntries(rows.map((r) => [r.categoria, Number(r.precio)]));
+}
+
+async function agregarComponente(id_menu, { id_preparacion, tipo_componente, categoria, cantidad_planificada, precio }) {
   const tipoRes = await pool.query('SELECT id_tipo_componente FROM tipo_componente WHERE nombre = $1', [tipo_componente]);
   if (!tipoRes.rows[0]) throw error(400, `Tipo de componente "${tipo_componente}" no existe.`);
 
@@ -96,16 +131,19 @@ async function agregarComponente(id_menu, { id_preparacion, tipo_componente, cat
     id_categoria_menu = catRes.rows[0].id_categoria_menu;
   }
 
+  const hayPrecio = precio !== undefined && precio !== null && precio !== '';
+  const precioFinal = !esPlatoPrincipal ? null : (hayPrecio ? Number(precio) : await precioReciente(id_categoria_menu));
+
   const { rows } = await pool.query(
-    `INSERT INTO menu_preparacion (id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING id_menu_preparacion, id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada`,
-    [id_menu, id_preparacion, id_categoria_menu, tipoRes.rows[0].id_tipo_componente, cantidad_planificada]
+    `INSERT INTO menu_preparacion (id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada, precio)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id_menu_preparacion, id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada, precio`,
+    [id_menu, id_preparacion, id_categoria_menu, tipoRes.rows[0].id_tipo_componente, cantidad_planificada, precioFinal]
   );
   return rows[0];
 }
 
-async function actualizarComponente(id_menu_preparacion, { id_preparacion, cantidad_planificada }) {
+async function actualizarComponente(id_menu_preparacion, { id_preparacion, cantidad_planificada, precio }) {
   if (id_preparacion !== undefined) {
     const prep = await pool.query('SELECT activa FROM preparacion WHERE id_preparacion = $1', [id_preparacion]);
     if (!prep.rows[0]) throw error(400, 'La preparación indicada no existe.');
@@ -114,10 +152,11 @@ async function actualizarComponente(id_menu_preparacion, { id_preparacion, canti
   const { rows } = await pool.query(
     `UPDATE menu_preparacion SET
        id_preparacion = COALESCE($2, id_preparacion),
-       cantidad_planificada = COALESCE($3, cantidad_planificada)
+       cantidad_planificada = COALESCE($3, cantidad_planificada),
+       precio = CASE WHEN id_categoria_menu IS NOT NULL THEN COALESCE($4, precio) ELSE precio END
      WHERE id_menu_preparacion = $1
-     RETURNING id_menu_preparacion, id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada`,
-    [id_menu_preparacion, id_preparacion ?? null, cantidad_planificada ?? null]
+     RETURNING id_menu_preparacion, id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada, precio`,
+    [id_menu_preparacion, id_preparacion ?? null, cantidad_planificada ?? null, precio ?? null]
   );
   return rows[0] || null;
 }
@@ -150,7 +189,7 @@ async function cambiarPublicacion(id_menu, publicado) {
 async function listarPorFecha(fecha, id_sede = 1) {
   const { rows } = await pool.query(
     `SELECT mp.id_menu_preparacion, mp.id_menu, p.id_preparacion, p.nombre AS preparacion,
-            c.nombre AS categoria, t.nombre AS componente, mp.cantidad_planificada, m.publicado,
+            c.nombre AS categoria, t.nombre AS componente, mp.cantidad_planificada, mp.precio, m.publicado,
             COALESCE(d.estado, 'disponible') AS disponibilidad,
             d.registrado_en AS disponibilidad_actualizada_en
      FROM menu m
@@ -220,7 +259,70 @@ async function historialMenus(desde, hasta, id_sede = 1) {
   return rows;
 }
 
+async function menusDelMes(mes, id_sede = 1) {
+  const { rows } = await pool.query(
+    `SELECT m.fecha, m.id_menu, m.publicado,
+            COALESCE(json_agg(json_build_object('componente', t.nombre, 'categoria', c.nombre, 'preparacion', p.nombre)
+                              ORDER BY t.id_tipo_componente, c.nombre NULLS FIRST)
+                     FILTER (WHERE mp.id_menu_preparacion IS NOT NULL), '[]') AS componentes
+     FROM menu m
+     LEFT JOIN menu_preparacion mp ON mp.id_menu = m.id_menu
+     LEFT JOIN preparacion p ON p.id_preparacion = mp.id_preparacion
+     LEFT JOIN tipo_componente t ON t.id_tipo_componente = mp.id_tipo_componente
+     LEFT JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
+     WHERE m.id_sede = $2 AND to_char(m.fecha, 'YYYY-MM') = $1
+     GROUP BY m.id_menu, m.fecha, m.publicado ORDER BY m.fecha`,
+    [mes, id_sede]
+  );
+  return rows;
+}
+
+async function copiarMenus(copias, { sobrescribir = false } = {}, id_sede = 1) {
+  const resultado = { copiados: 0, omitidos: [] };
+  for (const { origen, destino } of copias) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const src = (await client.query('SELECT id_menu FROM menu WHERE fecha = $1 AND id_sede = $2', [origen, id_sede])).rows[0];
+      const comps = src ? (await client.query(
+        `SELECT mp.id_preparacion, mp.id_categoria_menu, mp.id_tipo_componente, mp.cantidad_planificada, mp.precio
+         FROM menu_preparacion mp JOIN preparacion p ON p.id_preparacion = mp.id_preparacion
+         WHERE mp.id_menu = $1 AND p.activa = TRUE`, [src.id_menu])).rows : [];
+      if (!comps.length) { await client.query('ROLLBACK'); resultado.omitidos.push({ fecha: destino, motivo: 'El día de origen no tiene menú.' }); continue; }
+
+      let dst = (await client.query('SELECT id_menu FROM menu WHERE fecha = $1 AND id_sede = $2 FOR UPDATE', [destino, id_sede])).rows[0];
+      if (!dst) {
+        dst = (await client.query('INSERT INTO menu (id_sede, fecha, publicado) VALUES ($1, $2, FALSE) RETURNING id_menu', [id_sede, destino])).rows[0];
+      } else {
+        const hay = (await client.query('SELECT COUNT(*)::int AS n FROM menu_preparacion WHERE id_menu = $1', [dst.id_menu])).rows[0].n;
+        if (hay > 0 && !sobrescribir) { await client.query('ROLLBACK'); resultado.omitidos.push({ fecha: destino, motivo: 'Ya tiene un menú cargado.' }); continue; }
+        if ((await client.query('SELECT 1 FROM jornada WHERE id_menu = $1', [dst.id_menu])).rows[0]) {
+          await client.query('ROLLBACK'); resultado.omitidos.push({ fecha: destino, motivo: 'Ya tiene una jornada iniciada.' }); continue;
+        }
+        await client.query('DELETE FROM menu_preparacion WHERE id_menu = $1', [dst.id_menu]);
+        await client.query('UPDATE menu SET publicado = FALSE WHERE id_menu = $1', [dst.id_menu]);
+      }
+      for (const c of comps) {
+        await client.query(
+          `INSERT INTO menu_preparacion (id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada, precio)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [dst.id_menu, c.id_preparacion, c.id_categoria_menu, c.id_tipo_componente, c.cantidad_planificada, c.precio]);
+      }
+      await client.query('COMMIT');
+      resultado.copiados++;
+    } catch (err) {
+      await client.query('ROLLBACK');
+      resultado.omitidos.push({ fecha: destino, motivo: 'No se pudo copiar.' });
+    } finally {
+      client.release();
+    }
+  }
+  return resultado;
+}
+
 module.exports = {
+  menusDelMes, copiarMenus,
+  preciosRecientes,
   menuDelDia, obtenerOCrearMenu, obtenerMenuPorFecha, agregarComponente, actualizarComponente,
   eliminarComponente, cambiarPublicacion, listarPorFecha,
   actualizarDisponibilidad, historialDisponibilidad, historialMenus,

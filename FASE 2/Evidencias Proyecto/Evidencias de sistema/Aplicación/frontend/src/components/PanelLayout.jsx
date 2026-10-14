@@ -1,10 +1,10 @@
 import { useAuth } from '../context/auth-context';
 import { navegar } from '../ruteo/useRuta';
 import { NAVEGACION, PERMISOS } from '../ruteo/rutas';
-import { IconTenedor, IconSol, IconLuna } from './iconos';
+import { Utensils, Sun, Moon } from 'lucide-react';
 import { useTema } from '../utils/tema';
 
-export default function PanelLayout({ ruta, titulo, children }) {
+export default function PanelLayout({ ruta, titulo, accionesTitulo, children }) {
   const { usuario, kiosco, cerrarSesion } = useAuth();
   const { esOscuro, alternar } = useTema();
   const visibles = NAVEGACION.filter((item) => PERMISOS[item.ruta].includes(usuario.rol));
@@ -51,14 +51,17 @@ export default function PanelLayout({ ruta, titulo, children }) {
             title={esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             aria-label={esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           >
-            {esOscuro ? <IconSol width={16} height={16} /> : <IconLuna width={16} height={16} />}
+            {esOscuro ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button className="boton boton-secundario" onClick={salir}>Cerrar sesión</button>
         </div>
       </header>
 
       <main className="panel-contenido">
-        <h1 className="panel-titulo">{titulo}</h1>
+        <div className="panel-titulo-fila">
+          <h1 className="panel-titulo">{titulo}</h1>
+          {accionesTitulo && <div className="panel-titulo-acciones">{accionesTitulo}</div>}
+        </div>
         {children}
       </main>
     </div>

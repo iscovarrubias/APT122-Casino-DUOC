@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { listarUsuarios, crearUsuario, actualizarUsuario, cambiarClave } from '../api/gestion';
 import { useAuth } from '../context/auth-context';
 
-const ROLES = ['Personal Casino', 'Administrador', 'Estudiante'];
+const ROLES = ['Personal Casino', 'Cajero', 'Nutricionista', 'Administrador', 'Estudiante'];
 const VACIO = { nombre: '', email: '', password: '', rol: 'Personal Casino' };
 
 export default function UsuariosPage() {

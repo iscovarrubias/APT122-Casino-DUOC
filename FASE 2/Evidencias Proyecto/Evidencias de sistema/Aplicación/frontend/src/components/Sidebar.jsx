@@ -1,11 +1,11 @@
-import { IconTenedor, IconCalendario, IconPregunta, IconEngranaje, IconPerfil, IconSalir, IconSol, IconLuna } from './iconos';
+import { Utensils, Calendar, HelpCircle, Settings, User, LogOut, Sun, Moon } from 'lucide-react';
 import { useTema } from '../utils/tema';
 import { useAuth } from '../context/auth-context';
 import { navegar } from '../ruteo/useRuta';
 import { rutaInicial } from '../ruteo/rutas';
 
-export default function Sidebar({ vistaActiva, onCambiarVista }) {
-  const { usuario, kiosco } = useAuth();
+export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) {
+  const { usuario, kiosco, cerrarSesion } = useAuth();
   const { esOscuro, alternar } = useTema();
 
   return (
@@ -19,8 +19,17 @@ export default function Sidebar({ vistaActiva, onCambiarVista }) {
       </div>
 
       <div className="sidebar-greeting">
-        <h2>Menú del casino</h2>
-        <p>Sede Valparaíso</p>
+        {usuario ? (
+          <>
+            <h2>¡Hola, {usuario.nombre.split(' ')[0]}!</h2>
+            <p>{usuario.rol === 'Estudiante' ? 'Sede Valparaíso' : usuario.rol}</p>
+          </>
+        ) : (
+          <>
+            <h2>Menú del casino</h2>
+            <p>Sede Valparaíso</p>
+          </>
+        )}
       </div>
 
       <nav className="sidebar-nav">
@@ -28,41 +37,65 @@ export default function Sidebar({ vistaActiva, onCambiarVista }) {
           className={`sidebar-nav-item ${vistaActiva === 'diario' ? 'active' : ''}`}
           onClick={() => onCambiarVista('diario')}
         >
-          <IconTenedor /> Diario
+          <Utensils size={20} /> Diario
         </button>
         <button
           className={`sidebar-nav-item ${vistaActiva === 'semanal' ? 'active' : ''}`}
           onClick={() => onCambiarVista('semanal')}
         >
-          <IconCalendario /> Semanal
+          <Calendar size={20} /> Semanal
         </button>
         <button
           className={`sidebar-nav-item ${vistaActiva === 'preguntas' ? 'active' : ''}`}
           onClick={() => onCambiarVista('preguntas')}
         >
-          <IconPregunta /> Preguntas
+          <HelpCircle size={20} /> Preguntas
         </button>
       </nav>
 
       <div className="sidebar-bottom">
-        <button className="sidebar-link" onClick={alternar} title={esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}>
-          {esOscuro ? <IconSol width={16} height={16} /> : <IconLuna width={16} height={16} />}
+        <button
+          className="sidebar-link"
+          onClick={alternar}
+          title={esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+        >
+          {esOscuro ? <Sun size={16} /> : <Moon size={16} />}
           {esOscuro ? 'Modo claro' : 'Modo oscuro'}
         </button>
-        <button className="sidebar-link" disabled title="Requiere cuenta DUOC Microsoft">
-          <IconEngranaje width={16} height={16} /> Configuración
-        </button>
-        <button className="sidebar-link" disabled title="Requiere cuenta DUOC Microsoft">
-          <IconPerfil width={16} height={16} /> Cuenta y perfil
-        </button>
-        {}
-        <button
-          className="sidebar-logout"
-          onClick={() => navegar(usuario ? rutaInicial(usuario.rol, kiosco) : '/login')}
-        >
-          <IconSalir width={16} height={16} /> {usuario ? 'Ir al panel' : 'Acceso personal'}
-        </button>
+
+        {/* Solo con sesión activa: */}
+        {usuario?.rol === 'Estudiante' && (
+          <>
+            <button className="sidebar-link" onClick={onAbrirPerfil}>
+              <User size={16} /> Mi perfil
+            </button>
+            <button className="sidebar-logout" onClick={cerrarSesion}>
+              <LogOut size={16} /> Cerrar sesión
+            </button>
+          </>
+        )}
+
+        {usuario && usuario.rol !== 'Estudiante' && (
+          <>
+            <button
+              className="sidebar-link"
+              onClick={() => navegar(rutaInicial(usuario.rol, kiosco))}
+            >
+              <Settings size={16} /> Ir al panel
+            </button>
+            <button className="sidebar-logout" onClick={cerrarSesion}>
+              <IconSalir width={16} height={16} /> Cerrar sesión
+            </button>
+          </>
+        )}
+
+        {!usuario && (
+          <button className="sidebar-logout" onClick={() => navegar('/login')}>
+            <LogOut size={16} /> Iniciar sesión
+          </button>
+        )}
       </div>
+
     </aside>
   );
 }

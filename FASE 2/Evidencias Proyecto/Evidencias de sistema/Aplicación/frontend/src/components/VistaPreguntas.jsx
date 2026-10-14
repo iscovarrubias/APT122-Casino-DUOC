@@ -4,11 +4,11 @@ const SECCIONES = [
     preguntas: [
       {
         q: '¿Por qué algunos platos dicen "No disponible" en vez de mostrar las calorías?',
-        a: 'Porque esa información todavía no fue validada por el casino o la nutricionista. El sistema nunca muestra un dato nutricional inventado: si no está confirmado, prefiere decir "No disponible" antes que arriesgarse a mostrar algo incorrecto.',
+        a: 'Porque la nutricionista del casino todavía no la ha cargado. El sistema nunca muestra un dato nutricional inventado: si no está cargado, prefiere decir "No disponible" antes que arriesgarse a mostrar algo incorrecto.',
       },
       {
         q: '¿Cómo se calculan las calorías totales de un combo?',
-        a: 'Sumando las calorías de cada componente (entrada, plato principal, postre y bebida). Si a cualquiera de ellos le falta la validación nutricional, el total también se muestra como "No disponible", en vez de un número parcial que podría confundir.',
+        a: 'Sumando las calorías de cada componente (entrada, plato principal, postre y bebida). Si a cualquiera de ellos le falta la información nutricional, el total también se muestra como "No disponible", en vez de un número parcial que podría confundir.',
       },
     ],
   },
@@ -17,7 +17,7 @@ const SECCIONES = [
     preguntas: [
       {
         q: '¿Cómo sé si un plato tiene un alérgeno que me afecta?',
-        a: 'Cada preparación muestra sus alérgenos declarados justo debajo de la información nutricional, tomados de un catálogo fijo (gluten, lácteos, frutos secos, mariscos, huevo y soya), no de texto libre.',
+        a: 'Cada preparación muestra sus alérgenos declarados justo debajo de la información nutricional, tomados de un catálogo fijo (por ejemplo gluten, lácteos, huevo, pescado, mariscos, frutos secos, maní o soya), no de texto libre.',
       },
       {
         q: '¿Qué pasa si un plato no muestra ningún alérgeno?',

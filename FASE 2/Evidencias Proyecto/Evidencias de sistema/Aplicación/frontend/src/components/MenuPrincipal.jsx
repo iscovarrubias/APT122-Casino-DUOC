@@ -1,20 +1,24 @@
 import EstadoBadge from './EstadoBadge';
+import BotonFavorito from './BotonFavorito';
+import AvisoAlergias from './AvisoAlergias';
+import Opinion from './Opinion';
+import { useEstudiante } from '../utils/estudiante';
 import TablaNutricional from './TablaNutricional';
 import AlergenoPills from './AlergenoPills';
-import { IconPlato, IconEnsalada, IconPostre, IconBebida } from './iconos';
-import { formatearPrecio, calcularCaloriasTotales, calcularPrecioTotal, colorDeCategoria } from '../utils/formato';
+import { Utensils, Salad, CakeSlice, CupSoda } from 'lucide-react';
+import { formatearPrecio, calcularCaloriasTotales, calcularPrecioTotal, colorDeCategoria, formatearHora } from '../utils/formato';
 import { useState } from 'react';
 
 const ICONOS_COMPONENTE = {
-  'Plato Principal': IconPlato,
-  Entrada: IconEnsalada,
-  Postre: IconPostre,
-  Bebida: IconBebida,
+  'Plato Principal': Utensils,
+  Entrada: Salad,
+  Postre: CakeSlice,
+  Bebida: CupSoda,
 };
 
 function IconoComponente({ tipo, tamano = 40 }) {
-  const Icono = ICONOS_COMPONENTE[tipo] || IconPlato;
-  return <Icono width={tamano} height={tamano} strokeWidth={1.3} />;
+  const Icono = ICONOS_COMPONENTE[tipo] || Utensils;
+  return <Icono size={tamano} strokeWidth={1.3} />;
 }
 
 function ImagenOIcono({ url, tipo, tamano }) {
@@ -34,7 +38,17 @@ function ImagenOIcono({ url, tipo, tamano }) {
   return <IconoComponente tipo={tipo} tamano={tamano} />;
 }
 
+function Restante({ item }) {
+  if (item.cantidad_restante == null) return null;
+  return (
+    <span className="etiqueta" style={{ marginTop: 6 }}>
+      QUEDAN {item.cantidad_restante} · ACTUALIZADO {formatearHora(item.stock_actualizado_en)}
+    </span>
+  );
+}
+
 export default function MenuPrincipal({ categoria, componentes }) {
+  const { alergias } = useEstudiante();
   const principal = componentes.find((c) => c.componente === 'Plato Principal');
   const compartidos = componentes.filter((c) => c.componente !== 'Plato Principal');
 
@@ -53,6 +67,7 @@ export default function MenuPrincipal({ categoria, componentes }) {
 
   return (
     <div style={{ '--accent-categoria': color, '--accent-categoria-light': light }}>
+      <AvisoAlergias componentes={componentes} />
       <div className="contenido-principal">
         <div className="card-principal">
           <div className="card-imagen">
@@ -64,7 +79,10 @@ export default function MenuPrincipal({ categoria, componentes }) {
             </div>
           </div>
           <div className="card-body">
-            <h2>{principal.nombre}</h2>
+            <div className="card-titulo-fila">
+              <h2>{principal.nombre}</h2>
+              <BotonFavorito idPreparacion={principal.id_preparacion} nombre={principal.nombre} />
+            </div>
             {compartidos.length > 0 && (
               <p className="incluye">Incluye: {nombresCompartidos}.</p>
             )}
@@ -76,6 +94,7 @@ export default function MenuPrincipal({ categoria, componentes }) {
               <div className="stat-divider" />
               <div className="stat">
                 <EstadoBadge estado={principal.disponibilidad} />
+                <Restante item={principal} />
                 <span className="etiqueta" style={{ marginTop: 6 }}>DISPONIBILIDAD</span>
               </div>
             </div>
@@ -94,7 +113,9 @@ export default function MenuPrincipal({ categoria, componentes }) {
           <TablaNutricional info={principal.informacion_nutricional} />
 
           <h3>Alérgenos</h3>
-          <AlergenoPills alergenos={principal.alergenos} />
+          <AlergenoPills alergenos={principal.alergenos} resaltar={alergias} />
+
+          <Opinion item={principal} />
         </div>
       </div>
 
@@ -108,7 +129,10 @@ export default function MenuPrincipal({ categoria, componentes }) {
             <ImagenOIcono url={c.imagen_url} tipo={c.componente} tamano={40} />
           </div>
           <div className="card-body">
-            <h3 className="card-titulo">{c.nombre}</h3>
+            <div className="card-titulo-fila">
+              <h3 className="card-titulo">{c.nombre}</h3>
+              <BotonFavorito idPreparacion={c.id_preparacion} nombre={c.nombre} />
+            </div>
             <p className="incluye-tipo">{c.componente}</p>
 
             <div className="stats-row">
@@ -121,6 +145,7 @@ export default function MenuPrincipal({ categoria, componentes }) {
               <div className="stat-divider" />
               <div className="stat">
                 <EstadoBadge estado={c.disponibilidad} />
+                <Restante item={c} />
                 <span className="etiqueta" style={{ marginTop: 6 }}>DISPONIBILIDAD</span>
               </div>
             </div>
@@ -136,7 +161,8 @@ export default function MenuPrincipal({ categoria, componentes }) {
             <TablaNutricional info={c.informacion_nutricional} />
 
             <h4 className="subtitulo">Alérgenos</h4>
-            <AlergenoPills alergenos={c.alergenos} />
+            <AlergenoPills alergenos={c.alergenos} resaltar={alergias} />
+            <Opinion item={c} />
           </div>
         </div>
       ))}

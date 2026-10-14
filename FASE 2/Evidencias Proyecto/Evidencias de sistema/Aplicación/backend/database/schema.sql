@@ -25,7 +25,6 @@ COMMENT ON TABLE sede IS
 CREATE TABLE rol (
     id_rol              SERIAL PRIMARY KEY,
     nombre              VARCHAR(50) NOT NULL UNIQUE
-    -- Valores esperados en el MVP: 'Estudiante', 'Personal Casino', 'Administrador'.
 );
 
 CREATE TABLE usuario (

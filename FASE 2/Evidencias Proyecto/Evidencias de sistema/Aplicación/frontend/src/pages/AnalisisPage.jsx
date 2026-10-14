@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { consultarAnalisis } from '../api/gestion';
+import RankingMensual from '../components/RankingMensual';
+import PrediccionPanel from '../components/PrediccionPanel';
+import OpinionesPanel from '../components/OpinionesPanel';
 import { hoyChile, haceDiasChile } from '../utils/formato';
+import CampoFecha from '../components/CampoFecha';
 
 function Barra({ porcentaje, etiqueta }) {
   return (
@@ -36,9 +40,9 @@ export default function AnalisisPage() {
       <div className="barra-herramientas">
         <div className="barra-estado">
           <label className="campo campo-en-linea"><span>Desde</span>
-            <input type="date" value={desde} max={hasta} onChange={(e) => e.target.value && setDesde(e.target.value)} /></label>
+            <CampoFecha value={desde} max={hasta} onChange={(v) => v && setDesde(v)} ariaLabel="Fecha desde" /></label>
           <label className="campo campo-en-linea"><span>Hasta</span>
-            <input type="date" value={hasta} min={desde} onChange={(e) => e.target.value && setHasta(e.target.value)} /></label>
+            <CampoFecha value={hasta} min={desde} onChange={(v) => v && setHasta(v)} ariaLabel="Fecha hasta" /></label>
         </div>
       </div>
 
@@ -127,6 +131,12 @@ export default function AnalisisPage() {
           </section>
         </div>
       )}
+
+      <PrediccionPanel />
+
+      <OpinionesPanel />
+
+      <RankingMensual />
     </>
   );
 }

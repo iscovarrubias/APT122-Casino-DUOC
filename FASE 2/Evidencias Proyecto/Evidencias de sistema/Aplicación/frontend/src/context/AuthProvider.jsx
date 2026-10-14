@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuthContext } from './auth-context';
 import { configurarCliente } from '../api/cliente';
-import { iniciarSesionApi, consultarSesion } from '../api/gestion';
-import { ROLES_PANEL } from '../ruteo/rutas';
+import { iniciarSesionApi, consultarSesion, iniciarSesionDuoc as iniciarSesionDuocApi } from '../api/gestion';
 
 const CLAVE = 'casino_sesion';
 
@@ -48,12 +47,16 @@ export default function AuthProvider({ children }) {
 
   async function iniciarSesion(email, password, kiosco) {
     const respuesta = await iniciarSesionApi(email, password, kiosco);
-
-    if (!ROLES_PANEL.includes(respuesta.usuario.rol)) {
-      throw new Error('Esta cuenta no tiene acceso al panel. El menú se consulta sin iniciar sesión.');
-    }
-
     const nueva = { token: respuesta.token, usuario: respuesta.usuario, kiosco: respuesta.kiosco };
+    configurarCliente({ token: nueva.token });
+    guardar(nueva);
+    setSesion(nueva);
+    return nueva;
+  }
+
+  async function iniciarSesionDuoc(email) {
+    const respuesta = await iniciarSesionDuocApi(email);
+    const nueva = { token: respuesta.token, usuario: respuesta.usuario, kiosco: false };
     configurarCliente({ token: nueva.token });
     guardar(nueva);
     setSesion(nueva);
@@ -65,6 +68,7 @@ export default function AuthProvider({ children }) {
     kiosco: !!sesion?.kiosco,
     cargando,
     iniciarSesion,
+    iniciarSesionDuoc,
     cerrarSesion,
   };
 

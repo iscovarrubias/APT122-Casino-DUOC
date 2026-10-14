@@ -1,11 +1,11 @@
-import { IconTenedor, IconTicket, IconHoja, IconEnsalada } from './iconos';
+import { UtensilsCrossed, Ticket, Leaf, Salad } from 'lucide-react';
 import { CATEGORIAS_COLOR } from '../utils/formato';
 
 const CATEGORIAS = [
-  { nombre: 'Principal', Icono: IconTenedor },
-  { nombre: 'JUNAEB', Icono: IconTicket },
-  { nombre: 'Vegetariano', Icono: IconHoja },
-  { nombre: 'Hipocalórico', Icono: IconEnsalada },
+  { nombre: 'Principal', Icono: UtensilsCrossed },
+  { nombre: 'JUNAEB', Icono: Ticket },
+  { nombre: 'Vegetariano', Icono: Leaf },
+  { nombre: 'Hipocalórico', Icono: Salad },
 ];
 
 export default function CategoriaTabs({ categoriaActiva, onSeleccionar }) {
@@ -21,7 +21,7 @@ export default function CategoriaTabs({ categoriaActiva, onSeleccionar }) {
             style={activa ? { background: color, color: '#fff' } : undefined}
             onClick={() => onSeleccionar(nombre)}
           >
-            <Icono className="tab-icon" width={18} height={18} />
+          <Icono className="tab-icon" size={18} />
             {nombre.toUpperCase()}
           </button>
         );

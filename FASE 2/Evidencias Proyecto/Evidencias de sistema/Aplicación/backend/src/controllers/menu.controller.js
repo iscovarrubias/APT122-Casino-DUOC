@@ -12,7 +12,6 @@ function cantidadValida(valor) {
   return valor !== undefined && valor !== null && valor !== '' && Number.isInteger(Number(valor)) && Number(valor) >= 0;
 }
 
-// RF-07, RF-08: consulta pública del menú del día.
 async function hoy(req, res, next) {
   try {
     const fecha = fechaDe(req.query.fecha, hoyChile());
@@ -34,14 +33,19 @@ async function verHistorialMenus(req, res, next) {
   }
 }
 
+function precioValido(valor) {
+  return valor === undefined || valor === null || valor === '' || (!isNaN(Number(valor)) && Number(valor) >= 0);
+}
+
 async function verPlanificacion(req, res, next) {
   try {
     const fecha = fechaDe(req.query.fecha, null);
-    const [menu, componentes] = await Promise.all([
+    const [menu, componentes, precios_recientes] = await Promise.all([
       menuModel.obtenerMenuPorFecha(fecha),
       menuModel.listarPorFecha(fecha),
+      menuModel.preciosRecientes(),
     ]);
-    res.json({ fecha, menu, componentes });
+    res.json({ fecha, menu, componentes, precios_recientes });
   } catch (err) {
     next(err);
   }
@@ -49,7 +53,7 @@ async function verPlanificacion(req, res, next) {
 
 async function planificarComponente(req, res, next) {
   try {
-    const { fecha, id_preparacion, tipo_componente, categoria, cantidad_planificada } = req.body;
+    const { fecha, id_preparacion, tipo_componente, categoria, cantidad_planificada, precio } = req.body;
 
     if (!esFechaISO(fecha)) throw new ApiError(400, 'La fecha es obligatoria (AAAA-MM-DD).');
     if (!id_preparacion) throw new ApiError(400, 'id_preparacion es obligatorio.');
@@ -58,9 +62,11 @@ async function planificarComponente(req, res, next) {
       throw new ApiError(400, 'cantidad_planificada es obligatoria y debe ser un entero no negativo.');
     }
 
+    if (!precioValido(precio)) throw new ApiError(400, 'El precio debe ser un número no negativo.');
+
     const menu = await menuModel.obtenerOCrearMenu(fecha);
     const componente = await menuModel.agregarComponente(menu.id_menu, {
-      id_preparacion, tipo_componente, categoria, cantidad_planificada,
+      id_preparacion, tipo_componente, categoria, cantidad_planificada, precio,
     });
     res.status(201).json({ menu, componente });
   } catch (err) {
@@ -70,14 +76,15 @@ async function planificarComponente(req, res, next) {
 
 async function actualizarComponente(req, res, next) {
   try {
-    const { id_preparacion, cantidad_planificada } = req.body;
-    if (id_preparacion === undefined && cantidad_planificada === undefined) {
-      throw new ApiError(400, 'Envía id_preparacion o cantidad_planificada.');
+    const { id_preparacion, cantidad_planificada, precio } = req.body;
+    if (id_preparacion === undefined && cantidad_planificada === undefined && precio === undefined) {
+      throw new ApiError(400, 'Envía id_preparacion, cantidad_planificada o precio.');
     }
+    if (!precioValido(precio)) throw new ApiError(400, 'El precio debe ser un número no negativo.');
     if (cantidad_planificada !== undefined && !cantidadValida(cantidad_planificada)) {
       throw new ApiError(400, 'cantidad_planificada debe ser un entero no negativo.');
     }
-    const componente = await menuModel.actualizarComponente(req.params.id, { id_preparacion, cantidad_planificada });
+    const componente = await menuModel.actualizarComponente(req.params.id, { id_preparacion, cantidad_planificada, precio });
     if (!componente) throw new ApiError(404, 'Componente no encontrado.');
     res.json(componente);
   } catch (err) {
@@ -137,7 +144,34 @@ async function verHistorialDisponibilidad(req, res, next) {
   }
 }
 
+async function verMes(req, res, next) {
+  try {
+    const mes = req.query.mes || hoyChile().slice(0, 7);
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) throw new ApiError(400, 'El mes debe tener el formato AAAA-MM.');
+    res.json({ mes, dias: await menuModel.menusDelMes(mes) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function copiar(req, res, next) {
+  try {
+    const { copias, sobrescribir } = req.body;
+    if (!Array.isArray(copias) || copias.length === 0 || copias.length > 31) {
+      throw new ApiError(400, 'copias debe ser una lista de 1 a 31 pares { origen, destino }.');
+    }
+    for (const c of copias) {
+      if (!c || !esFechaISO(c.origen) || !esFechaISO(c.destino)) throw new ApiError(400, 'Cada copia necesita origen y destino (AAAA-MM-DD).');
+      if (c.origen === c.destino) throw new ApiError(400, 'El origen y el destino no pueden ser el mismo día.');
+    }
+    res.json(await menuModel.copiarMenus(copias, { sobrescribir: sobrescribir === true }));
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
+  verMes, copiar,
   hoy, verHistorialMenus, verPlanificacion, planificarComponente, actualizarComponente,
   eliminarComponente, publicar, despublicar, actualizarDisponibilidad, verHistorialDisponibilidad,
 };

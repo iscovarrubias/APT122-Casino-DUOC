@@ -14,10 +14,10 @@
   --disponible: #2E9E5B;
   --baja: #E0A526;
   --agotado: #D64545;
-
   --radius: 16px;
   --radius-sm: 10px;
   --shadow: 0 4px 18px rgba(31, 56, 100, 0.08);
+    color-scheme: light;
 }
 
 [data-theme='oscuro'] {
@@ -36,8 +36,8 @@
   --disponible: #3EBD74;
   --baja: #F2B84B;
   --agotado: #E85D5D;
-
   --shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
 }
 body {
   background: var(--bg);
