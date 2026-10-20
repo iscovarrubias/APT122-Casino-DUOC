@@ -116,15 +116,23 @@ todavía no cumple.
 
 ## Estructura del repositorio
 
+```text
 APT122-Casino-DUOC/
-├── FASE 1/ # Documentación del proyecto
+├── FASE 1/
+│   ├── Evidencias Individuales/
+│   ├── Evidencias Grupales/
+│   └── Evidencias Proyecto/
 ├── FASE 2/
-│ └── Evidencias Proyecto/
-│ └── Evidencias de sistema/
-│ └── Aplicación/
-│ ├── backend/ # API Node.js + Express
-│ ├── frontend/ # SPA React + Vite
-│ └── README.md
+│   ├── Evidencias Individuales/
+│   ├── Evidencias Grupales/
+│   └── Evidencias Proyecto/
+│       ├── Evidencias de documentación/
+│       └── Evidencias de sistema/
+│           ├── Aplicación/
+│           │   ├── backend/
+│           │   └── frontend/
+│           └── Base de datos/
+└── README.md
 
 Cada proyecto tiene su propio README con instrucciones específicas:
 
@@ -141,6 +149,17 @@ Cada proyecto tiene su propio README con instrucciones específicas:
 | [Encuesta a estudiantes - instrumento](./Evidencias%20Proyecto/Evidencias%20de%20documentacion/Levantamiento/04_Encuesta_Estudiantes.pdf) | Formulario aplicado |
 | [Presentación Fase 1](./Evidencias%20Grupales/Presentacion_Idea_Proyecto_APT122.pptx) | Exposición según formato entregado por la docente |
 | [Diario de Reflexión Fase 2](./Evidencias%20Proyecto/Evidencias%20de%20documentacion/DIAZ_DIEGO_2.1_APT122_DiarioReflexionFase2.docx) | Monitoreo del avance según carta Gantt |
+
+## Arquitectura
+
+La aplicación sigue una arquitectura en capas, separando responsabilidades entre frontend y backend:
+
+- **Frontend (Capa de presentación):** React 19 + Vite. Aplicación de página única (SPA) que consume la API REST y se conecta por SSE para actualizaciones en tiempo real.
+- **Backend (Capa de lógica de negocio):** Node.js + Express. Organizado en rutas, controladores (manejo de peticiones), servicios (reglas de negocio y validaciones) y acceso a datos.
+- **Base de datos (Capa de persistencia):** PostgreSQL. Modelo relacional normalizado que separa la planificación del menú (minuta) de la ejecución real (disponibilidad) y guarda historial.
+- **Autenticación:** JWT con control de roles (Administrador, Nutricionista, Personal Casino, Cajero y Estudiante).
+
+El detalle completo de las capas, decisiones de diseño y diagramas está en el documento `01_Documento_Arquitectura_Casino_DUOC.docx`.
 
 ## Levantar el sistema
 
