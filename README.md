@@ -133,7 +133,7 @@ APT122-Casino-DUOC/
 │           │   └── frontend/
 │           └── Base de datos/
 └── README.md
-
+```
 Cada proyecto tiene su propio README con instrucciones específicas:
 
 - [Backend](./FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicaci%C3%B3n/backend/README.md)
