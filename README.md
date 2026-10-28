@@ -59,6 +59,7 @@ Sprints implementados y funcionando de punta a punta:
 | Sprint 7 | Vista mensual del calendario, copiar menús entre fechas |
 | Sprint 8 | Perfil del estudiante (alergias, favoritos, calificaciones), predicción con backtesting |
 | Sprint 9 | Categoría preferida del estudiante |
+| Sprint 10 | Diseño responsive y cierre documental a la tabla de sprints |
 
 ## Módulos implementados
 
