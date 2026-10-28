@@ -63,10 +63,13 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0'; 
+
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`Servidor corriendo en la red local. Accesible desde tu iPhone.`);
   });
 }
+
 
 module.exports = app;
