@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './panel.css';
+import './responsive.css';
 import AuthProvider from './context/AuthProvider';
 import { EstudianteProvider } from './utils/estudiante';
 import { useAuth } from './context/auth-context';

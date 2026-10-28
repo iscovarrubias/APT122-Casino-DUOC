@@ -49,6 +49,7 @@ function Restante({ item }) {
 
 export default function MenuPrincipal({ categoria, componentes }) {
   const { alergias } = useEstudiante();
+  const [detalleAbierto, setDetalleAbierto] = useState(false);
   const principal = componentes.find((c) => c.componente === 'Plato Principal');
   const compartidos = componentes.filter((c) => c.componente !== 'Plato Principal');
 
@@ -98,10 +99,18 @@ export default function MenuPrincipal({ categoria, componentes }) {
                 <span className="etiqueta" style={{ marginTop: 6 }}>DISPONIBILIDAD</span>
               </div>
             </div>
+            <button
+              type="button"
+              className="boton boton-secundario boton-detalles"
+              onClick={() => setDetalleAbierto((v) => !v)}
+              aria-expanded={detalleAbierto}
+            >
+              {detalleAbierto ? 'Ocultar detalles' : 'Ver detalles'}
+            </button>
           </div>
         </div>
 
-        <div className="panel-detalle">
+        <div className={`panel-detalle ${detalleAbierto ? 'abierto' : ''}`}>
           <h3>Ingredientes</h3>
           <p className="ingredientes-texto">
             {principal.ingredientes && principal.ingredientes.length > 0
