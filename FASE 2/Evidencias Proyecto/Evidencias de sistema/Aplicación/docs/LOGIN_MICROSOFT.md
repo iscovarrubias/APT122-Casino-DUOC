@@ -51,9 +51,15 @@ Cambian estos valores: `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID`, `ENTRA_CLIENT_SECRE
 - Flujo *authorization code* con **PKCE** y parámetros `state` y `nonce`.
 - El `id_token` se valida: firma RS256 con las claves públicas de Microsoft, emisor, audiencia y nonce.
 - La contraseña nunca pasa por el sistema.
-- El navegador no recibe el token en la URL: vuelve con un ticket de un solo uso (60 s) que se canjea por la sesión.
+- El navegador no recibe el token en la URL: vuelve con un ticket de un solo uso (60 s) guardado en la base de datos (tabla `ticket_acceso`), que se canjea por la sesión. Sobrevive a reinicios y funciona con varios servidores.
+- La consulta del correo en el login tiene límite por IP (`LIMITE_IDENTIFICAR_POR_IP`, 30 cada 15 minutos por defecto).
 - Pruebas automáticas: `backend/tests/entra.test.js` (usa un Microsoft falso local; verifica que se rechacen tokens con firma, audiencia, nonce o state incorrectos).
 
-## Limitaciones conocidas
+## Cuidar el secreto de la aplicación
 
-- Los tickets se guardan en memoria: sirve para una sola instancia del servidor.
+- El secreto de cliente es como una contraseña: va solo en `backend/.env`, que `.gitignore` excluye del repositorio. No lo compartas ni lo pegues en chats o documentos.
+- Para cambiarlo: en Entra, abre la app, ve a **Certificados y secretos**, crea un secreto nuevo, cópialo a `.env`, reinicia el backend y elimina el secreto anterior.
+- Al terminar las pruebas con tu tenant, elimina ese secreto y la app de pruebas si ya no los usas.
+
+## Limitaciones conocidas
+- El acceso de funcionarios y docentes (`ENTRA_DOMINIOS_PERSONAL`) está probado con pruebas automáticas, pero no con cuentas reales de Duoc.

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useEstudiante } from '../utils/estudiante';
+import { useEstudiante } from '../utils/useEstudiante';
+import { CATEGORIAS_MENU as CATEGORIAS } from '../utils/formato';
 import { pedir } from '../api/cliente';
 import Mensaje from './Mensaje';
 
@@ -11,7 +12,6 @@ export default function PerfilEstudianteModal({ onCerrar }) {
   const [guardando, setGuardando] = useState(false);
   const [ok, setOk] = useState(false);
 
-  const CATEGORIAS = ['Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
   const [categoriaSel, setCategoriaSel] = useState(categoriaPreferida || '');
   const [guardandoCat, setGuardandoCat] = useState(false);
   const [okCat, setOkCat] = useState(false);

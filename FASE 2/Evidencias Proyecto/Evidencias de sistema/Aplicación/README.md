@@ -93,6 +93,7 @@ npm run build
 cd backend
 npm run respaldo                      # crea backend/respaldos/casino_AAAAMMDD_HHMM.sql (conserva los últimos 14)
 psql "$DATABASE_URL" -f backend/respaldos/casino_AAAAMMDD_HHMM.sql    # restaurar
+npm run respaldo:verificar            # respalda DATABASE_URL, lo restaura en TEST_DATABASE_URL y compara tabla por tabla
 ```
 
 Requiere `pg_dump` instalado. Para automatizarlo, programa ese comando una vez al día (cron o Programador de tareas).

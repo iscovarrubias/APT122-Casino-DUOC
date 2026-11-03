@@ -1,4 +1,4 @@
-import { useEstudiante } from '../utils/estudiante';
+import { useEstudiante } from '../utils/useEstudiante';
 import { Heart } from 'lucide-react';
 
 export default function BotonFavorito({ idPreparacion, nombre }) {

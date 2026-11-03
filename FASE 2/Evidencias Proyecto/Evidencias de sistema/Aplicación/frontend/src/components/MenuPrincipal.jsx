@@ -2,7 +2,7 @@ import EstadoBadge from './EstadoBadge';
 import BotonFavorito from './BotonFavorito';
 import AvisoAlergias from './AvisoAlergias';
 import Opinion from './Opinion';
-import { useEstudiante } from '../utils/estudiante';
+import { useEstudiante } from '../utils/useEstudiante';
 import TablaNutricional from './TablaNutricional';
 import AlergenoPills from './AlergenoPills';
 import ImagenOIcono from './ImagenOIcono';

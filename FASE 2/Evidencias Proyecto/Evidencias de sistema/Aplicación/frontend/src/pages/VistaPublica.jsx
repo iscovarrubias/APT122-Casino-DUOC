@@ -1,16 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import PerfilEstudianteModal from '../components/PerfilEstudianteModal';
-import { useEstudiante } from '../utils/estudiante';
+import { useEstudiante } from '../utils/useEstudiante';
 import CategoriaTabs from '../components/CategoriaTabs';
 import MenuPrincipal from '../components/MenuPrincipal';
 import VistaSemanal from '../components/VistaSemanal';
 import VistaPreguntas from '../components/VistaPreguntas';
 import PantallaCarga from '../components/PantallaCarga';
 import { obtenerMenuHoy } from '../api/menu';
-import { hoyChile, parseFechaISO } from '../utils/formato';
+import { hoyChile, parseFechaISO, estadoEfectivo, NO_DISPONIBLE, CATEGORIAS_MENU } from '../utils/formato';
 import { suscribirCambios } from '../utils/eventos';
 import Cargando from '../components/Cargando';
+
+function estadosPorCategoria(preparaciones) {
+  const estados = {};
+  for (const nombre of CATEGORIAS_MENU) {
+    const principal = preparaciones.find((p) => p.categoria === nombre);
+    const estado = principal ? estadoEfectivo(principal) : null;
+    if (NO_DISPONIBLE.includes(estado)) estados[nombre] = estado;
+  }
+  return estados;
+}
 
 const INTERVALO_SONDEO_MS = 30000;
 
@@ -34,7 +44,7 @@ function VistaDiario() {
 
   const cargar = useCallback(async () => {
     try {
-      const respuesta = await obtenerMenuHoy(categoria, hoyChile());
+      const respuesta = await obtenerMenuHoy(null, hoyChile());
       setDatos(respuesta);
       setError(null);
     } catch (err) {
@@ -42,7 +52,7 @@ function VistaDiario() {
     } finally {
       setCargando(false);
     }
-  }, [categoria]);
+  }, []);
 
   useEffect(() => {
     setCargando(true);
@@ -52,13 +62,17 @@ function VistaDiario() {
     return () => { clearInterval(intervalo); cerrar(); };
   }, [cargar]);
 
+  const delDia = datos?.preparaciones || [];
+  const visibles = delDia.filter((p) => !p.categoria || p.categoria === categoria);
+  const estados = estadosPorCategoria(delDia);
+
   return (
     <>
       <div className="main-header">
         <h1>Menú del día <span className="titulo-separador" aria-hidden="true">|</span> <span className="titulo-fecha">{formatearFechaLarga(datos?.fecha || hoyChile())}</span></h1>
       </div>
 
-      <CategoriaTabs categoriaActiva={categoria} onSeleccionar={setCategoria} />
+      <CategoriaTabs categoriaActiva={categoria} onSeleccionar={setCategoria} estados={estados} />
 
       {cargando && !datos && <PantallaCarga compacta mensaje="Cargando menú del día…" />}
       {cargando && datos && <Cargando>Cargando menú del día…</Cargando>}
@@ -67,12 +81,12 @@ function VistaDiario() {
         <div className="estado-info">No se pudo cargar el menú. Inténtalo de nuevo en unos minutos. ({error})</div>
       )}
 
-      {!cargando && !error && datos && datos.preparaciones.length === 0 && (
+      {!cargando && !error && datos && visibles.length === 0 && (
         <div className="estado-info">Todavía no hay un menú publicado para hoy en la categoría "{categoria}".</div>
       )}
 
-      {!cargando && !error && datos && datos.preparaciones.length > 0 && (
-        <MenuPrincipal categoria={categoria} componentes={datos.preparaciones} />
+      {!cargando && !error && datos && visibles.length > 0 && (
+        <MenuPrincipal categoria={categoria} componentes={visibles} />
       )}
     </>
   );

@@ -172,7 +172,7 @@ async function microsoftCallback(req, res) {
     const token = jwt.sign(
       { id_usuario: usuario.id_usuario, email: usuario.email, rol: usuario.rol, id_sede: usuario.id_sede },
       process.env.JWT_SECRET, { expiresIn: sesionLarga ? (process.env.JWT_EXPIRES_IN_KIOSCO || '7d') : (process.env.JWT_EXPIRES_IN || '8h') });
-    const ticket = entra.crearTicket({
+    const ticket = await entra.crearTicket({
       token, kiosco: sesionLarga,
       usuario: { id_usuario: usuario.id_usuario, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
     });
@@ -184,9 +184,11 @@ async function microsoftCallback(req, res) {
   }
 }
 
-function microsoftCanje(req, res, next) {
+async function microsoftCanje(req, res, next) {
   try {
-    const sesion = typeof req.body?.ticket === 'string' ? entra.canjearTicket(req.body.ticket) : null;
+    const sesion = typeof req.body?.ticket === 'string' && req.body.ticket.length <= 64
+      ? await entra.canjearTicket(req.body.ticket)
+      : null;
     if (!sesion) throw new ApiError(401, 'El acceso expiró. Vuelve a intentarlo.');
     res.json(sesion);
   } catch (err) {

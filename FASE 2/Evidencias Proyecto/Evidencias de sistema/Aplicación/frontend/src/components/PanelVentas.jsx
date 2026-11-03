@@ -1,6 +1,4 @@
-import { colorDeCategoria, formatearHora, ESTADO_TEXTO } from '../utils/formato';
-
-export const CATEGORIAS = ['Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
+import { colorDeCategoria, formatearHora, ESTADO_TEXTO, CATEGORIAS_MENU as CATEGORIAS } from '../utils/formato';
 
 function textoEstimacion(e) {
   if (!e) return null;

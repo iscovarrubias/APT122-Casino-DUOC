@@ -39,4 +39,33 @@ function crearLimitadorDeFallos({ ventanaMs, maximo, clave, mensaje }) {
   };
 }
 
-module.exports = { crearLimitadorDeFallos };
+function crearLimitadorDeSolicitudes({ ventanaMs, maximo, clave, mensaje }) {
+  const registros = new Map();
+
+  const limpieza = setInterval(() => {
+    const ahora = Date.now();
+    for (const [k, r] of registros) {
+      if (r.expira <= ahora) registros.delete(k);
+    }
+  }, Math.min(ventanaMs, 60000));
+  limpieza.unref();
+
+  return (req, res, next) => {
+    const k = clave(req);
+    const ahora = Date.now();
+    let actual = registros.get(k);
+    if (!actual || actual.expira <= ahora) {
+      if (registros.size >= MAXIMO_REGISTROS) registros.delete(registros.keys().next().value);
+      actual = { cuenta: 0, expira: ahora + ventanaMs };
+      registros.set(k, actual);
+    }
+    actual.cuenta += 1;
+    if (actual.cuenta > maximo) {
+      res.set('Retry-After', String(Math.ceil((actual.expira - ahora) / 1000)));
+      return res.status(429).json({ error: mensaje });
+    }
+    next();
+  };
+}
+
+module.exports = { crearLimitadorDeFallos, crearLimitadorDeSolicitudes };

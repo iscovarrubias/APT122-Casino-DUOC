@@ -149,6 +149,8 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
   );
 }
 
+const idSeccion = (nombre) => `seccion-${String(nombre).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
+
 export default function IngredientesPage() {
   const [lista, setLista] = useState(null);
   const [categorias, setCategorias] = useState([]);
@@ -252,7 +254,7 @@ export default function IngredientesPage() {
               className="ing-cabeza ing-cabeza-boton"
               onClick={() => alternarCategoria(g.nombre)}
               aria-expanded={!estaColapsada(g.nombre)}
-              aria-controls={`seccion-${g.nombre}`}
+              aria-controls={idSeccion(g.nombre)}
             >
               <span className="ing-icono"><Icono size={18} strokeWidth={1.8} /></span>
               <div className="ing-cabeza-info">
@@ -264,7 +266,7 @@ export default function IngredientesPage() {
             </button>
 
             {!estaColapsada(g.nombre) && (
-              <div className="tabla-contenedor ing-tabla" id={`seccion-${g.nombre}`}>
+              <div className="tabla-contenedor ing-tabla" id={idSeccion(g.nombre)}>
                 <table className="tabla tabla-ingredientes">
                 <thead>
                   <tr><th>Ingrediente</th><th className="col-num">kcal</th><th className="col-num">Prot. (g)</th><th className="col-num">Carb. (g)</th><th className="col-num">Grasas (g)</th><th>Alérgenos</th><th className="col-fin"><span className="v2-solo-lector">Acciones</span></th></tr>

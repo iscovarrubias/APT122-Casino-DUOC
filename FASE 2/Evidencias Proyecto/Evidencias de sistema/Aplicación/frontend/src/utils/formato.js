@@ -53,8 +53,17 @@ export const CATEGORIAS_COLOR = {
   Hipocalórico:  { color: '#318386', light: '#D7EAEB' },
 };
 
+export const CATEGORIAS_MENU = ['Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
+
 export function colorDeCategoria(categoria) {
   return CATEGORIAS_COLOR[categoria] || CATEGORIAS_COLOR.Principal;
+}
+
+export function colorTextoSobre(hex) {
+  const n = parseInt(String(hex).replace('#', ''), 16);
+  const canal = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const luminancia = 0.2126 * canal((n >> 16) & 255) + 0.7152 * canal((n >> 8) & 255) + 0.0722 * canal(n & 255);
+  return luminancia > 0.3 ? '#1B1F27' : '#FFFFFF';
 }
 
 export function estadoEfectivo(item) {

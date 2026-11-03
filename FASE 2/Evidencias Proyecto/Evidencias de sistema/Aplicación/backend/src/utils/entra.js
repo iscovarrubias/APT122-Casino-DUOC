@@ -1,9 +1,9 @@
 const crypto = require('node:crypto');
 const jwt = require('jsonwebtoken');
+const pool = require('../config/db');
 
 const ESTADO_MS = 10 * 60 * 1000;
 const TICKET_MS = 60 * 1000;
-const tickets = new Map();
 let cacheClaves = { claves: null, hasta: 0 };
 
 const lista = (texto) => texto.split(',').map((d) => d.trim().toLowerCase()).filter(Boolean);
@@ -116,17 +116,22 @@ async function completar({ code, state, cookie }) {
   return { email, nombre: claims.name || '' };
 }
 
-function crearTicket(sesion) {
+async function crearTicket(sesion) {
   const id = b64url(crypto.randomBytes(24));
-  tickets.set(id, { sesion, expira: Date.now() + TICKET_MS });
-  for (const [k, t] of tickets) if (t.expira <= Date.now()) tickets.delete(k);
+  await pool.query('DELETE FROM ticket_acceso WHERE expira_en < NOW()');
+  await pool.query(
+    "INSERT INTO ticket_acceso (id, sesion, expira_en) VALUES ($1, $2, NOW() + ($3 || ' milliseconds')::interval)",
+    [id, JSON.stringify(sesion), String(TICKET_MS)]
+  );
   return id;
 }
 
-function canjearTicket(id) {
-  const t = tickets.get(id);
-  tickets.delete(id);
-  return t && t.expira > Date.now() ? t.sesion : null;
+async function canjearTicket(id) {
+  const { rows } = await pool.query(
+    'DELETE FROM ticket_acceso WHERE id = $1 RETURNING sesion, expira_en > NOW() AS vigente',
+    [id]
+  );
+  return rows[0] && rows[0].vigente ? rows[0].sesion : null;
 }
 
 module.exports = { config, habilitado, problemaDeConfiguracion, iniciar, completar, esDominioPermitido, esDominioEstudiante, esDominioPersonal, crearTicket, canjearTicket };

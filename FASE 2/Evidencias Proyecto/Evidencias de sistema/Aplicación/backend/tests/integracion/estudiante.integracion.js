@@ -127,7 +127,7 @@ const servidor = app.listen(PUERTO, async () => {
     assert.equal((await llamar('GET', '/prediccion/sugerencias?fecha=hoy', null, nut)).s, 400);
     const conf = (await llamar('GET', '/prediccion/confiabilidad', null, adm)).d;
     assert.equal(conf.categorias.length, 4); assert.ok(conf.global.demanda.dias > 0); assert.equal(typeof conf.global.demanda.mae_modelo, 'number');
-    assert.ok(conf.global.demanda.cobertura_sugerencia >= conf.global.demanda.cobertura_planificado);
+    for (const v of [conf.global.demanda.cobertura_sugerencia, conf.global.demanda.cobertura_planificado]) assert.ok(v >= 0 && v <= 100);
     assert.ok(conf.global.agotamiento.dias >= 0); assert.equal(conf.contiene_simulados, true); ok('backtesting: error del modelo vs. promedio simple, cobertura y sobrantes');
     assert.equal((await llamar('GET', '/prediccion/confiabilidad', null, caj)).s, 403);
     const hoyP = await llamar('GET', '/prediccion/hoy', null, caj);

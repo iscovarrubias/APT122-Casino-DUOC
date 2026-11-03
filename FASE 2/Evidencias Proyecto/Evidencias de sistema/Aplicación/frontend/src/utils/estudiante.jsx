@@ -1,25 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { pedir } from '../api/cliente';
 import { useAuth } from '../context/auth-context';
 
-const EstudianteContext = createContext(null);
-
-export function useEstudiante() {
-  const ctx = useContext(EstudianteContext);
-  return ctx || {
-    usuario: null,
-    alergias: [],
-    favoritos: [],
-    calificaciones: [],
-    categoriaPreferida: null,
-    calificacionDe: () => null,
-    guardarCalificacion: () => {},
-    quitarCalificacion: () => {},
-    marcarFavorito: () => {},
-    quitarFavorito: () => {},
-    guardarCategoriaPreferida: () => {},
-  };
-}
+import { EstudianteContext } from './estudiante-context';
 
 export function EstudianteProvider({ children }) {
   const { usuario } = useAuth();
@@ -73,7 +56,7 @@ export function EstudianteProvider({ children }) {
     await cargar();
   }, [cargar]);
 
-    const guardarCategoriaPreferida = useCallback(async (categoria) => {
+  const guardarCategoriaPreferida = useCallback(async (categoria) => {
     await pedir('/api/estudiante/categoria-preferida', { metodo: 'PUT', cuerpo: { categoria } });
     await cargar();
   }, [cargar]);

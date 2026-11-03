@@ -176,7 +176,6 @@
 .v2 .mes-celda.vacia-fuera { border: 0; background: none; box-shadow: none; }
 @media (max-width: 700px) { .v2 .mes-celda.vacia-fuera { display: none; } }
 .v2 .plan-card-cabeza { background: color-mix(in srgb, var(--acento) 10%, var(--card-bg)); border-bottom-color: color-mix(in srgb, var(--acento) 25%, var(--v2-borde)); padding: 9px 14px; }
-.v2 .plan-card-cabeza > span:first-of-type { color: color-mix(in srgb, var(--acento) 55%, var(--text)); }
 .v2 .plan-card-cabeza svg { color: var(--acento); }
 .v2 .plan-grid { gap: 12px; }
 .v2 .plan-card-cuerpo { padding: 12px 14px 14px; gap: 10px; }
@@ -397,7 +396,7 @@
 .v2 .plan-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 760px) { .v2 .plan-grid-3 { grid-template-columns: 1fr; } }
 .v2 .plan-card-cabeza { background: color-mix(in srgb, var(--acento) 20%, var(--card-bg)); border-bottom-color: color-mix(in srgb, var(--acento) 30%, var(--v2-borde)); padding: 10px 14px; font-size: .95rem; }
-.v2 .plan-card-cabeza > span:first-of-type { color: color-mix(in srgb, var(--acento) 70%, var(--text)); font-weight: 650; }
+.v2 .plan-card-cabeza > span:first-of-type { color: color-mix(in srgb, var(--acento) 40%, var(--text)); font-weight: 650; }
 .v2 .plan-campos { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .v2 .plan-sugerencia { display: flex; align-items: center; gap: 6px; margin: 0; padding: 6px 10px; border-radius: 8px; background: var(--bg); font-size: .78rem; line-height: 1.3; }
 .v2 .plan-sugerencia > svg { flex: none; color: var(--navy); }
@@ -514,3 +513,12 @@
 .v2 .login-cuenta:hover { border-color: var(--navy); }
 .v2 .login-tarjeta a.boton { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .v2 .login-tarjeta .login-logo { display: flex; }
+
+.v2-pub .tab.tab-agotada,
+.v2-pub .tab.tab-agotada.active { background: var(--bg); color: var(--text-muted); border-color: var(--v2-borde); }
+.v2-pub .tab.tab-agotada .tab-icon { opacity: .55; }
+.v2-pub .tab.tab-agotada { box-shadow: inset 0 0 0 1px var(--v2-borde); }
+.v2-pub .tab.tab-agotada.active { box-shadow: inset 0 0 0 1px var(--text-muted); }
+.v2-pub .semanal-componentes li.no-disponible .semanal-nombre { color: var(--text-muted); }
+.v2-pub .semanal-componentes li.no-disponible .semanal-tipo { color: var(--text-muted); background: var(--bg); }
+.v2-pub .semanal-estado { align-self: flex-start; font-size: .75rem; font-weight: 600; color: var(--text-muted); }

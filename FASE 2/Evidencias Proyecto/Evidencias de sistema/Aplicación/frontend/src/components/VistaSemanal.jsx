@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { obtenerHistorialMenu } from '../api/menu';
-import { aISOChile, hoyChile, CATEGORIAS_COLOR } from '../utils/formato';
+import { aISOChile, hoyChile, CATEGORIAS_COLOR, estadoEfectivo, NO_DISPONIBLE } from '../utils/formato';
 import Cargando from './Cargando';
+
+const ETIQUETA_ESTADO = { agotado: 'Agotado', cerrada: 'Cerrado' };
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -121,10 +123,13 @@ export default function VistaSemanal() {
                       {items.map((c, i) => {
                         const { color, light } = colorComponente(c.categoria);
                         const etiqueta = c.categoria ? c.categoria : c.componente;
+                        const estado = esHoy ? estadoEfectivo(c) : null;
+                        const noDisponible = NO_DISPONIBLE.includes(estado);
                         return (
-                          <li key={i}>
-                            <span className="semanal-tipo" style={{ color, background: light }}>{etiqueta}</span>
+                          <li key={i} className={noDisponible ? 'no-disponible' : ''}>
+                            <span className="semanal-tipo" style={noDisponible ? undefined : { color, background: light }}>{etiqueta}</span>
                             <span className="semanal-nombre">{c.preparacion}</span>
+                            {noDisponible && <span className="semanal-estado">{ETIQUETA_ESTADO[estado]}</span>}
                           </li>
                         );
                       })}

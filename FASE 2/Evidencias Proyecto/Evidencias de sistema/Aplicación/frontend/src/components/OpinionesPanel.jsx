@@ -7,10 +7,9 @@ import Mensaje from './Mensaje';
 import Ayuda from './Ayuda';
 import CampoFecha from './CampoFecha';
 import ExportarAnalisis from './ExportarAnalisis';
-import { hoyChile, haceDiasChile } from '../utils/formato';
+import { hoyChile, haceDiasChile, CATEGORIAS_MENU as CATEGORIAS } from '../utils/formato';
 import Cargando from './Cargando';
 
-const CATEGORIAS = ['Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 

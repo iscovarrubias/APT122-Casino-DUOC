@@ -1,7 +1,7 @@
 const express = require('express');
 const { login, yo, loginDuoc, configPublica, identificar, microsoftInicio, microsoftCallback, microsoftCanje } = require('../controllers/auth.controller');
 const { autenticar } = require('../middleware/auth');
-const { crearLimitadorDeFallos } = require('../middleware/limitador');
+const { crearLimitadorDeFallos, crearLimitadorDeSolicitudes } = require('../middleware/limitador');
 
 const router = express.Router();
 
@@ -22,9 +22,16 @@ const limitePorIp = crearLimitadorDeFallos({
   mensaje: MENSAJE,
 });
 
+const limiteIdentificar = crearLimitadorDeSolicitudes({
+  ventanaMs: VENTANA_MS,
+  maximo: Number(process.env.LIMITE_IDENTIFICAR_POR_IP) || 30,
+  clave: (req) => req.ip,
+  mensaje: 'Demasiadas consultas seguidas. Espera unos minutos antes de volver a intentar.',
+});
+
 router.post('/login', limitePorIp, limitePorCuenta, login);
 router.post('/duoc', limitePorIp, loginDuoc);
-router.post('/identificar', limitePorIp, identificar);
+router.post('/identificar', limiteIdentificar, identificar);
 router.get('/microsoft/inicio', microsoftInicio);
 router.get('/microsoft/callback', microsoftCallback);
 router.post('/microsoft/canje', limitePorIp, microsoftCanje);

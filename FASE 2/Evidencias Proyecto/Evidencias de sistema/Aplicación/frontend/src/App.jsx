@@ -109,15 +109,16 @@ function Enrutador() {
 }
 
 export default function App() {
-  const [splash, setSplash] = useState(() => (debeMostrarSplash() ? 'visible' : false));
+  const [mostrarInicial] = useState(debeMostrarSplash);
+  const [splash, setSplash] = useState(mostrarInicial ? 'visible' : false);
 
   useEffect(() => {
-    if (!splash) return undefined;
+    if (!mostrarInicial) return undefined;
     marcarSplashVisto();
     const t1 = setTimeout(() => setSplash('saliendo'), SPLASH_DURACION_MS);
     const t2 = setTimeout(() => setSplash(false), SPLASH_DURACION_MS + SPLASH_SALIDA_MS);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+  }, [mostrarInicial]);
 
   return (
     <AuthProvider>

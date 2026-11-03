@@ -1,4 +1,4 @@
-import { useEstudiante } from '../utils/estudiante';
+import { useEstudiante } from '../utils/useEstudiante';
 import Mensaje from './Mensaje';
 export default function AvisoAlergias({ componentes }) {
   const { alergias } = useEstudiante();

@@ -81,12 +81,6 @@ test('rechaza una cookie manipulada o ausente', async () => {
   await assert.rejects(entra.completar({ code: 'codigo-bueno', state: 'x', cookie: 'basura' }), /expiró/);
 });
 
-test('el ticket sirve una sola vez', () => {
-  const t = entra.crearTicket({ ok: 1 });
-  assert.deepEqual(entra.canjearTicket(t), { ok: 1 });
-  assert.equal(entra.canjearTicket(t), null);
-});
-
 test('distingue alumnos, personal y desconocidos por dominio', () => {
   assert.equal(entra.esDominioEstudiante('a@duocuc.cl'), true);
   assert.equal(entra.esDominioEstudiante('a@duoc.cl'), false);

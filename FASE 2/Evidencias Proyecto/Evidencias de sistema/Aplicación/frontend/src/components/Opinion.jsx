@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
-import { useEstudiante } from '../utils/estudiante';
+import { useEstudiante } from '../utils/useEstudiante';
 import OpinionModal from './OpinionModal';
 import Mensaje from './Mensaje';
 

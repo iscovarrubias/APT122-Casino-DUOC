@@ -244,7 +244,10 @@ async function historialMenus(desde, hasta, id_sede = 1) {
   const { rows } = await pool.query(
     `SELECT m.id_menu, m.fecha,
             json_agg(
-              json_build_object('componente', t.nombre, 'categoria', c.nombre, 'preparacion', p.nombre)
+              json_build_object('componente', t.nombre, 'categoria', c.nombre, 'preparacion', p.nombre,
+                                'disponibilidad', COALESCE(d.estado, 'disponible'),
+                                'jornada_estado', j.estado,
+                                'cantidad_restante', CASE WHEN j.estado = 'abierta' THEN GREATEST(s.restante, 0) END)
               ORDER BY t.id_tipo_componente, c.nombre NULLS FIRST
             ) AS componentes
      FROM menu m
@@ -252,6 +255,16 @@ async function historialMenus(desde, hasta, id_sede = 1) {
      JOIN preparacion p ON p.id_preparacion = mp.id_preparacion
      JOIN tipo_componente t ON t.id_tipo_componente = mp.id_tipo_componente
      LEFT JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
+     LEFT JOIN jornada j ON j.id_menu = m.id_menu
+     LEFT JOIN LATERAL (
+        SELECT estado FROM disponibilidad
+        WHERE id_menu_preparacion = mp.id_menu_preparacion
+        ORDER BY registrado_en DESC, id_disponibilidad DESC LIMIT 1
+     ) d ON TRUE
+     LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(delta), 0)::int AS restante
+        FROM movimiento_stock WHERE id_menu_preparacion = mp.id_menu_preparacion
+     ) s ON TRUE
      WHERE m.publicado = TRUE AND m.id_sede = $3 AND m.fecha BETWEEN $1 AND $2
      GROUP BY m.id_menu, m.fecha
      ORDER BY m.fecha DESC`,

@@ -11,9 +11,11 @@
     "test": "node --test \"tests/*.test.js\"",
     "test:integracion": "node tests/integracion/jornada.integracion.js",
     "test:estudiante": "node tests/integracion/estudiante.integracion.js",
-    "test:db": "node tests/integracion/jornada.integracion.js && node tests/integracion/estudiante.integracion.js",
+    "test:acceso": "node tests/integracion/acceso.integracion.js",
+    "test:db": "node tests/integracion/jornada.integracion.js && node tests/integracion/estudiante.integracion.js && node tests/integracion/acceso.integracion.js",
     "migrar": "node database/migrar.js",
-    "respaldo": "node database/respaldo.js"
+    "respaldo": "node database/respaldo.js",
+    "respaldo:verificar": "node database/verificar_respaldo.js"
   },
   "keywords": [],
   "author": "",
