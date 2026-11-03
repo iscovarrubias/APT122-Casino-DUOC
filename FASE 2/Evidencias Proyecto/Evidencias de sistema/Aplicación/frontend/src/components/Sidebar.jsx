@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavAnimada } from '../utils/navAnimada';
 import { Utensils, Calendar, HelpCircle, Settings, User, LogOut, LogIn, Sun, Moon } from 'lucide-react';
 import { useTema } from '../utils/tema';
 import { useAuth } from '../context/auth-context';
@@ -9,6 +10,8 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
   const { usuario, kiosco, cerrarSesion } = useAuth();
   const { esOscuro, alternar } = useTema();
   const [ajustes, setAjustes] = useState(false);
+
+  const { activa, ir, ref, indicadorRef } = useNavAnimada(vistaActiva, onCambiarVista, 3);
 
   const logo = esOscuro ? '/logooscuro.svg' : '/logo.svg';
   const primerNombre = usuario ? usuario.nombre.split(' ')[0] : null;
@@ -39,7 +42,7 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
       </header>
 
       <div className="sidebar-logo">
-        <img src={logo} alt="Casinos DuocUC" className="sidebar-logo-img" />
+        <img src="/logooscuro.svg" alt="Casinos DuocUC" className="sidebar-logo-img" />
       </div>
 
       <div className="sidebar-greeting">
@@ -57,27 +60,22 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
       </div>
 
       <nav className="sidebar-nav" aria-label="Secciones del menú">
-        <button
-          className={`sidebar-nav-item ${vistaActiva === 'semanal' ? 'active' : ''}`}
-          onClick={() => onCambiarVista('semanal')}
-          aria-current={vistaActiva === 'semanal' ? 'page' : undefined}
-        >
-          <Calendar size={20} /> Semanal
-        </button>
-        <button
-          className={`sidebar-nav-item ${vistaActiva === 'diario' ? 'active' : ''}`}
-          onClick={() => onCambiarVista('diario')}
-          aria-current={vistaActiva === 'diario' ? 'page' : undefined}
-        >
-          <Utensils size={20} /> Menú diario
-        </button>
-        <button
-          className={`sidebar-nav-item ${vistaActiva === 'preguntas' ? 'active' : ''}`}
-          onClick={() => onCambiarVista('preguntas')}
-          aria-current={vistaActiva === 'preguntas' ? 'page' : undefined}
-        >
-          <HelpCircle size={20} /> Preguntas
-        </button>
+        {[
+          { id: 'semanal', Icono: Calendar, texto: 'Semanal' },
+          { id: 'diario', Icono: Utensils, texto: 'Menú diario' },
+          { id: 'preguntas', Icono: HelpCircle, texto: 'Preguntas' },
+        ].map(({ id, Icono, texto }) => (
+          <button
+            key={id}
+            ref={ref(id)}
+            className={`sidebar-nav-item ${activa === id ? 'active' : ''}`}
+            onClick={() => ir(id)}
+            aria-current={activa === id ? 'page' : undefined}
+          >
+            <Icono size={20} /> {texto}
+          </button>
+        ))}
+        <span className="nav-indicador" ref={indicadorRef} aria-hidden="true" />
       </nav>
 
       <div className="sidebar-bottom">

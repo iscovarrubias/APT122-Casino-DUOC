@@ -2,22 +2,55 @@ import { useState } from 'react';
 import { useAuth } from '../context/auth-context';
 import { navegar } from '../ruteo/useRuta';
 import { rutaInicial } from '../ruteo/rutas';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, ChevronLeft, ArrowLeft } from 'lucide-react';
 import { useTema } from '../utils/tema';
+import { identificarCorreo, urlInicioMicrosoft } from '../api/gestion';
+import Mensaje from '../components/Mensaje';
+
+const CLAVE_ERROR = 'casino_login_error';
+
+function errorPendiente() {
+  try {
+    const e = sessionStorage.getItem(CLAVE_ERROR);
+    sessionStorage.removeItem(CLAVE_ERROR);
+    return e;
+  } catch {
+    return null;
+  }
+}
 
 export default function LoginPage() {
   const { iniciarSesion, iniciarSesionDuoc } = useAuth();
   const { esOscuro, alternar } = useTema();
 
-  const [pestana, setPestana] = useState('estudiante');
+  const [metodo, setMetodo] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [kiosco, setKiosco] = useState(false);
-  const [emailDuoc, setEmailDuoc] = useState('');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(errorPendiente);
   const [enviando, setEnviando] = useState(false);
 
-  async function enviarPersonal(evento) {
+  async function continuar(evento) {
+    evento.preventDefault();
+    setError(null);
+    setEnviando(true);
+    try {
+      const { metodo: m } = await identificarCorreo(email.trim());
+      setMetodo(m);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  function cambiarCorreo() {
+    setMetodo(null);
+    setPassword('');
+    setError(null);
+  }
+
+  async function entrarConClave(evento) {
     evento.preventDefault();
     setError(null);
     setEnviando(true);
@@ -26,27 +59,29 @@ export default function LoginPage() {
       navegar(rutaInicial(sesion.usuario.rol, sesion.kiosco));
     } catch (err) {
       setError(err.message);
-    } finally {
       setEnviando(false);
     }
   }
 
-  async function enviarEstudiante(evento) {
-    evento.preventDefault();
+  async function entrarDemo() {
     setError(null);
     setEnviando(true);
     try {
-      await iniciarSesionDuoc(emailDuoc.trim());
+      await iniciarSesionDuoc(email.trim());
       navegar('/');
     } catch (err) {
       setError(err.message);
-    } finally {
       setEnviando(false);
     }
   }
 
+  const aviso = error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>;
+
   return (
-    <div className="login-pagina">
+    <div className="login-pagina v2">
+      <button type="button" className="login-volver" onClick={() => navegar('/')}>
+        <ChevronLeft size={18} aria-hidden="true" /> Volver al menú
+      </button>
       <button
         type="button"
         className="login-toggle-tema"
@@ -66,87 +101,85 @@ export default function LoginPage() {
         </div>
 
         <h1 style={{ marginBottom: 6 }}>Iniciar sesión</h1>
-        <p className="login-ayuda">
-          Ingresa con tu cuenta DUOC UC para acceder a tu perfil y dejar tus opiniones.
-        </p>
 
-        <div className="segmentado" style={{ display: 'flex', marginBottom: 20 }}>
-          <button
-            type="button"
-            className={pestana === 'estudiante' ? 'activo' : ''}
-            onClick={() => { setPestana('estudiante'); setError(null); }}
-            style={{ flex: 1 }}
-          >
-            Estudiante
-          </button>
-          <button
-            type="button"
-            className={pestana === 'personal' ? 'activo' : ''}
-            onClick={() => { setPestana('personal'); setError(null); }}
-            style={{ flex: 1 }}
-          >
-            Personal
-          </button>
-        </div>
-
-        {pestana === 'estudiante' && (
-          <form onSubmit={enviarEstudiante} className="formulario">
-            <label className="campo">
-              <span>Correo institucional</span>
-              <input
-                type="email"
-                value={emailDuoc}
-                onChange={(e) => setEmailDuoc(e.target.value)}
-                placeholder="tunombre@duocuc.cl"
-                autoComplete="username"
-                required
-              />
-            </label>
-
-            {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
-
-            <button type="submit" className="boton boton-primario boton-ancho" disabled={enviando}>
-              {enviando ? 'Ingresando…' : 'Ingresar con mi cuenta DUOC'}
-            </button>
-          </form>
-        )}
-
-        {pestana === 'personal' && (
-          <form onSubmit={enviarPersonal} className="formulario">
+        {!metodo && (
+          <form onSubmit={continuar} className="formulario">
+            <p className="login-ayuda">Ingresa con tu correo institucional</p>
             <label className="campo">
               <span>Correo</span>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="tunombre@duocuc.cl"
                 autoComplete="username"
+                autoFocus
                 required
               />
             </label>
-            <label className="campo">
-              <span>Contraseña</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
-            </label>
-            <label className="campo-check">
-              <input type="checkbox" checked={kiosco} onChange={(e) => setKiosco(e.target.checked)} />
-              <span>Este es un dispositivo compartido de cocina (la sesión dura más tiempo)</span>
-            </label>
-
-            {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
-
+            {aviso}
             <button type="submit" className="boton boton-primario boton-ancho" disabled={enviando}>
-              {enviando ? 'Ingresando…' : 'Ingresar'}
+              {enviando ? 'Comprobando…' : 'Continuar'}
             </button>
           </form>
         )}
 
-        <button className="boton-enlace" onClick={() => navegar('/')}>Volver al menú</button>
+        {metodo && (
+          <div className="login-paso">
+            <button type="button" className="login-cuenta" onClick={cambiarCorreo} title="Usar otro correo">
+              <ArrowLeft size={14} aria-hidden="true" />
+              <span>{email.trim()}</span>
+            </button>
+
+            {metodo === 'clave' && (
+              <form onSubmit={entrarConClave} className="formulario">
+                <label className="campo">
+                  <span>Contraseña</span>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    autoFocus
+                    required
+                  />
+                </label>
+                <label className="campo-check">
+                  <input type="checkbox" checked={kiosco} onChange={(e) => setKiosco(e.target.checked)} />
+                  <span>Este es un dispositivo compartido de cocina (la sesión dura más tiempo)</span>
+                </label>
+                {aviso}
+                <button type="submit" className="boton boton-primario boton-ancho" disabled={enviando}>
+                  {enviando ? 'Ingresando…' : 'Ingresar'}
+                </button>
+              </form>
+            )}
+
+            {metodo === 'microsoft' && (
+              <div className="formulario">
+                <p className="login-ayuda">
+                  Te llevaremos a Microsoft para confirmar tu cuenta. Tu contraseña nunca pasa por este sitio.
+                </p>
+                {aviso}
+                <a className="boton boton-primario boton-ancho" href={urlInicioMicrosoft(email.trim())}>
+                  Continuar con Microsoft
+                </a>
+              </div>
+            )}
+
+            {metodo === 'duoc' && (
+              <div className="formulario">
+                <p className="login-ayuda">
+                  Cuenta de estudiante detectada. Esta versión de demostración no pide contraseña.
+                </p>
+                {aviso}
+                <button type="button" className="boton boton-primario boton-ancho" onClick={entrarDemo} disabled={enviando}>
+                  {enviando ? 'Ingresando…' : 'Ingresar con mi cuenta DUOC'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

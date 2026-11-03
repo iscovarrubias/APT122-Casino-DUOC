@@ -5,7 +5,8 @@ const { requiereRol } = require('../middleware/roles');
 
 const router = express.Router();
 
-router.get('/resumen', autenticar, requiereRol('Administrador'), controller.resumen);
-router.get('/mensual', autenticar, requiereRol('Administrador'), controller.mensual);
+router.get('/resumen', autenticar, requiereRol('Administrador', 'Nutricionista'), controller.resumen);
+router.get('/detalle', autenticar, requiereRol('Administrador', 'Nutricionista'), controller.detalle);
+router.get('/mensual', autenticar, requiereRol('Administrador', 'Nutricionista'), controller.mensual);
 
 module.exports = router;

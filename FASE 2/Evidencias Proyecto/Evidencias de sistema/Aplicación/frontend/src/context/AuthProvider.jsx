@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuthContext } from './auth-context';
 import { configurarCliente } from '../api/cliente';
-import { iniciarSesionApi, consultarSesion, iniciarSesionDuoc as iniciarSesionDuocApi } from '../api/gestion';
+import { iniciarSesionApi, consultarSesion, iniciarSesionDuoc as iniciarSesionDuocApi, canjearTicketMicrosoft } from '../api/gestion';
 
 const CLAVE = 'casino_sesion';
 
@@ -63,12 +63,22 @@ export default function AuthProvider({ children }) {
     return nueva;
   }
 
+  const iniciarConTicket = useCallback(async (ticket) => {
+    const respuesta = await canjearTicketMicrosoft(ticket);
+    const nueva = { token: respuesta.token, usuario: respuesta.usuario, kiosco: !!respuesta.kiosco };
+    configurarCliente({ token: nueva.token });
+    guardar(nueva);
+    setSesion(nueva);
+    return nueva;
+  }, []);
+
   const valor = {
     usuario: sesion?.usuario || null,
     kiosco: !!sesion?.kiosco,
     cargando,
     iniciarSesion,
     iniciarSesionDuoc,
+    iniciarConTicket,
     cerrarSesion,
   };
 

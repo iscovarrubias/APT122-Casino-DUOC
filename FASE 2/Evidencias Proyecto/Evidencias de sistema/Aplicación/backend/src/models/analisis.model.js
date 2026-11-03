@@ -101,7 +101,7 @@ async function origenes(desde, hasta, id_sede) {
   };
 }
 
-async function rankingMensual(mes) {
+async function rankingPeriodo(desde, hasta) {
   const resumen = (await pool.query(
     `SELECT
         COUNT(*) FILTER (WHERE j.estado = 'cerrada')::int AS jornadas_cerradas,
@@ -109,8 +109,8 @@ async function rankingMensual(mes) {
         COUNT(*) FILTER (WHERE j.estado = 'cerrada' AND j.cierre_automatico)::int AS cierres_automaticos
      FROM jornada j
      JOIN menu m ON m.id_menu = j.id_menu
-     WHERE m.fecha >= $1::date AND m.fecha < ($1::date + INTERVAL '1 month')`,
-    [`${mes}-01`]
+     WHERE m.fecha BETWEEN $1::date AND $2::date`,
+    [desde, hasta]
   )).rows[0];
 
   const { rows } = await pool.query(
@@ -118,7 +118,7 @@ async function rankingMensual(mes) {
         SELECT j.id_jornada, j.id_menu, j.estado, j.sobrante_contado, j.iniciada_en, m.fecha
         FROM jornada j
         JOIN menu m ON m.id_menu = j.id_menu
-        WHERE m.fecha >= $1::date AND m.fecha < ($1::date + INTERVAL '1 month')
+        WHERE m.fecha BETWEEN $1::date AND $2::date
           AND j.estado = 'cerrada'
      ),
      apariciones AS (
@@ -166,10 +166,97 @@ async function rankingMensual(mes) {
      LEFT JOIN primer_agotado pa ON pa.id_jornada = a.id_jornada AND pa.id_menu_preparacion = a.id_menu_preparacion
      GROUP BY a.id_preparacion, a.nombre
      ORDER BY porcentaje_agotado DESC NULLS LAST, dias_agotado DESC, a.nombre`,
-    [`${mes}-01`]
+    [desde, hasta]
   );
 
-  return { resumen, platos: rows };
+  return { desde, hasta, resumen, platos: rows };
 }
 
-module.exports = { agotamientos, ventasPorHora, masVendidas, origenes, rankingMensual, MARCA_SIMULADO };
+async function rankingMensual(mes) {
+  const [a, m] = mes.split('-').map(Number);
+  const ultimo = new Date(Date.UTC(a, m, 0)).getUTCDate();
+  return rankingPeriodo(`${mes}-01`, `${mes}-${String(ultimo).padStart(2, '0')}`);
+}
+
+const aHora = (seg) => (seg == null ? null
+  : `${String(Math.floor(seg / 3600)).padStart(2, '0')}:${String(Math.floor((seg % 3600) / 60)).padStart(2, '0')}`);
+
+const BASE_DETALLE = `
+  WITH base AS (
+    SELECT mp.id_menu_preparacion, mp.id_preparacion, p.nombre AS preparacion, t.nombre AS componente,
+           COALESCE(c.nombre, 'Compartido') AS categoria, (mp.id_categoria_menu IS NOT NULL) AS es_principal,
+           mp.cantidad_planificada AS planificadas, mp.precio, m.fecha,
+           COALESCE(v.vendidas, 0)::int AS vendidas, v.primera, v.ultima, ag.agotado_en
+    FROM menu_preparacion mp
+    JOIN menu m ON m.id_menu = mp.id_menu
+    JOIN preparacion p ON p.id_preparacion = mp.id_preparacion
+    JOIN tipo_componente t ON t.id_tipo_componente = mp.id_tipo_componente
+    LEFT JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
+    LEFT JOIN LATERAL (
+      SELECT SUM(ve.cantidad) AS vendidas, MIN(ve.fecha_hora) AS primera, MAX(ve.fecha_hora) AS ultima
+      FROM venta_efectiva ve WHERE ve.id_menu_preparacion = mp.id_menu_preparacion
+    ) v ON TRUE
+    LEFT JOIN LATERAL (
+      SELECT MIN(d.registrado_en) AS agotado_en FROM disponibilidad d
+      WHERE d.id_menu_preparacion = mp.id_menu_preparacion AND d.estado = 'agotado'
+    ) ag ON TRUE
+    WHERE m.id_sede = $3 AND m.fecha BETWEEN $1 AND $2
+      AND ($4::int IS NULL OR mp.id_preparacion = $4)
+      AND ($5::text IS NULL OR COALESCE(c.nombre, 'Compartido') = $5)
+  )`;
+
+const RESUMEN_GRUPO = `
+  COUNT(DISTINCT fecha)::int AS dias,
+  COALESCE(SUM(planificadas), 0)::int AS planificadas,
+  COALESCE(SUM(vendidas), 0)::int AS vendidas,
+  COUNT(*) FILTER (WHERE agotado_en IS NOT NULL)::int AS dias_agotado,
+  AVG(EXTRACT(EPOCH FROM agotado_en::time))::int AS segundos_agotado,
+  ROUND(AVG(precio) FILTER (WHERE precio IS NOT NULL AND precio > 0))::int AS precio_promedio,
+  ROUND((SUM(vendidas) FILTER (WHERE vendidas > 0)
+         / NULLIF(SUM(GREATEST(EXTRACT(EPOCH FROM (ultima - primera)) / 3600.0, 0.25)) FILTER (WHERE vendidas > 0), 0))::numeric, 1)::float8 AS ritmo_hora`;
+
+function conPorcentajes(f) {
+  const { segundos_agotado, ...resto } = f;
+  return {
+    ...resto,
+    porcentaje_consumo: f.planificadas > 0 ? Math.round((1000 * f.vendidas) / f.planificadas) / 10 : null,
+    porcentaje_agotado: f.dias > 0 ? Math.round((1000 * f.dias_agotado) / f.dias) / 10 : null,
+    hora_agotamiento: aHora(segundos_agotado),
+  };
+}
+
+async function detalle(desde, hasta, id_sede, { id_preparacion = null, categoria = null } = {}) {
+  const par = [desde, hasta, id_sede, id_preparacion, categoria];
+  const [porCategoria, preparaciones, porHora, porDia] = await Promise.all([
+    pool.query(`${BASE_DETALLE}
+      SELECT categoria, es_principal, ${RESUMEN_GRUPO}
+      FROM base GROUP BY categoria, es_principal
+      ORDER BY es_principal DESC, categoria`, par),
+    pool.query(`${BASE_DETALLE}
+      SELECT id_preparacion, preparacion AS nombre, MIN(componente) AS componente,
+             COUNT(DISTINCT categoria) FILTER (WHERE es_principal)::int AS categorias, ${RESUMEN_GRUPO}
+      FROM base GROUP BY id_preparacion, preparacion
+      ORDER BY SUM(vendidas) DESC, preparacion`, par),
+    pool.query(`${BASE_DETALLE}
+      SELECT EXTRACT(HOUR FROM ve.fecha_hora)::int AS hora, SUM(ve.cantidad)::int AS unidades
+      FROM base b JOIN venta_efectiva ve ON ve.id_menu_preparacion = b.id_menu_preparacion
+      GROUP BY 1 ORDER BY 1`, par),
+    pool.query(`${BASE_DETALLE}
+      SELECT fecha, categoria, preparacion, planificadas, vendidas, precio, agotado_en,
+             ROUND((vendidas / GREATEST(EXTRACT(EPOCH FROM (ultima - primera)) / 3600.0, 0.25))::numeric, 1)::float8 AS ritmo_hora
+      FROM base ORDER BY fecha DESC, categoria, preparacion LIMIT 200`, par),
+  ]);
+  return {
+    por_categoria: porCategoria.rows.map(conPorcentajes),
+    preparaciones: preparaciones.rows.map(conPorcentajes),
+    ventas_por_hora: porHora.rows,
+    por_dia: porDia.rows.map((f) => ({
+      ...f,
+      fecha: String(f.fecha).slice(0, 10),
+      hora_agotado: f.agotado_en ? String(f.agotado_en).slice(11, 16) : null,
+      agotado_en: undefined,
+    })),
+  };
+}
+
+module.exports = { detalle, agotamientos, ventasPorHora, masVendidas, origenes, rankingMensual, rankingPeriodo, MARCA_SIMULADO };

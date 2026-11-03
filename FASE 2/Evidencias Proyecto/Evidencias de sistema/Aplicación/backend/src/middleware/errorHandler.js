@@ -1,8 +1,15 @@
 function errorHandler(err, req, res, next) {
-  console.error(err); 
+  if (!err.status || err.status >= 500) console.error(err);
 
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ error: 'El cuerpo de la solicitud no es JSON válido.' });
+  }
+
+  if (err.name === 'MulterError') {
+    const tamano = err.code === 'LIMIT_FILE_SIZE';
+    return res.status(tamano ? 413 : 400).json({
+      error: tamano ? 'La imagen supera el tamaño máximo de 3 MB.' : 'No se pudo procesar el archivo enviado.',
+    });
   }
 
   if (err.status) {

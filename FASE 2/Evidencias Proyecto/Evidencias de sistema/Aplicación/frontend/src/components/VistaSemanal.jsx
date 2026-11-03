@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { obtenerHistorialMenu } from '../api/menu';
 import { aISOChile, hoyChile, CATEGORIAS_COLOR } from '../utils/formato';
+import Cargando from './Cargando';
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -18,6 +19,18 @@ function formatearFechaLarga(fecha) {
   return fecha.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
 }
 
+const ORDEN_CATEGORIA = ['Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
+const ORDEN_ACOMPANAMIENTO = ['Entrada', 'Postre', 'Bebida'];
+
+function agruparComponentes(componentes) {
+  const idx = (lista, v) => { const i = lista.indexOf(v); return i === -1 ? lista.length : i; };
+  const principales = componentes.filter((c) => c.categoria)
+    .sort((a, b) => idx(ORDEN_CATEGORIA, a.categoria) - idx(ORDEN_CATEGORIA, b.categoria));
+  const acompanamientos = componentes.filter((c) => !c.categoria)
+    .sort((a, b) => idx(ORDEN_ACOMPANAMIENTO, a.componente) - idx(ORDEN_ACOMPANAMIENTO, b.componente));
+  return { principales, acompanamientos };
+}
+
 function colorComponente(categoria) {
   if (!categoria) return { color: '#6B7280', light: '#EEF0F3' };
   return CATEGORIAS_COLOR[categoria] || CATEGORIAS_COLOR.Principal;
@@ -27,7 +40,7 @@ export default function VistaSemanal() {
   const [menus, setMenus] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [abierto, setAbierto] = useState(null); 
+  const [abierto, setAbierto] = useState(null);
 
   const hoy = hoyChile();
 
@@ -64,7 +77,7 @@ export default function VistaSemanal() {
     setAbierto((actual) => (actual === fechaISO ? null : fechaISO));
   }
 
-  if (cargando) return <div className="estado-info">Cargando menú semanal…</div>;
+  if (cargando) return <Cargando>Cargando menú semanal…</Cargando>;
   if (error) return <div className="estado-info">No se pudo cargar el menú semanal. ({error})</div>;
 
   return (
@@ -101,24 +114,34 @@ export default function VistaSemanal() {
                 {!menu && (
                   <p className="semanal-sin-menu">Aún no hay menú publicado para este día.</p>
                 )}
-                {menu && (
-                  <ul className="semanal-componentes">
-                    {menu.componentes.map((c, i) => {
-                      const { color, light } = colorComponente(c.categoria);
-                      const etiqueta = c.categoria
-                        ? `${c.componente} · ${c.categoria}`
-                        : `${c.componente} · Compartido`;
-                      return (
-                        <li key={i}>
-                          <span className="semanal-tipo" style={{ color, background: light }}>
-                            {etiqueta}
-                          </span>
-                          <span className="semanal-nombre">{c.preparacion}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
+                {menu && (() => {
+                  const { principales, acompanamientos } = agruparComponentes(menu.componentes);
+                  const lista = (items) => (
+                    <ul className="semanal-componentes">
+                      {items.map((c, i) => {
+                        const { color, light } = colorComponente(c.categoria);
+                        const etiqueta = c.categoria ? c.categoria : c.componente;
+                        return (
+                          <li key={i}>
+                            <span className="semanal-tipo" style={{ color, background: light }}>{etiqueta}</span>
+                            <span className="semanal-nombre">{c.preparacion}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                  return (
+                    <>
+                      {principales.length > 0 && lista(principales)}
+                      {acompanamientos.length > 0 && (
+                        <>
+                          <h3 className="semanal-subtitulo">Acompañamientos</h3>
+                          {lista(acompanamientos)}
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
           </section>

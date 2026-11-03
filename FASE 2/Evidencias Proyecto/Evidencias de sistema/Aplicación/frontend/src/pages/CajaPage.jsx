@@ -3,6 +3,8 @@ import { consultarJornadaHoy, registrarVenta, anularVenta, consultarPrediccionHo
 import { suscribirCambios } from '../utils/eventos';
 import { formatearHora } from '../utils/formato';
 import { BotonesVenta, CompartidosDelDia, UltimasVentas, MenuDelDia } from '../components/PanelVentas';
+import Mensaje from '../components/Mensaje';
+import Cargando from '../components/Cargando';
 
 export default function CajaPage() {
   const [estado, setEstado] = useState(null);
@@ -58,31 +60,31 @@ export default function CajaPage() {
     }
   }
 
-  if (!estado && !error) return <div className="estado-info">Cargando…</div>;
+  if (!estado && !error) return <Cargando>Cargando…</Cargando>;
   const { menu, jornada, componentes = [], ventas_recientes = [], ventas_por_categoria = [] } = estado || {};
   const abierta = jornada?.estado === 'abierta';
 
   return (
-    <>
-      {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
-      {aviso && !error && <div className="mensaje mensaje-ok" role="status">{aviso}</div>}
+    <div className="v2">
+      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+      {aviso && !error && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
 
       {estado && !menu && <div className="estado-info">Todavía no hay un menú planificado para hoy. Avisa a la cocina o a administración.</div>}
       {menu && !jornada && (
-        <div className="mensaje mensaje-aviso">
+        <Mensaje tipo="aviso">
           {menu.publicado
             ? 'La cocina todavía no inicia la jornada: no se pueden registrar ventas.'
             : 'El menú de hoy aún no está publicado.'}
-        </div>
+        </Mensaje>
       )}
 
       {abierta && (
         <>
-          <div className="barra-herramientas">
-            <span className="insignia insignia-ok">Jornada abierta desde las {formatearHora(jornada.iniciada_en)}</span>
+          <div className="v2-barra">
+            <span className="v2-estado">Jornada abierta desde las {formatearHora(jornada.iniciada_en)}</span>
           </div>
           <BotonesVenta componentes={componentes} onVender={vender} estimaciones={estimaciones} />
-          <h2 className="subtitulo-panel">Incluido en todos los combos</h2>
+          <h2 className="v2-subtitulo">Incluido en todos los combos</h2>
           <CompartidosDelDia componentes={componentes} />
           <UltimasVentas ventas={ventas_recientes} ocupado={ocupado} onAnular={anular} />
         </>
@@ -97,6 +99,6 @@ export default function CajaPage() {
       )}
 
       {menu && !abierta && componentes.length > 0 && <MenuDelDia componentes={componentes} />}
-    </>
+    </div>
   );
 }

@@ -23,7 +23,24 @@ async function resumen(req, res, next) {
   }
 }
 
-// Valida el formato AAAA-MM y devuelve el mes o lanza 400.
+async function detalle(req, res, next) {
+  try {
+    const desde = req.query.desde || haceDiasChile(30);
+    const hasta = req.query.hasta || hoyChile();
+    if (!esFechaISO(desde) || !esFechaISO(hasta)) throw new ApiError(400, 'Las fechas deben tener el formato AAAA-MM-DD.');
+    if (desde > hasta) throw new ApiError(400, 'La fecha "desde" no puede ser posterior a "hasta".');
+    let id_preparacion = null;
+    if (req.query.id_preparacion) {
+      id_preparacion = Number(req.query.id_preparacion);
+      if (!Number.isInteger(id_preparacion) || id_preparacion <= 0) throw new ApiError(400, 'id_preparacion inválido.');
+    }
+    const categoria = typeof req.query.categoria === 'string' && req.query.categoria ? req.query.categoria.slice(0, 50) : null;
+    res.json({ desde, hasta, id_preparacion, categoria, ...(await analisisModel.detalle(desde, hasta, req.user.id_sede, { id_preparacion, categoria })) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 function validarMes(mes) {
   if (typeof mes !== 'string' || !/^\d{4}-\d{2}$/.test(mes)) {
     throw new ApiError(400, 'El mes debe tener el formato AAAA-MM.');
@@ -35,6 +52,13 @@ function validarMes(mes) {
 
 async function mensual(req, res, next) {
   try {
+    if (req.query.desde || req.query.hasta) {
+      const desde = req.query.desde || haceDiasChile(30);
+      const hasta = req.query.hasta || hoyChile();
+      if (!esFechaISO(desde) || !esFechaISO(hasta)) throw new ApiError(400, 'Las fechas deben tener el formato AAAA-MM-DD.');
+      if (desde > hasta) throw new ApiError(400, 'La fecha "desde" no puede ser posterior a "hasta".');
+      return res.json(await analisisModel.rankingPeriodo(desde, hasta));
+    }
     const mes = validarMes(req.query.mes);
     res.json(await analisisModel.rankingMensual(mes));
   } catch (err) {
@@ -42,4 +66,4 @@ async function mensual(req, res, next) {
   }
 }
 
-module.exports = { resumen, mensual };
+module.exports = { resumen, detalle, mensual };

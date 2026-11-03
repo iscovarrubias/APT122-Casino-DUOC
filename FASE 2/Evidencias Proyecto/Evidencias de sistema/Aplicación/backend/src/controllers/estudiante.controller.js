@@ -32,11 +32,42 @@ const calificar = envolver(async (req) => {
     comentario = comentario.trim();
     if (comentario.length > 300) throw new ApiError(400, 'El comentario no puede superar los 300 caracteres.');
   }
-  return model.calificar(req.user.id_usuario, idDe(req), estrellas, comentario);
+  const categoria = typeof req.body.categoria === 'string' ? req.body.categoria.slice(0, 50) : undefined;
+  return model.calificar(req.user.id_usuario, idDe(req), estrellas, comentario, categoria);
 });
 const quitarCalificacion = envolver(async (req) => { await model.quitarCalificacion(req.user.id_usuario, idDe(req)); return { eliminada: true }; });
 const alertas = envolver((req) => model.alertas(req.user.id_usuario, req.user.id_sede));
 const opiniones = envolver(() => model.resumenOpiniones());
+const opinionesDetalle = envolver((req) => {
+  const q = req.query;
+  const fechaOk = (v) => v === undefined || v === '' || /^\d{4}-\d{2}-\d{2}$/.test(v);
+  if (!fechaOk(q.desde) || !fechaOk(q.hasta)) throw new ApiError(400, 'Las fechas deben tener el formato AAAA-MM-DD.');
+  const entero = (v, nombre) => {
+    if (v === undefined || v === '') return undefined;
+    const n = Number(v);
+    if (!Number.isInteger(n) || n <= 0) throw new ApiError(400, `${nombre} inválido.`);
+    return n;
+  };
+  const estrellas = entero(q.estrellas, 'estrellas');
+  if (estrellas && estrellas > 5) throw new ApiError(400, 'estrellas inválido.');
+  if (q.estado && !['vigente', 'editada', 'eliminada'].includes(q.estado)) throw new ApiError(400, 'estado inválido.');
+  return model.listarOpiniones({
+    desde: q.desde || undefined, hasta: q.hasta || undefined,
+    id_preparacion: entero(q.id_preparacion, 'id_preparacion'),
+    categoria: q.categoria || undefined, estado: q.estado || undefined, estrellas,
+    soloConComentario: q.con_comentario === '1',
+    limite: Math.min(entero(q.limite, 'limite') || 500, 5000),
+  });
+});
+
+const favoritosDetalle = envolver((req) => {
+  const q = req.query;
+  const fechaOk = (v) => v === undefined || v === '' || /^\d{4}-\d{2}-\d{2}$/.test(v);
+  if (!fechaOk(q.desde) || !fechaOk(q.hasta)) throw new ApiError(400, 'Las fechas deben tener el formato AAAA-MM-DD.');
+  let id = q.id_preparacion ? Number(q.id_preparacion) : undefined;
+  if (id !== undefined && (!Number.isInteger(id) || id <= 0)) throw new ApiError(400, 'id_preparacion inválido.');
+  return model.listarFavoritos({ desde: q.desde || undefined, hasta: q.hasta || undefined, id_preparacion: id });
+});
 
 const categoriaPreferida = envolver(async (req) => {
   const { categoria } = req.body;
@@ -46,4 +77,4 @@ const categoriaPreferida = envolver(async (req) => {
   return { categoria_preferida: await model.fijarCategoriaPreferida(req.user.id_usuario, categoria || null) };
 });
 
-module.exports = { perfil, alergias, categoriaPreferida, marcarFavorito, quitarFavorito, calificar, quitarCalificacion, alertas, opiniones };
+module.exports = { perfil, alergias, categoriaPreferida, marcarFavorito, quitarFavorito, calificar, quitarCalificacion, alertas, opiniones, opinionesDetalle, favoritosDetalle };

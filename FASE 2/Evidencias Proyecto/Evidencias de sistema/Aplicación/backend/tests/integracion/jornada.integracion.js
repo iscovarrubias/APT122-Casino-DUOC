@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('../soporte/entorno');
 process.env.HORA_CIERRE_AUTOMATICO = '23:59';
 const http = require('node:http');
 const assert = require('node:assert/strict');

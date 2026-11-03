@@ -3,6 +3,8 @@ import { consultarJornadaHoy, iniciarJornada, cerrarJornada, ajustarStock, regis
 import { suscribirCambios } from '../utils/eventos';
 import { formatearHora, ESTADO_TEXTO } from '../utils/formato';
 import { BotonesVenta, CompartidosDelDia, UltimasVentas } from '../components/PanelVentas';
+import Mensaje from '../components/Mensaje';
+import Cargando from '../components/Cargando';
 
 const etiqueta = (c) => (c.categoria ? `${c.componente} · ${c.categoria}` : c.componente);
 
@@ -66,7 +68,7 @@ export default function KioscoPage() {
     }
   }
 
-  if (!estado && !error) return <div className="estado-info">Cargando el menú de hoy…</div>;
+  if (!estado && !error) return <Cargando>Cargando el menú de hoy…</Cargando>;
   const { menu, jornada, componentes = [], ventas_recientes = [] } = estado || {};
   const abierta = jornada?.estado === 'abierta';
 
@@ -76,15 +78,15 @@ export default function KioscoPage() {
   };
 
   return (
-    <>
-      {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
-      {aviso && !error && <div className="mensaje mensaje-ok" role="status">{aviso}</div>}
+    <div className="v2">
+      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+      {aviso && !error && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
 
       {estado && !menu && (
         <div className="estado-info">Todavía no hay un menú planificado para hoy. Cárgalo en Planificación del menú.</div>
       )}
       {menu && !menu.publicado && !jornada && (
-        <div className="mensaje mensaje-aviso">El menú de hoy aún no está publicado. Publícalo en Planificación del menú para iniciar la jornada.</div>
+        <Mensaje tipo="aviso">El menú de hoy aún no está publicado. Publícalo en Planificación del menú para iniciar la jornada.</Mensaje>
       )}
 
       {menu && !jornada && (
@@ -107,21 +109,21 @@ export default function KioscoPage() {
 
       {abierta && !cerrando && (
         <>
-          <div className="barra-herramientas">
-            <span className="insignia insignia-ok">Jornada abierta desde las {formatearHora(jornada.iniciada_en)}</span>
+          <div className="v2-barra">
+            <span className="v2-estado">Jornada abierta desde las {formatearHora(jornada.iniciada_en)}</span>
             <button className="boton boton-secundario" onClick={() => setCerrando(true)}>Cerrar jornada</button>
           </div>
 
           <BotonesVenta componentes={componentes} onVender={vender} estimaciones={estimaciones} />
 
-          <h2 className="subtitulo-panel">Incluido en todos los combos</h2>
+          <h2 className="v2-subtitulo">Incluido en todos los combos</h2>
           <CompartidosDelDia componentes={componentes} />
 
           <UltimasVentas ventas={ventas_recientes} ocupado={ocupado}
             onAnular={(id) => ejecutar(() => anularVenta(id), 'Venta anulada.')} />
 
           <details className="tarjeta">
-            <summary><strong>Corregir cantidades o registrar reposición</strong></summary>
+            <summary>Corregir cantidades o registrar reposición</summary>
             <p className="texto-suave">Úsalo cuando el conteo real no coincide con el sistema o cuando se repone una preparación.</p>
             {componentes.map((c) => (
               <div key={c.id_menu_preparacion} className="stock-fila" style={{ marginBottom: 10 }}>
@@ -133,11 +135,11 @@ export default function KioscoPage() {
                   <input type="number" min="0" step="1" className="entrada-corta" placeholder="Quedan"
                     value={fijar[c.id_menu_preparacion] ?? ''} aria-label={`Cuántas quedan de ${c.preparacion}`}
                     onChange={(e) => setFijar({ ...fijar, [c.id_menu_preparacion]: e.target.value })} />
-                  <button className="boton boton-primario" disabled={ocupado || (fijar[c.id_menu_preparacion] ?? '') === ''}
+                  <button className="boton boton-secundario" disabled={ocupado || (fijar[c.id_menu_preparacion] ?? '') === ''}
                     onClick={async () => { if (await ejecutar(() => ajustarStock(c.id_menu_preparacion, { accion: 'quedan', cantidad: Number(fijar[c.id_menu_preparacion]) }), 'Cantidad actualizada.')) setFijar({ ...fijar, [c.id_menu_preparacion]: '' }); }}>
                     Fijar
                   </button>
-                  <button className="boton boton-secundario" disabled={ocupado} onClick={() => reponer(c)}>Repuse…</button>
+                  <button className="boton-texto" disabled={ocupado} onClick={() => reponer(c)}>Repuse…</button>
                 </span>
               </div>
             ))}
@@ -181,6 +183,6 @@ export default function KioscoPage() {
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 }

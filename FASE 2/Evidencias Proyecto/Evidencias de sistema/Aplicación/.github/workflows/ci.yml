@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: casino_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/casino_test
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/casino_test
+      JWT_SECRET: secreto-solo-para-ci-0123456789abcdef0123456789
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Pruebas unitarias y de seguridad
+        run: npm test
+      - name: Preparar la base de pruebas
+        run: |
+          node database/migrar.js
+          node database/seed_sprint1.js
+          psql "$DATABASE_URL" -q -f database/seed_demo.sql
+          node database/seed_ventas_simuladas.js
+      - name: Pruebas de integración
+        run: DATABASE_URL=postgres://nadie@localhost:5432/otra npm run test:db
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Compilar
+        run: npm run build

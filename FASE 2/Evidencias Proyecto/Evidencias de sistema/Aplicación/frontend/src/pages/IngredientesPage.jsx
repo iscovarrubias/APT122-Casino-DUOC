@@ -3,7 +3,10 @@ import {
   listarIngredientes, listarCategoriasIngrediente, listarCatalogoAlergenos,
   crearIngrediente, actualizarIngrediente, eliminarIngrediente,
 } from '../api/gestion';
-import { Beef, Fish, Carrot, Wheat, Milk, Droplet, Package } from 'lucide-react';
+import { Beef, Fish, Carrot, Wheat, Milk, Droplet, Package, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import Mensaje from '../components/Mensaje';
+import ModalFormulario from '../components/ModalFormulario';
+import Cargando from '../components/Cargando';
 
 const NUTRIENTES = ['calorias_100g', 'proteinas_100g', 'carbohidratos_100g', 'grasas_100g'];
 
@@ -87,11 +90,18 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
   }
 
   return (
-    <div className="modal-fondo" role="dialog" aria-modal="true" aria-label={editando ? 'Editar ingrediente' : 'Nuevo ingrediente'}>
-      <form className="modal formulario" onSubmit={enviar}>
-        <h2>{editando ? 'Editar ingrediente' : 'Nuevo ingrediente'}</h2>
-
-        <div className="rejilla-2">
+    <ModalFormulario
+      titulo={editando ? 'Editar ingrediente' : 'Nuevo ingrediente'}
+      ancho="medio"
+      onSubmit={enviar}
+      onCancelar={onCancelar}
+      guardando={guardando}
+      textoGuardar={editando ? 'Guardar cambios' : 'Guardar ingrediente'}
+      error={error}
+      onCerrarError={() => setError(null)}
+    >
+      <div className="form-cols">
+        <div className="form-col">
           <label className="campo"><span>Nombre</span>
             <input value={datos.nombre} onChange={poner('nombre')} required />
             <span className="texto-suave">Sé específico: "Pechuga de pollo", no "Pollo".</span></label>
@@ -100,47 +110,42 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
               <option value="">Sin categoría</option>
               {categorias.map((c) => <option key={c.id_categoria_ingrediente} value={c.id_categoria_ingrediente}>{c.nombre}</option>)}
             </select></label>
+
+          <section className="form-card">
+            <h3>Alérgenos que aporta</h3>
+            <div className="checks">
+              {catalogoAlergenos.map((a) => (
+                <label key={a.id_alergeno} className="campo-check">
+                  <input type="checkbox" checked={datos.alergenos.includes(a.nombre)} onChange={() => alternarAlergeno(a.nombre)} />
+                  <span>{a.nombre}</span>
+                </label>
+              ))}
+            </div>
+            <span className="texto-suave">Se sugieren al armar una receta; siempre se confirman a mano. No cubre contaminación cruzada.</span>
+          </section>
         </div>
 
-        <fieldset className="grupo">
-          <legend>Composición por 100 g, en crudo</legend>
-          <div className="rejilla-4">
-            <label className="campo"><span>Calorías (kcal)</span>
-              <input type="number" min="0" step="0.1" value={datos.calorias_100g} onChange={poner('calorias_100g')} /></label>
-            <label className="campo"><span>Proteínas (g)</span>
-              <input type="number" min="0" step="0.1" value={datos.proteinas_100g} onChange={poner('proteinas_100g')} /></label>
-            <label className="campo"><span>Carbohidratos (g)</span>
-              <input type="number" min="0" step="0.1" value={datos.carbohidratos_100g} onChange={poner('carbohidratos_100g')} /></label>
-            <label className="campo"><span>Grasas (g)</span>
-              <input type="number" min="0" step="0.1" value={datos.grasas_100g} onChange={poner('grasas_100g')} /></label>
-          </div>
-          <label className="campo-check">
-            <input type="checkbox" checked={datos.sin_cuantificar} onChange={marcar('sin_cuantificar')} />
-            <span>Sin cuantificar (sal, especias, condimentos): se ignora en el cálculo y no necesita gramos.</span>
-          </label>
-        </fieldset>
-
-        <fieldset className="grupo">
-          <legend>Alérgenos que aporta</legend>
-          <div className="checks">
-            {catalogoAlergenos.map((a) => (
-              <label key={a.id_alergeno} className="campo-check">
-                <input type="checkbox" checked={datos.alergenos.includes(a.nombre)} onChange={() => alternarAlergeno(a.nombre)} />
-                <span>{a.nombre}</span>
-              </label>
-            ))}
-          </div>
-          <span className="texto-suave">Se sugieren al armar una receta; siempre se confirman a mano. No cubre contaminación cruzada.</span>
-        </fieldset>
-
-        {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
-
-        <div className="modal-acciones">
-          <button type="button" className="boton boton-secundario" onClick={onCancelar} disabled={guardando}>Cancelar</button>
-          <button type="submit" className="boton boton-primario" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar ingrediente'}</button>
+        <div className="form-col">
+          <section className="form-card">
+            <h3>Composición por 100 g <span className="texto-suave">(en crudo)</span></h3>
+            <div className="rejilla-4">
+              <label className="campo"><span>Calorías (kcal)</span>
+                <input type="number" min="0" step="0.1" value={datos.calorias_100g} onChange={poner('calorias_100g')} /></label>
+              <label className="campo"><span>Proteínas (g)</span>
+                <input type="number" min="0" step="0.1" value={datos.proteinas_100g} onChange={poner('proteinas_100g')} /></label>
+              <label className="campo"><span>Carbohidratos (g)</span>
+                <input type="number" min="0" step="0.1" value={datos.carbohidratos_100g} onChange={poner('carbohidratos_100g')} /></label>
+              <label className="campo"><span>Grasas (g)</span>
+                <input type="number" min="0" step="0.1" value={datos.grasas_100g} onChange={poner('grasas_100g')} /></label>
+            </div>
+            <label className="campo-check">
+              <input type="checkbox" checked={datos.sin_cuantificar} onChange={marcar('sin_cuantificar')} />
+              <span>Sin cuantificar (sal, especias, condimentos): se ignora en el cálculo y no necesita gramos.</span>
+            </label>
+          </section>
         </div>
-      </form>
-    </div>
+      </div>
+    </ModalFormulario>
   );
 }
 
@@ -207,29 +212,27 @@ export default function IngredientesPage() {
   visibles.forEach((i) => (grupos.find((g) => g.id === (i.id_categoria_ingrediente ?? null)) || grupos[grupos.length - 1]).items.push(i));
   const num = (v) => (v === null ? '—' : Number(v));
 
+  const sinInfo = (lista || []).filter(estaIncompleto).length;
+
   return (
-    <>
-      <div className="barra-herramientas">
-        <div className="barra-estado">
-          <label className="campo campo-en-linea">
-            <span>Buscar</span>
-            <input type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
-          </label>
+    <div className="v2">
+      <div className="v2-barra">
+        <div className="v2-filtros">
+          <input type="search" className="v2-buscar" placeholder="Buscar ingrediente" aria-label="Buscar ingrediente"
+            value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
           <label className="campo-check">
-            <input
-              type="checkbox"
-              checked={soloIncompletos}
-              onChange={(e) => setSoloIncompletos(e.target.checked)}
-            />
-            <span>Solo sin información nutricional</span>
+            <input type="checkbox" checked={soloIncompletos} onChange={(e) => setSoloIncompletos(e.target.checked)} />
+            <span>Solo sin información nutricional{lista && sinInfo > 0 ? ` (${sinInfo})` : ''}</span>
           </label>
         </div>
-        <button className="boton boton-primario" onClick={() => { setAviso(null); setFormulario('nuevo'); }}>Nuevo ingrediente</button>
+        <button className="boton boton-primario boton-con-icono" onClick={() => { setAviso(null); setFormulario('nuevo'); }}>
+          <Plus size={16} aria-hidden="true" />Nuevo ingrediente
+        </button>
       </div>
 
-      {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
-      {aviso && <div className="mensaje mensaje-ok" role="status">{aviso}</div>}
-      {!lista && !error && <div className="estado-info">Cargando ingredientes…</div>}
+      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+      {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
+      {!lista && !error && <Cargando>Cargando ingredientes…</Cargando>}
       {lista && visibles.length === 0 && (
         <div className="estado-info">
           {soloIncompletos && !busqueda.trim()
@@ -251,35 +254,40 @@ export default function IngredientesPage() {
               aria-expanded={!estaColapsada(g.nombre)}
               aria-controls={`seccion-${g.nombre}`}
             >
-              <span className="ing-icono"><Icono size={22} strokeWidth={1.8} /></span>
+              <span className="ing-icono"><Icono size={18} strokeWidth={1.8} /></span>
               <div className="ing-cabeza-info">
-                <h2>{g.nombre}</h2>
-                <p className="texto-suave">{g.items.length} ingrediente(s)</p>
+                <h2>{g.nombre} <span>{g.items.length}</span></h2>
               </div>
               <span className="ing-chevron" aria-hidden="true">
-                {estaColapsada(g.nombre) ? '▸' : '▾'}
+                {estaColapsada(g.nombre) ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
               </span>
             </button>
 
             {!estaColapsada(g.nombre) && (
               <div className="tabla-contenedor ing-tabla" id={`seccion-${g.nombre}`}>
-                <table className="tabla">
+                <table className="tabla tabla-ingredientes">
                 <thead>
-                  <tr><th>Ingrediente</th><th>kcal</th><th>Prot. (g)</th><th>Carb. (g)</th><th>Grasas (g)</th><th>Alérgenos</th><th>Acciones</th></tr>
+                  <tr><th>Ingrediente</th><th className="col-num">kcal</th><th className="col-num">Prot. (g)</th><th className="col-num">Carb. (g)</th><th className="col-num">Grasas (g)</th><th>Alérgenos</th><th className="col-fin"><span className="v2-solo-lector">Acciones</span></th></tr>
                 </thead>
                 <tbody>
                   {g.items.map((i) => (
                     <tr key={i.id_ingrediente}>
-                      <td>
-                        <strong>{i.nombre}</strong>
-                        {i.sin_cuantificar && <span className="insignia insignia-neutra" style={{ marginLeft: 8 }}>Sin cuantificar</span>}
-                        <div className="texto-suave">{i.usos} preparación(es)</div>
+                      <td className="col-nombre">
+                        <div className="v2-persona">
+                          <strong>{i.nombre}{i.sin_cuantificar && <em className="ing-nota"> · sin cuantificar</em>}</strong>
+                          <span>{i.usos === 0 ? 'Sin uso en preparaciones' : `Usado en ${i.usos} ${i.usos === 1 ? 'preparación' : 'preparaciones'}`}</span>
+                        </div>
                       </td>
-                      <td>{num(i.calorias_100g)}</td><td>{num(i.proteinas_100g)}</td><td>{num(i.carbohidratos_100g)}</td><td>{num(i.grasas_100g)}</td>
-                      <td>{i.alergenos.length ? i.alergenos.join(', ') : <span className="texto-suave">—</span>}</td>
-                      <td className="celda-acciones">
-                        <button className="boton boton-secundario" onClick={() => { setAviso(null); setFormulario(i); }}>Editar</button>
-                        {i.usos === 0 && <button className="boton boton-peligro" onClick={() => borrar(i)}>Borrar</button>}
+                      <td className="col-num" data-etiqueta="kcal">{num(i.calorias_100g)}</td>
+                      <td className="col-num" data-etiqueta="Prot.">{num(i.proteinas_100g)}</td>
+                      <td className="col-num" data-etiqueta="Carb.">{num(i.carbohidratos_100g)}</td>
+                      <td className="col-num" data-etiqueta="Grasas">{num(i.grasas_100g)}</td>
+                      <td className="col-alerg">{i.alergenos.length ? i.alergenos.join(', ') : <span className="texto-suave">—</span>}</td>
+                      <td className="col-fin">
+                        <div className="v2-acciones">
+                          <button type="button" className="boton-texto" onClick={() => { setAviso(null); setFormulario(i); }}>Editar</button>
+                          {i.usos === 0 && <button type="button" className="boton-texto peligro" onClick={() => borrar(i)}>Borrar</button>}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -300,6 +308,6 @@ export default function IngredientesPage() {
           onGuardado={(mensaje) => { setFormulario(null); setAviso(mensaje); cargar(); }}
         />
       )}
-    </>
+    </div>
   );
 }

@@ -1,6 +1,27 @@
 const pool = require('../config/db');
 const { ApiError } = require('../middleware/errorHandler');
 const { hoyChile } = require('../utils/fecha');
+const fs = require('fs');
+const path = require('path');
+
+let registroListo = null;
+function asegurarRegistro() {
+  if (!registroListo) {
+    registroListo = (async () => {
+      const leer = (n) => fs.readFileSync(path.join(__dirname, `../../database/${n}`), 'utf8');
+      const { rows } = await pool.query("SELECT to_regclass('public.opinion_registro') AS t");
+      if (!rows[0].t) await pool.query(leer('migracion_sprint10.sql'));
+      const col = await pool.query(
+        "SELECT 1 FROM information_schema.columns WHERE table_name = 'opinion_registro' AND column_name = 'autor_correo'");
+      if (!col.rows.length) await pool.query(leer('migracion_sprint11.sql'));
+    })().catch((err) => {
+      registroListo = null;
+      console.error('No se pudo preparar opinion_registro. Ejecuta database/migracion_sprint10.sql.', err.message);
+      throw new ApiError(500, 'Falta actualizar la base de datos: ejecuta database/migracion_sprint10.sql.');
+    });
+  }
+  return registroListo;
+}
 
 async function perfil(id_usuario) {
   const alergias = (await pool.query(
@@ -56,19 +77,71 @@ async function quitarFavorito(id_usuario, id_preparacion) {
   await pool.query('DELETE FROM favorito WHERE id_usuario = $1 AND id_preparacion = $2', [id_usuario, id_preparacion]);
 }
 
-async function calificar(id_usuario, id_preparacion, estrellas, comentario) {
+async function contextoDeMenu(client, id_preparacion, categoria) {
+  const { rows } = await client.query(
+    `SELECT m.fecha, c.nombre AS categoria
+     FROM menu_preparacion mp
+     JOIN menu m ON m.id_menu = mp.id_menu
+     LEFT JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
+     WHERE mp.id_preparacion = $1 AND m.publicado = TRUE AND m.fecha <= $2
+     ORDER BY m.fecha DESC LIMIT 8`,
+    [id_preparacion, hoyChile()]
+  );
+  if (!rows.length) return { fecha_menu: null, categoria: null };
+  const fecha = rows[0].fecha;
+  const delDia = rows.filter((r) => r.fecha === fecha).map((r) => r.categoria).filter(Boolean);
+  let elegida = null;
+  if (categoria && delDia.includes(categoria)) elegida = categoria;
+  else if (new Set(delDia).size === 1) elegida = delDia[0];
+  return { fecha_menu: fecha, categoria: elegida };
+}
+
+async function calificar(id_usuario, id_preparacion, estrellas, comentario, categoria) {
   await asegurarPreparacion(id_preparacion);
-  const { rows } = await pool.query(
-    `INSERT INTO calificacion (id_usuario, id_preparacion, estrellas, comentario) VALUES ($1, $2, $3, $4)
-     ON CONFLICT (id_usuario, id_preparacion) DO UPDATE
-       SET estrellas = EXCLUDED.estrellas, comentario = EXCLUDED.comentario, actualizado_en = CURRENT_TIMESTAMP
-     RETURNING id_preparacion, estrellas, comentario`,
-    [id_usuario, id_preparacion, estrellas, comentario || null]);
-  return rows[0];
+  await asegurarRegistro();
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows } = await client.query(
+      `INSERT INTO calificacion (id_usuario, id_preparacion, estrellas, comentario) VALUES ($1, $2, $3, $4)
+       ON CONFLICT (id_usuario, id_preparacion) DO UPDATE
+         SET estrellas = EXCLUDED.estrellas, comentario = EXCLUDED.comentario, actualizado_en = CURRENT_TIMESTAMP
+       RETURNING id_preparacion, estrellas, comentario`,
+      [id_usuario, id_preparacion, estrellas, comentario || null]);
+    await client.query(
+      `UPDATE opinion_registro SET estado = 'editada', cerrada_en = CURRENT_TIMESTAMP
+       WHERE id_usuario = $1 AND id_preparacion = $2 AND estado = 'vigente'`, [id_usuario, id_preparacion]);
+    const ctx = await contextoDeMenu(client, id_preparacion, categoria);
+    await client.query(
+      `INSERT INTO opinion_registro (id_usuario, autor_nombre, autor_correo, id_preparacion, categoria, fecha_menu, estrellas, comentario)
+       VALUES ($1, (SELECT nombre FROM usuario WHERE id_usuario = $1), (SELECT email FROM usuario WHERE id_usuario = $1), $2, $3, $4, $5, $6)`,
+      [id_usuario, id_preparacion, ctx.categoria, ctx.fecha_menu, estrellas, comentario || null]);
+    await client.query('COMMIT');
+    return rows[0];
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 async function quitarCalificacion(id_usuario, id_preparacion) {
-  await pool.query('DELETE FROM calificacion WHERE id_usuario = $1 AND id_preparacion = $2', [id_usuario, id_preparacion]);
+  await asegurarRegistro();
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM calificacion WHERE id_usuario = $1 AND id_preparacion = $2', [id_usuario, id_preparacion]);
+    await client.query(
+      `UPDATE opinion_registro SET estado = 'eliminada', cerrada_en = CURRENT_TIMESTAMP
+       WHERE id_usuario = $1 AND id_preparacion = $2 AND estado = 'vigente'`, [id_usuario, id_preparacion]);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 async function alertas(id_usuario, id_sede) {
@@ -133,4 +206,62 @@ async function opinionesDePreparacion(id_preparacion) {
   return rows;
 }
 
-module.exports = { perfil, fijarAlergias, fijarCategoriaPreferida, marcarFavorito, quitarFavorito, calificar, quitarCalificacion, alertas, resumenOpiniones, opinionesDePreparacion };
+async function listarOpiniones({ desde, hasta, id_preparacion, categoria, estado, estrellas, soloConComentario, limite = 500 }) {
+  await asegurarRegistro();
+  const cond = ['TRUE'];
+  const par = [];
+  const p = (v) => { par.push(v); return `$${par.length}`; };
+  if (desde) cond.push(`o.creado_en::date >= ${p(desde)}::date`);
+  if (hasta) cond.push(`o.creado_en::date <= ${p(hasta)}::date`);
+  if (id_preparacion) cond.push(`o.id_preparacion = ${p(id_preparacion)}`);
+  if (categoria) cond.push(`o.categoria = ${p(categoria)}`);
+  if (estado) cond.push(`o.estado = ${p(estado)}`);
+  if (estrellas) cond.push(`o.estrellas = ${p(estrellas)}`);
+  if (soloConComentario) cond.push(`o.comentario IS NOT NULL AND o.comentario <> ''`);
+  const donde = cond.join(' AND ');
+
+  const opiniones = (await pool.query(
+    `SELECT o.id_opinion, o.id_preparacion, p.nombre AS preparacion, o.categoria, o.fecha_menu, o.estrellas,
+            o.comentario, o.autor_nombre AS autor, o.autor_correo AS correo, o.estado, o.creado_en, o.cerrada_en
+     FROM opinion_registro o JOIN preparacion p ON p.id_preparacion = o.id_preparacion
+     WHERE ${donde}
+     ORDER BY o.creado_en DESC, o.id_opinion DESC LIMIT ${Number(limite)}`, par)).rows;
+
+  const resumen = (await pool.query(
+    `SELECT COUNT(*)::int AS total,
+            COUNT(*) FILTER (WHERE o.comentario IS NOT NULL AND o.comentario <> '')::int AS con_comentario,
+            COUNT(*) FILTER (WHERE o.estado = 'eliminada')::int AS eliminadas,
+            COUNT(*) FILTER (WHERE o.estado = 'editada')::int AS editadas,
+            ROUND(AVG(o.estrellas) FILTER (WHERE o.estado = 'vigente'), 1)::float8 AS promedio_vigentes
+     FROM opinion_registro o WHERE ${donde}`, par)).rows[0];
+
+  const preparaciones = (await pool.query(
+    `SELECT p.id_preparacion, p.nombre, COUNT(*)::int AS total
+     FROM opinion_registro o JOIN preparacion p ON p.id_preparacion = o.id_preparacion
+     GROUP BY p.id_preparacion, p.nombre ORDER BY p.nombre`)).rows;
+
+  return { resumen, opiniones, preparaciones };
+}
+
+async function listarFavoritos({ desde, hasta, id_preparacion }) {
+  const cond = ['TRUE']; const par = [];
+  const p = (v) => { par.push(v); return `$${par.length}`; };
+  if (desde) cond.push(`f.creado_en::date >= ${p(desde)}::date`);
+  if (hasta) cond.push(`f.creado_en::date <= ${p(hasta)}::date`);
+  if (id_preparacion) cond.push(`f.id_preparacion = ${p(id_preparacion)}`);
+  const donde = cond.join(' AND ');
+  const favoritos = (await pool.query(
+    `SELECT f.id_preparacion, p.nombre AS preparacion, u.nombre AS autor, u.email AS correo, f.creado_en
+     FROM favorito f JOIN preparacion p ON p.id_preparacion = f.id_preparacion JOIN usuario u ON u.id_usuario = f.id_usuario
+     WHERE ${donde} ORDER BY f.creado_en DESC LIMIT 5000`, par)).rows;
+  const por_preparacion = (await pool.query(
+    `SELECT p.id_preparacion, p.nombre, COUNT(*)::int AS total
+     FROM favorito f JOIN preparacion p ON p.id_preparacion = f.id_preparacion
+     WHERE ${donde} GROUP BY p.id_preparacion, p.nombre ORDER BY total DESC, p.nombre`, par)).rows;
+  const resumen = (await pool.query(
+    `SELECT COUNT(*)::int AS total, COUNT(DISTINCT f.id_usuario)::int AS estudiantes, COUNT(DISTINCT f.id_preparacion)::int AS preparaciones
+     FROM favorito f WHERE ${donde}`, par)).rows[0];
+  return { resumen, favoritos, por_preparacion };
+}
+
+module.exports = { listarFavoritos, listarOpiniones, perfil, fijarAlergias, fijarCategoriaPreferida, marcarFavorito, quitarFavorito, calificar, quitarCalificacion, alertas, resumenOpiniones, opinionesDePreparacion };

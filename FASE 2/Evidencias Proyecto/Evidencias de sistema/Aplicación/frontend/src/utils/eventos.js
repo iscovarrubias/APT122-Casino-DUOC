@@ -1,6 +1,9 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+const REINTENTO_MS = 15000;
+
 let fuente = null;
+let temporizador = null;
 const suscriptores = new Set();
 
 function conectar() {
@@ -15,10 +18,23 @@ function conectar() {
   });
 
   fuente.addEventListener('error', () => {
+    if (fuente && fuente.readyState === EventSource.CLOSED) {
+      fuente = null;
+      if (suscriptores.size > 0 && !temporizador) {
+        temporizador = setTimeout(() => {
+          temporizador = null;
+          if (suscriptores.size > 0) conectar();
+        }, REINTENTO_MS);
+      }
+    }
   });
 }
 
 function desconectar() {
+  if (temporizador) {
+    clearTimeout(temporizador);
+    temporizador = null;
+  }
   if (fuente) {
     fuente.close();
     fuente = null;

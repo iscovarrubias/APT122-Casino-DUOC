@@ -1,6 +1,8 @@
+import Cargando from './Cargando';
 import { useState, useEffect } from 'react';
 import { consultarOpinionesDePlato } from '../api/gestion';
 import { Estrellas } from './Opinion';
+import Mensaje from './Mensaje';
 
 export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
   const [datos, setDatos] = useState(null);
@@ -26,12 +28,12 @@ export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
   }
 
   return (
-    <div className="modal-fondo" role="dialog" aria-modal="true" aria-label={`Opiniones de ${nombrePlato}`}>
+    <div className="modal-fondo v2" role="dialog" aria-modal="true" aria-label={`Opiniones de ${nombrePlato}`}>
       <div className="modal">
         <h2>Opiniones de "{nombrePlato}"</h2>
 
-        {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
-        {!datos && !error && <p className="texto-suave">Cargando opiniones…</p>}
+        {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+        {!datos && !error && <Cargando>Cargando opiniones…</Cargando>}
 
         {datos && opiniones.length === 0 && (
           <p className="texto-suave">

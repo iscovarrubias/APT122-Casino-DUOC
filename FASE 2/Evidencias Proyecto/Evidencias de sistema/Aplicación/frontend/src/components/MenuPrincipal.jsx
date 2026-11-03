@@ -5,44 +5,15 @@ import Opinion from './Opinion';
 import { useEstudiante } from '../utils/estudiante';
 import TablaNutricional from './TablaNutricional';
 import AlergenoPills from './AlergenoPills';
-import { Utensils, Salad, CakeSlice, CupSoda } from 'lucide-react';
-import { formatearPrecio, calcularCaloriasTotales, calcularPrecioTotal, colorDeCategoria, formatearHora } from '../utils/formato';
+import ImagenOIcono from './ImagenOIcono';
+import { formatearPrecio, calcularCaloriasTotales, calcularPrecioTotal, colorDeCategoria, formatearHora, estadoEfectivo, NO_DISPONIBLE } from '../utils/formato';
 import { useState } from 'react';
 
-const ICONOS_COMPONENTE = {
-  'Plato Principal': Utensils,
-  Entrada: Salad,
-  Postre: CakeSlice,
-  Bebida: CupSoda,
-};
-
-function IconoComponente({ tipo, tamano = 40 }) {
-  const Icono = ICONOS_COMPONENTE[tipo] || Utensils;
-  return <Icono size={tamano} strokeWidth={1.3} />;
-}
-
-function ImagenOIcono({ url, tipo, tamano }) {
-  const [fallo, setFallo] = useState(false);
-
-  if (url && !fallo) {
-    return (
-      <img
-        src={url}
-        alt=""
-        className="card-foto"
-        loading="lazy"
-        onError={() => setFallo(true)}
-      />
-    );
-  }
-  return <IconoComponente tipo={tipo} tamano={tamano} />;
-}
-
 function Restante({ item }) {
-  if (item.cantidad_restante == null) return null;
+  if (item.cantidad_restante == null || NO_DISPONIBLE.includes(estadoEfectivo(item))) return null;
   return (
     <span className="etiqueta" style={{ marginTop: 6 }}>
-      QUEDAN {item.cantidad_restante} · ACTUALIZADO {formatearHora(item.stock_actualizado_en)}
+      Quedan {item.cantidad_restante} · actualizado {formatearHora(item.stock_actualizado_en)}
     </span>
   );
 }
@@ -70,12 +41,12 @@ export default function MenuPrincipal({ categoria, componentes }) {
     <div style={{ '--accent-categoria': color, '--accent-categoria-light': light }}>
       <AvisoAlergias componentes={componentes} />
       <div className="contenido-principal">
-        <div className="card-principal">
+        <div className={`card-principal ${NO_DISPONIBLE.includes(estadoEfectivo(principal)) ? 'no-disponible' : ''}`}>
           <div className="card-imagen">
             <ImagenOIcono url={principal.imagen_url} tipo={principal.componente} tamano={56} />
             <span className="badge-categoria">{categoria}</span>
             <div className="badge-precio">
-              <span className="precio-label">PRECIO DEL COMBO</span>
+              <span className="precio-label">Precio del combo</span>
               <span className="precio-valor">{formatearPrecio(precioTotal)}</span>
             </div>
           </div>
@@ -90,13 +61,12 @@ export default function MenuPrincipal({ categoria, componentes }) {
             <div className="stats-row">
               <div className="stat">
                 <span className="valor">{caloriasTotales != null ? `${caloriasTotales} kcal` : 'No disponible'}</span>
-                <span className="etiqueta">CALORÍAS TOTALES DEL COMBO</span>
+                <span className="etiqueta">Calorías totales del combo</span>
               </div>
               <div className="stat-divider" />
               <div className="stat">
-                <EstadoBadge estado={principal.disponibilidad} />
+                <EstadoBadge estado={estadoEfectivo(principal)} />
                 <Restante item={principal} />
-                <span className="etiqueta" style={{ marginTop: 6 }}>DISPONIBILIDAD</span>
               </div>
             </div>
             <button
@@ -124,16 +94,16 @@ export default function MenuPrincipal({ categoria, componentes }) {
           <h3>Alérgenos</h3>
           <AlergenoPills alergenos={principal.alergenos} resaltar={alergias} />
 
-          <Opinion item={principal} />
+          <Opinion item={{ ...principal, categoria }} />
         </div>
       </div>
 
 {compartidos.length > 0 && (
   <section className="seccion-incluye">
-    <h2>Incluye:</h2>
+    <h2>Incluye en el combo</h2>
     <div className="grid-incluye">
       {compartidos.map((c) => (
-        <div key={c.id_menu_preparacion} className="card-incluye">
+        <div key={c.id_menu_preparacion} className={`card-incluye ${NO_DISPONIBLE.includes(estadoEfectivo(c)) ? 'no-disponible' : ''}`}>
           <div className="card-imagen">
             <ImagenOIcono url={c.imagen_url} tipo={c.componente} tamano={40} />
           </div>
@@ -149,13 +119,12 @@ export default function MenuPrincipal({ categoria, componentes }) {
                 <span className="valor">
                   {c.informacion_nutricional ? `${c.informacion_nutricional.calorias} kcal` : 'No disponible'}
                 </span>
-                <span className="etiqueta">CALORÍAS</span>
+                <span className="etiqueta">Calorías</span>
               </div>
               <div className="stat-divider" />
               <div className="stat">
-                <EstadoBadge estado={c.disponibilidad} />
+                <EstadoBadge estado={estadoEfectivo(c)} />
                 <Restante item={c} />
-                <span className="etiqueta" style={{ marginTop: 6 }}>DISPONIBILIDAD</span>
               </div>
             </div>
 
@@ -171,7 +140,7 @@ export default function MenuPrincipal({ categoria, componentes }) {
 
             <h4 className="subtitulo">Alérgenos</h4>
             <AlergenoPills alergenos={c.alergenos} resaltar={alergias} />
-            <Opinion item={c} />
+            <Opinion item={{ ...c, categoria }} />
           </div>
         </div>
       ))}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { useEstudiante } from '../utils/estudiante';
 import OpinionModal from './OpinionModal';
+import Mensaje from './Mensaje';
 
 export function Estrellas({ valor, tam = 16 }) {
   const llenas = Math.round(Number(valor) || 0);
@@ -39,7 +40,7 @@ export default function Opinion({ item }) {
     setGuardando(true);
     setError(null);
     try {
-      await guardarCalificacion(item.id_preparacion, estrellas, comentario.trim() || undefined);
+      await guardarCalificacion(item.id_preparacion, estrellas, comentario.trim() || undefined, item.categoria || undefined);
       setAbierto(false);
     } catch (err) {
       setError(err.message);
@@ -87,7 +88,7 @@ export default function Opinion({ item }) {
               {mia ? 'Editar mi calificación' : 'Calificar'}
             </button>
             {mia && (
-              <button type="button" className="boton boton-peligro boton-chico" onClick={borrar} disabled={guardando}>
+              <button type="button" className="boton-texto peligro" onClick={borrar} disabled={guardando}>
                 Borrar
               </button>
             )}
@@ -121,7 +122,7 @@ export default function Opinion({ item }) {
           <p className="texto-suave" style={{ margin: 0, fontSize: '0.78rem' }}>
             Tu opinión es pública: otros estudiantes verán tu nombre, tu calificación y tu comentario.
           </p>
-          {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
+          {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
           <div className="en-linea">
             <button type="submit" className="boton boton-primario boton-chico" disabled={guardando}>
               {guardando ? 'Guardando…' : 'Guardar'}

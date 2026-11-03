@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import './panel.css';
 import './responsive.css';
+import './diseno.css';
 import AuthProvider from './context/AuthProvider';
 import { EstudianteProvider } from './utils/estudiante';
 import { useAuth } from './context/auth-context';
@@ -8,23 +9,35 @@ import { useRuta, navegar } from './ruteo/useRuta';
 import { PERMISOS, rutaInicial } from './ruteo/rutas';
 import VistaPublica from './pages/VistaPublica';
 import LoginPage from './pages/LoginPage';
+import AccesoPage from './pages/AccesoPage';
 import PanelLayout from './components/PanelLayout';
-import KioscoPage from './pages/KioscoPage';
-import CajaPage from './pages/CajaPage';
-import PlanificacionPage from './pages/PlanificacionPage';
-import IngredientesPage from './pages/IngredientesPage';
-import PreparacionesPage from './pages/PreparacionesPage';
-import UsuariosPage from './pages/UsuariosPage';
-import AnalisisPage from './pages/AnalisisPage';
+import PantallaCarga from './components/PantallaCarga';
+import { debeMostrarSplash, marcarSplashVisto, SPLASH_DURACION_MS, SPLASH_SALIDA_MS } from './utils/splash';
+const KioscoPage = lazy(() => import('./pages/KioscoPage'));
+const CajaPage = lazy(() => import('./pages/CajaPage'));
+const PlanificacionPage = lazy(() => import('./pages/PlanificacionPage'));
+const IngredientesPage = lazy(() => import('./pages/IngredientesPage'));
+const PreparacionesPage = lazy(() => import('./pages/PreparacionesPage'));
+const UsuariosPage = lazy(() => import('./pages/UsuariosPage'));
+const AnalisisPage = lazy(() => import('./pages/AnalisisPage'));
+import Mensaje from './components/Mensaje';
+import Cargando from './components/Cargando';
+import NoEncontrada from './components/NoEncontrada';
+
+const NOMBRE_SITIO = 'Casinos DUOC UC';
+
+function useTitulo(titulo) {
+  useEffect(() => { document.title = titulo ? `${titulo} · ${NOMBRE_SITIO}` : NOMBRE_SITIO; }, [titulo]);
+}
 
 const PAGINAS = {
-  '/panel/caja': { titulo: 'Caja', Pagina: CajaPage },
-  '/panel/kiosco': { titulo: 'Disponibilidad de hoy', Pagina: KioscoPage },
-  '/panel/menu': { titulo: 'Planificación del menú', Pagina: PlanificacionPage },
-  '/panel/ingredientes': { titulo: 'Ingredientes', Pagina: IngredientesPage },
-  '/panel/preparaciones': { titulo: 'Preparaciones', Pagina: PreparacionesPage },
-  '/panel/usuarios': { titulo: 'Usuarios', Pagina: UsuariosPage },
-  '/panel/analisis': { titulo: 'Análisis de la oferta', Pagina: AnalisisPage },
+  '/panel/caja': { titulo: 'Caja', descripcion: 'Toca el combo que vendes. Cada toque descuenta una porción del plato y de los acompañamientos.', Pagina: CajaPage },
+  '/panel/kiosco': { titulo: 'Disponibilidad de hoy', ayuda: 'Controla la jornada: porciones que quedan, ventas del día y cierre con conteo de sobrantes.', Pagina: KioscoPage },
+  '/panel/menu': { titulo: 'Planificación del menú', ayuda: 'Define qué se sirve cada día, en qué cantidad y a qué precio. El menú solo lo ven los estudiantes cuando lo publicas.', Pagina: PlanificacionPage },
+  '/panel/ingredientes': { titulo: 'Ingredientes', ayuda: 'Catálogo base con valores nutricionales por 100 g. De aquí se calculan las preparaciones.', Pagina: IngredientesPage },
+  '/panel/preparaciones': { titulo: 'Preparaciones', ayuda: 'Recetas del casino con su información nutricional y alérgenos. Lo que se desactiva deja de poder planificarse.', Pagina: PreparacionesPage },
+  '/panel/usuarios': { titulo: 'Usuarios', ayuda: 'Cuentas del personal del casino. Los estudiantes consultan el menú sin cuenta.', Pagina: UsuariosPage },
+  '/panel/analisis': { titulo: 'Análisis de la oferta', ayuda: 'Qué se vende, qué se agota y qué opinan los estudiantes. Elige un período y compara por menú o por preparación.', Pagina: AnalisisPage },
 };
 
 function Redirigir({ a }) {
@@ -37,13 +50,20 @@ function Enrutador() {
   const { usuario, kiosco, cargando } = useAuth();
   const [ocultarDesactivadas, setOcultarDesactivadas] = useState(false);
 
+  const tituloPagina = ruta === '/login' ? 'Iniciar sesión'
+    : ruta.startsWith('/panel') ? (PAGINAS[ruta]?.titulo || 'Panel')
+    : ruta === '/' ? 'Menú del día' : 'Página no encontrada';
+  useTitulo(tituloPagina);
+
+  if (ruta.startsWith('/acceso')) return <AccesoPage />;
+
   if (ruta === '/login') {
-    if (cargando) return <div className="estado-info">Cargando…</div>;
+    if (cargando) return <PantallaCarga mensaje="Cargando…" />;
     return usuario ? <Redirigir a={rutaInicial(usuario.rol, kiosco)} /> : <LoginPage />;
   }
 
   if (ruta.startsWith('/panel')) {
-    if (cargando) return <div className="estado-info">Comprobando tu sesión…</div>;
+    if (cargando) return <PantallaCarga mensaje="Comprobando tu sesión…" />;
     if (!usuario) return <Redirigir a="/login" />;
     if (usuario.rol === 'Estudiante') return <Redirigir a="/" />;
 
@@ -59,46 +79,54 @@ function Enrutador() {
     if (!PERMISOS[ruta].includes(usuario.rol)) {
       return (
         <PanelLayout ruta={ruta} titulo="Sin permiso">
-          <div className="mensaje mensaje-error" role="alert">
+          <Mensaje tipo="error" titulo="Sin permiso">
             Tu rol (<strong>{usuario.rol}</strong>) no tiene acceso a esta sección.
-          </div>
+          </Mensaje>
           <button className="boton boton-primario" onClick={() => navegar(rutaInicial(usuario.rol, false))}>Ir a mi panel</button>
         </PanelLayout>
       );
     }
 
-    const { titulo, Pagina } = pagina;
+    const { titulo, descripcion, ayuda, Pagina } = pagina;
     const esPreparaciones = ruta === '/panel/preparaciones';
-    const accionesTitulo = esPreparaciones ? (
-      <label className="campo-check">
-        <input
-          type="checkbox"
-          checked={ocultarDesactivadas}
-          onChange={(e) => setOcultarDesactivadas(e.target.checked)}
-        />
-        <span>Ocultar desactivadas</span>
-      </label>
-    ) : null;
 
     return (
-      <PanelLayout ruta={ruta} titulo={titulo} accionesTitulo={accionesTitulo}>
-        <Pagina
-          soloActivas={esPreparaciones ? ocultarDesactivadas : undefined}
-          setSoloActivas={esPreparaciones ? setOcultarDesactivadas : undefined}
-        />
+      <PanelLayout ruta={ruta} titulo={titulo} descripcion={descripcion} ayuda={ayuda}>
+        <div className="pagina" key={ruta}>
+          <Suspense fallback={<Cargando>Cargando…</Cargando>}>
+            <Pagina
+              soloActivas={esPreparaciones ? ocultarDesactivadas : undefined}
+              setSoloActivas={esPreparaciones ? setOcultarDesactivadas : undefined}
+            />
+          </Suspense>
+        </div>
       </PanelLayout>
     );
   }
 
+  if (ruta !== '/') return <NoEncontrada />;
   return <VistaPublica />;
 }
 
 export default function App() {
+  const [splash, setSplash] = useState(() => (debeMostrarSplash() ? 'visible' : false));
+
+  useEffect(() => {
+    if (!splash) return undefined;
+    marcarSplashVisto();
+    const t1 = setTimeout(() => setSplash('saliendo'), SPLASH_DURACION_MS);
+    const t2 = setTimeout(() => setSplash(false), SPLASH_DURACION_MS + SPLASH_SALIDA_MS);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
   return (
     <AuthProvider>
       <EstudianteProvider>
         <Enrutador />
       </EstudianteProvider>
+      {splash && (
+        <PantallaCarga forzada saliendo={splash === 'saliendo'} duracionMs={SPLASH_DURACION_MS} mensaje="Cargando Casinos DUOC UC…" />
+      )}
     </AuthProvider>
   );
 }

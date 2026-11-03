@@ -8,7 +8,18 @@ const router = express.Router();
 
 const PERSONAL = [autenticar, requiereRol('Personal Casino', 'Administrador', 'Nutricionista')];
 
+const VIDA_MAXIMA_CONEXION_MS = 15 * 60 * 1000;
+
 router.get('/eventos', (req, res) => {
+  const desuscribir = eventos.suscribir(req.ip, () => {
+    res.write('event: cambio\ndata: {}\n\n');
+  });
+
+  if (!desuscribir) {
+    res.set('Retry-After', '30');
+    return res.status(429).json({ error: 'Demasiadas conexiones en tiempo real. Intenta de nuevo en unos segundos.' });
+  }
+
   res.set({
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -16,19 +27,18 @@ router.get('/eventos', (req, res) => {
     'X-Accel-Buffering': 'no',
   });
   res.flushHeaders?.();
-
-  res.write(': conectado\n\n');
+  res.write('retry: 5000\n\n: conectado\n\n');
 
   const keepAlive = setInterval(() => res.write(': keep-alive\n\n'), 25000);
+  const vencimiento = setTimeout(() => res.end(), VIDA_MAXIMA_CONEXION_MS);
 
-  const desuscribir = eventos.suscribir(() => {
-    res.write('event: cambio\ndata: {}\n\n');
-  });
-
-  req.on('close', () => {
+  const cerrar = () => {
     clearInterval(keepAlive);
+    clearTimeout(vencimiento);
     desuscribir();
-  });
+  };
+  req.on('close', cerrar);
+  res.on('error', cerrar);
 });
 
 router.get('/hoy', controller.hoy);

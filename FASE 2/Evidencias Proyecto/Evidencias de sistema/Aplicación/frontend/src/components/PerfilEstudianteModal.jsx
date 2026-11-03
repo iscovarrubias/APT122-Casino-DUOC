@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useEstudiante } from '../utils/estudiante';
 import { pedir } from '../api/cliente';
-import { useAuth } from '../context/auth-context';
+import Mensaje from './Mensaje';
 
 export default function PerfilEstudianteModal({ onCerrar }) {
-  const { usuario } = useAuth();
   const { alergias, favoritos, quitarFavorito, categoriaPreferida, guardarCategoriaPreferida } = useEstudiante();
   const [seleccion, setSeleccion] = useState(alergias);
   const [catalogo, setCatalogo] = useState([]);
@@ -56,7 +55,7 @@ export default function PerfilEstudianteModal({ onCerrar }) {
   }
 
   return (
-    <div className="modal-fondo" role="dialog" aria-modal="true" aria-label="Mi perfil">
+    <div className="modal-fondo v2" role="dialog" aria-modal="true" aria-label="Mi perfil">
       <div className="modal">
         <h2>Mi perfil</h2>
         <p className="texto-suave">
@@ -81,8 +80,8 @@ export default function PerfilEstudianteModal({ onCerrar }) {
               </button>
             ))}
           </div>
-          {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
-          {ok && <div className="mensaje mensaje-ok" role="status">Alergias guardadas.</div>}
+          {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+          {ok && <Mensaje tipo="ok" onCerrar={() => setOk(false)}>Alergias guardadas.</Mensaje>}
           <div className="en-linea">
             <button className="boton boton-primario" onClick={guardar} disabled={guardando}>
               {guardando ? 'Guardando…' : 'Guardar alergias'}
@@ -111,7 +110,7 @@ export default function PerfilEstudianteModal({ onCerrar }) {
               </button>
             ))}
           </div>
-          {okCat && <div className="mensaje mensaje-ok" role="status">Categoría preferida guardada.</div>}
+          {okCat && <Mensaje tipo="ok" onCerrar={() => setOkCat(false)}>Categoría preferida guardada.</Mensaje>}
           <div className="en-linea">
             <button className="boton boton-primario" onClick={guardarCategoria} disabled={guardandoCat}>
               {guardandoCat ? 'Guardando…' : 'Guardar categoría'}
@@ -135,7 +134,7 @@ export default function PerfilEstudianteModal({ onCerrar }) {
               <span>{f.nombre}</span>
               <button
                 type="button"
-                className="boton boton-peligro boton-chico"
+                className="boton-texto peligro"
                 onClick={() => quitarFavorito(f.id_preparacion)}
               >
                 Quitar

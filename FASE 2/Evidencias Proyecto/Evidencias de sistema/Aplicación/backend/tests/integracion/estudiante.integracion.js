@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('../soporte/entorno');
 process.env.SSO_SIMULADO = 'true';
 process.env.HORA_CIERRE_AUTOMATICO = '23:59';
 const assert = require('node:assert/strict');
@@ -41,14 +41,14 @@ const servidor = app.listen(PUERTO, async () => {
     };
     const caj = await crear('Cajero'); const nut = await crear('Nutricionista');
 
-    assert.equal((await llamar('GET', '/auth/config')).d.sso_simulado, true);
-    assert.equal((await llamar('POST', '/auth/duoc', { email: 'admin@duocuc.cl' })).s, 403); ok('el SSO simulado NO entra a cuentas del personal (403)');
+    assert.equal((await llamar('GET', '/auth/config')).d.sso_habilitado, true);
+    assert.equal((await llamar('POST', '/auth/duoc', { email: 'admin@duocuc.cl' })).s, 403); ok('el acceso con cuenta DUOC NO entra a cuentas del personal (403)');
     assert.equal((await llamar('POST', '/auth/duoc', { email: 'alguien@gmail.com' })).s, 400); ok('solo acepta correos @duocuc.cl (400)');
     process.env.SSO_SIMULADO = 'false';
-    assert.equal((await llamar('POST', '/auth/duoc', { email: 'estudiante@duocuc.cl' })).s, 404); ok('con SSO_SIMULADO apagado no existe (404)');
+    assert.equal((await llamar('POST', '/auth/duoc', { email: 'estudiante@duocuc.cl' })).s, 404); ok('con el acceso DUOC apagado no existe (404)');
     process.env.SSO_SIMULADO = 'true';
     const e1 = await llamar('POST', '/auth/duoc', { email: 'estudiante@duocuc.cl' });
-    assert.equal(e1.s, 200); assert.equal(e1.d.usuario.rol, 'Estudiante'); assert.equal(e1.d.simulado, true);
+    assert.equal(e1.s, 200); assert.equal(e1.d.usuario.rol, 'Estudiante');
     const nuevo = await llamar('POST', '/auth/duoc', { email: `nuevo.alumno${suf}@duocuc.cl` });
     assert.equal(nuevo.s, 200); assert.equal(nuevo.d.usuario.nombre, `Nuevo Alumno${suf}`); ok('estudiante existente y estudiante nuevo entran sin contraseña');
     const est1 = e1.d.token; const est2 = nuevo.d.token;
@@ -72,6 +72,7 @@ const servidor = app.listen(PUERTO, async () => {
     const pid = id('Pollo arvejado con arroz');
     await pool.query('DELETE FROM calificacion WHERE id_preparacion = $1', [pid]);
 
+    await pool.query("DELETE FROM preferencia_alergeno WHERE id_usuario IN (SELECT id_usuario FROM usuario WHERE email = 'estudiante@duocuc.cl')");
     assert.deepEqual((await llamar('GET', '/estudiante/perfil', null, est1)).d.alergias, []);
     let r = await llamar('PUT', '/estudiante/alergias', { alergenos: ['Gluten', 'Lácteos'] }, est1);
     assert.equal(r.s, 200); assert.deepEqual((await llamar('GET', '/estudiante/perfil', null, est1)).d.alergias, ['Gluten', 'Lácteos']);
@@ -97,6 +98,11 @@ const servidor = app.listen(PUERTO, async () => {
     al = (await llamar('GET', '/estudiante/alertas', null, est1)).d;
     assert.equal(al.find((a) => a.id_preparacion === pid).cantidad_restante, 10); ok('alerta: el favorito está hoy en el menú y cuánto queda');
     assert.equal((await llamar('DELETE', `/estudiante/calificaciones/${pid}`, null, est2)).s, 200);
+    const reg = (await llamar('GET', `/opiniones/detalle?id_preparacion=${pid}`, null, adm)).d;
+    assert.ok(reg.opiniones.some((o) => o.estado === 'eliminada'), 'la opinión eliminada se conserva para el administrador');
+    assert.ok(reg.opiniones.some((o) => o.estado === 'editada'), 'la versión editada se conserva');
+    assert.equal((await llamar('GET', '/opiniones/detalle', null, est1)).s, 403);
+    assert.equal((await llamar('GET', '/opiniones/detalle?estado=otra', null, adm)).s, 400); ok('las opiniones eliminadas o editadas se conservan en el historial del administrador');
 
     r = await llamar('POST', '/menu/copiar', { copias: [{ origen: hoy, destino }] }, nut);
     assert.equal(r.d.copiados, 1);

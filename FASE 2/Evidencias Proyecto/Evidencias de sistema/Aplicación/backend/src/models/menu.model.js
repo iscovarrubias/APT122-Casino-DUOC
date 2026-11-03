@@ -20,6 +20,7 @@ async function menuDelDia(fecha, categoria) {
         CASE WHEN mp.id_categoria_menu IS NULL THEN 0 ELSE COALESCE(mp.precio, p.precio) END AS precio, p.imagen_url,
         c.nombre AS categoria, t.nombre AS componente, mp.cantidad_planificada,
         COALESCE(d.estado, 'disponible') AS disponibilidad,
+        j.estado AS jornada_estado,
         d.registrado_en AS disponibilidad_actualizada_en,
         CASE WHEN j.estado = 'abierta' THEN GREATEST(s.restante, 0) END AS cantidad_restante,
         CASE WHEN j.estado = 'abierta' THEN s.actualizado END AS stock_actualizado_en,
@@ -93,8 +94,8 @@ async function obtenerMenuPorFecha(fecha, id_sede = 1) {
 async function precioReciente(id_categoria_menu) {
   const { rows } = await pool.query(
     `SELECT mp.precio FROM menu_preparacion mp JOIN menu m ON m.id_menu = mp.id_menu
-     WHERE mp.id_categoria_menu = $1 AND mp.precio IS NOT NULL AND m.fecha <= CURRENT_DATE
-     ORDER BY m.fecha DESC, mp.id_menu_preparacion DESC LIMIT 1`,
+     WHERE mp.id_categoria_menu = $1 AND mp.precio IS NOT NULL
+     ORDER BY mp.id_menu_preparacion DESC LIMIT 1`,
     [id_categoria_menu]
   );
   return rows[0] ? Number(rows[0].precio) : 0;
@@ -106,8 +107,8 @@ async function preciosRecientes() {
      FROM menu_preparacion mp
      JOIN menu m ON m.id_menu = mp.id_menu
      JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
-     WHERE mp.precio IS NOT NULL AND m.fecha <= CURRENT_DATE
-     ORDER BY c.nombre, m.fecha DESC, mp.id_menu_preparacion DESC`
+     WHERE mp.precio IS NOT NULL
+     ORDER BY c.nombre, mp.id_menu_preparacion DESC`
   );
   return Object.fromEntries(rows.map((r) => [r.categoria, Number(r.precio)]));
 }
@@ -262,7 +263,8 @@ async function historialMenus(desde, hasta, id_sede = 1) {
 async function menusDelMes(mes, id_sede = 1) {
   const { rows } = await pool.query(
     `SELECT m.fecha, m.id_menu, m.publicado,
-            COALESCE(json_agg(json_build_object('componente', t.nombre, 'categoria', c.nombre, 'preparacion', p.nombre)
+            COALESCE(json_agg(json_build_object('componente', t.nombre, 'categoria', c.nombre, 'preparacion', p.nombre,
+                                                'cantidad', mp.cantidad_planificada, 'precio', mp.precio)
                               ORDER BY t.id_tipo_componente, c.nombre NULLS FIRST)
                      FILTER (WHERE mp.id_menu_preparacion IS NOT NULL), '[]') AS componentes
      FROM menu m

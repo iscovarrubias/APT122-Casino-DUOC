@@ -22,7 +22,7 @@ export default function CategoriaTabs({ categoriaActiva, onSeleccionar }) {
             onClick={() => onSeleccionar(nombre)}
           >
           <Icono className="tab-icon" size={18} />
-            {nombre.toUpperCase()}
+            {nombre}
           </button>
         );
       })}

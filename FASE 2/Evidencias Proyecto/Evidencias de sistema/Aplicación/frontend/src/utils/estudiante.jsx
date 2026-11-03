@@ -53,8 +53,8 @@ export function EstudianteProvider({ children }) {
     [perfil]
   );
 
-  const guardarCalificacion = useCallback(async (id, estrellas, comentario) => {
-    await pedir(`/api/estudiante/calificaciones/${id}`, { metodo: 'PUT', cuerpo: { estrellas, comentario } });
+  const guardarCalificacion = useCallback(async (id, estrellas, comentario, categoria) => {
+    await pedir(`/api/estudiante/calificaciones/${id}`, { metodo: 'PUT', cuerpo: { estrellas, comentario, categoria } });
     await cargar();
   }, [cargar]);
 

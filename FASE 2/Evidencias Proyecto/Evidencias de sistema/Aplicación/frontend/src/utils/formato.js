@@ -9,6 +9,7 @@ export const ESTADO_TEXTO = {
   disponible: 'Disponible',
   baja_disponibilidad: 'Quedan pocas unidades',
   agotado: 'Agotado',
+  cerrada: 'Jornada cerrada',
 };
 
 export function calcularCaloriasTotales(componentes) {
@@ -24,7 +25,7 @@ export function calcularPrecioTotal(componentes) {
 const ZONA = 'America/Santiago';
 
 export function aISOChile(fecha) {
-  return fecha.toLocaleDateString('en-CA', { timeZone: ZONA }); 
+  return fecha.toLocaleDateString('en-CA', { timeZone: ZONA });
 }
 
 export function hoyChile() {
@@ -45,7 +46,6 @@ export function formatearHora(marca) {
   return String(marca).slice(11, 16);
 }
 
-
 export const CATEGORIAS_COLOR = {
   Principal:     { color: '#F5A623', light: '#FDECD2' },
   JUNAEB:        { color: '#D11B1B', light: '#FBE3E3' },
@@ -56,3 +56,11 @@ export const CATEGORIAS_COLOR = {
 export function colorDeCategoria(categoria) {
   return CATEGORIAS_COLOR[categoria] || CATEGORIAS_COLOR.Principal;
 }
+
+export function estadoEfectivo(item) {
+  if (item.jornada_estado === 'cerrada') return 'cerrada';
+  if (item.disponibilidad === 'agotado') return 'agotado';
+  if (item.jornada_estado === 'abierta' && item.cantidad_restante === 0) return 'agotado';
+  return item.disponibilidad;
+}
+export const NO_DISPONIBLE = ['agotado', 'cerrada'];

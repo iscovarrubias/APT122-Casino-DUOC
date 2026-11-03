@@ -10,21 +10,27 @@ async function autenticar(req, res, next) {
 
   let payload;
   try {
-    payload = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
+    payload = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] });
   } catch (err) {
     return res.status(401).json({ error: 'Token inválido o expirado.' });
   }
 
   try {
-    const { rows } = await pool.query('SELECT activo FROM usuario WHERE id_usuario = $1', [payload.id_usuario]);
+    const { rows } = await pool.query(
+      `SELECT u.activo, u.id_sede, r.nombre AS rol
+       FROM usuario u
+       JOIN rol r ON r.id_rol = u.id_rol
+       WHERE u.id_usuario = $1`,
+      [payload.id_usuario]
+    );
     if (!rows[0] || !rows[0].activo) {
       return res.status(401).json({ error: 'La cuenta está desactivada o ya no existe.' });
     }
+    req.user = { ...payload, rol: rows[0].rol, id_sede: rows[0].id_sede };
   } catch (err) {
     return next(err);
   }
 
-  req.user = payload; 
   next();
 }
 

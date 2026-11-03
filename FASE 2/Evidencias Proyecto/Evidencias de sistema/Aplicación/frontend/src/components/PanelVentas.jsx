@@ -51,20 +51,23 @@ export function CompartidosDelDia({ componentes }) {
 
 export function UltimasVentas({ ventas, ocupado, onAnular }) {
   return (
-    <div className="tarjeta">
-      <h2>Últimas ventas</h2>
-      {ventas.length === 0 && <p className="texto-suave">Aún no hay ventas registradas.</p>}
-      {ventas.map((v) => (
-        <div key={v.id_venta_combo} className="en-linea" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={v.anulada ? { textDecoration: 'line-through', color: 'var(--text-muted)' } : undefined}>
-            {formatearHora(v.registrada_en)} · {v.categoria}
-          </span>
-          {v.anulada ? <span className="insignia insignia-neutra">Anulada</span> : (
-            <button className="boton boton-peligro" disabled={ocupado} onClick={() => onAnular(v.id_venta_combo)}>Deshacer</button>
-          )}
-        </div>
-      ))}
-    </div>
+    <section className="ultimas-ventas">
+      <h2 className="v2-subtitulo">Últimas ventas</h2>
+      {ventas.length === 0 && <p className="ultimas-vacio">Aún no hay ventas registradas.</p>}
+      {ventas.length > 0 && (
+        <ul className="ultimas-lista">
+          {ventas.map((v) => (
+            <li key={v.id_venta_combo} className={v.anulada ? 'anulada' : ''}>
+              <span className="ultimas-hora">{formatearHora(v.registrada_en)}</span>
+              <span className="ultimas-cat"><i style={{ background: colorDeCategoria(v.categoria).color }} aria-hidden="true" />{v.categoria}</span>
+              {v.anulada
+                ? <span className="ultimas-nota">Anulada</span>
+                : <button type="button" className="boton-texto peligro" disabled={ocupado} onClick={() => onAnular(v.id_venta_combo)}>Deshacer</button>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

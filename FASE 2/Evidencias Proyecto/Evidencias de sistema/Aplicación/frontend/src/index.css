@@ -80,18 +80,11 @@ body {
   justify-content: center;
   margin-bottom: 32px;
 }
-.sidebar-logo span.brand-accent { color: var(--amber); }
 
 .sidebar-logo-img {
   height: 84px;
   width: auto;
   max-width: 100%;
-  display: block;
-}
-
-.panel-marca-img {
-  height: 34px;
-  width: auto;
   display: block;
 }
 
@@ -699,4 +692,10 @@ table.tabla-nutricional td {
   .sidebar-bottom { margin-top: 12px; flex-direction: row; }
   .contenido-principal { grid-template-columns: 1fr; }
   .grid-incluye { grid-template-columns: 1fr; gap: 20px; }
+}
+
+.semanal-subtitulo { margin: 18px 0 0; padding-top: 14px; border-top: 1px dashed var(--border); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+@media (max-width: 480px) {
+  .semanal-card-header { padding: 14px 16px; }
+  .semanal-card-cuerpo { padding: 4px 16px 18px; }
 }

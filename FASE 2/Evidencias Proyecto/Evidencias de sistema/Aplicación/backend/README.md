@@ -56,14 +56,8 @@ cp .env.ejemplo .env
 
 createdb casino_duoc
 
-psql -d casino_duoc -f database/schema.sql
-psql -d casino_duoc -f database/migracion_sprint3.sql
-psql -d casino_duoc -f database/migracion_sprint4.sql
-psql -d casino_duoc -f database/migracion_sprint5.sql
-psql -d casino_duoc -f database/migracion_sprint6.sql
-psql -d casino_duoc -f database/migracion_sprint7.sql
-psql -d casino_duoc -f database/migracion_sprint8.sql
-psql -d casino_duoc -f database/migracion_sprint9.sql
+# crea el esquema y aplica las migraciones pendientes (queda registro en la tabla schema_migraciones)
+npm run migrar
 
 npm run seed
 psql -d casino_duoc -f database/seed_demo.sql
@@ -133,6 +127,8 @@ backend/
 │   ├── migracion_sprint7.sql        
 │   ├── migracion_sprint8.sql        
 │   ├── migracion_sprint9.sql        
+│   ├── migracion_sprint10.sql
+│   ├── migracion_sprint11.sql       
 │   ├── seed_sprint1.js              
 │   ├── seed_demo.sql                
 │   └── seed_ventas_simuladas.js     

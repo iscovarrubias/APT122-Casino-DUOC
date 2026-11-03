@@ -6,20 +6,25 @@ import CategoriaTabs from '../components/CategoriaTabs';
 import MenuPrincipal from '../components/MenuPrincipal';
 import VistaSemanal from '../components/VistaSemanal';
 import VistaPreguntas from '../components/VistaPreguntas';
+import PantallaCarga from '../components/PantallaCarga';
 import { obtenerMenuHoy } from '../api/menu';
 import { hoyChile, parseFechaISO } from '../utils/formato';
 import { suscribirCambios } from '../utils/eventos';
+import Cargando from '../components/Cargando';
 
 const INTERVALO_SONDEO_MS = 30000;
 
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
 function formatearFechaLarga(fechaISO) {
-  return parseFechaISO(fechaISO).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const f = parseFechaISO(fechaISO);
+  return `${f.getDate()} de ${MESES[f.getMonth()]} de ${f.getFullYear()}`;
 }
 
 function VistaDiario() {
   const { categoriaPreferida } = useEstudiante();
   const [categoria, setCategoria] = useState(categoriaPreferida || 'Principal');
-  
+
   useEffect(() => {
     if (categoriaPreferida) setCategoria(categoriaPreferida);
   }, [categoriaPreferida]);
@@ -43,7 +48,6 @@ function VistaDiario() {
     setCargando(true);
     cargar();
     const intervalo = setInterval(cargar, INTERVALO_SONDEO_MS);
-    // Tiempo real: el servidor avisa cuando cambia el stock; el sondeo queda de respaldo.
     const cerrar = suscribirCambios(cargar);
     return () => { clearInterval(intervalo); cerrar(); };
   }, [cargar]);
@@ -51,12 +55,13 @@ function VistaDiario() {
   return (
     <>
       <div className="main-header">
-        <h1>Menú diario {formatearFechaLarga(datos?.fecha || hoyChile())}</h1>
+        <h1>Menú del día <span className="titulo-separador" aria-hidden="true">|</span> <span className="titulo-fecha">{formatearFechaLarga(datos?.fecha || hoyChile())}</span></h1>
       </div>
 
       <CategoriaTabs categoriaActiva={categoria} onSeleccionar={setCategoria} />
 
-      {cargando && <div className="estado-info">Cargando menú del día…</div>}
+      {cargando && !datos && <PantallaCarga compacta mensaje="Cargando menú del día…" />}
+      {cargando && datos && <Cargando>Cargando menú del día…</Cargando>}
 
       {!cargando && error && (
         <div className="estado-info">No se pudo cargar el menú. Inténtalo de nuevo en unos minutos. ({error})</div>
@@ -90,16 +95,18 @@ export default function VistaPublica() {
         onAbrirPerfil={() => setPerfilAbierto(true)}
       />
 
-      <main className="main">
-        {vista !== 'diario' && (
-          <div className="main-header">
-            <h1>{TITULOS_VISTA[vista]}</h1>
-          </div>
-        )}
+      <main className="main v2 v2-pub">
+        <div className="pagina" key={vista}>
+          {vista !== 'diario' && (
+            <div className="main-header">
+              <h1>{TITULOS_VISTA[vista]}</h1>
+            </div>
+          )}
 
-        {vista === 'diario' && <VistaDiario />}
-        {vista === 'semanal' && <VistaSemanal />}
-        {vista === 'preguntas' && <VistaPreguntas />}
+          {vista === 'diario' && <VistaDiario />}
+          {vista === 'semanal' && <VistaSemanal />}
+          {vista === 'preguntas' && <VistaPreguntas />}
+        </div>
       </main>
 
       {perfilAbierto && (

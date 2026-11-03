@@ -1,33 +1,48 @@
 import { useState, useEffect } from 'react';
 import { consultarMensual } from '../api/gestion';
-import { hoyChile } from '../utils/formato';
-import CampoFecha from './CampoFecha';
+import { Download } from 'lucide-react';
+import SelectorPeriodo from './SelectorPeriodo';
+import ExportarAnalisis from './ExportarAnalisis';
+import { atajos } from '../utils/periodos';
+import Mensaje from './Mensaje';
 
 export default function RankingMensual() {
-  const [mes, setMes] = useState(hoyChile().slice(0, 7));
+  const inicio = atajos().find((a) => a.id === 'mes');
+  const [desde, setDesde] = useState(inicio.desde);
+  const [hasta, setHasta] = useState(inicio.hasta);
+  const [exportando, setExportando] = useState(false);
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let activo = true;
     setDatos(null);
-    consultarMensual(mes)
+    consultarMensual({ desde, hasta })
       .then((d) => { if (activo) { setDatos(d); setError(null); } })
       .catch((err) => { if (activo) setError(err.message); });
     return () => { activo = false; };
-  }, [mes]);
+  }, [desde, hasta]);
 
   return (
     <section className="tarjeta tarjeta-ancha" style={{ marginTop: 22 }}>
       <div className="barra-herramientas">
-        <h2>Informe mensual: qué se agota más rápido</h2>
-        <label className="campo campo-en-linea"><span>Mes</span>
-          <CampoFecha modo="mes" value={mes} onChange={(v) => v && setMes(v)} ariaLabel="Mes del informe" /></label>
+        <h2>Informe general: qué se agota más rápido</h2>
       </div>
-      {error && <div className="mensaje mensaje-error" role="alert">{error}</div>}
+      <SelectorPeriodo
+        desde={desde}
+        hasta={hasta}
+        onCambio={(d, h) => { setDesde(d); setHasta(h); }}
+        accion={(
+          <button type="button" className="boton boton-secundario boton-exportar" onClick={() => setExportando(true)}>
+            <Download size={16} aria-hidden="true" /> Exportar
+          </button>
+        )}
+      />
+      {exportando && <ExportarAnalisis tipo="general" desdeInicial={desde} hastaInicial={hasta} onCerrar={() => setExportando(false)} />}
+      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
       {!datos && !error && <p className="texto-suave">Calculando…</p>}
       {datos && datos.resumen.jornadas_cerradas === 0 && (
-        <p className="texto-suave">No hay jornadas cerradas en este mes. El informe se arma con las jornadas que la caja y la cocina registran.</p>
+        <p className="texto-suave">No hay jornadas cerradas en este período. El informe se arma con las jornadas que la caja y la cocina registran.</p>
       )}
       {datos && datos.resumen.jornadas_cerradas > 0 && (
         <>
