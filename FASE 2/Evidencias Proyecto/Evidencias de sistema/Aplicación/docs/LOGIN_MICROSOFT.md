@@ -1,65 +1,27 @@
-# Inicio de sesión con Microsoft (Entra ID)
+# Login con Microsoft (Entra ID) — notas para implementación real
 
-El acceso es único: la persona escribe su correo y el sistema detecta el rol.
+## Para probar ahora (tenant propio)
 
-| Correo | Cómo entra |
-|---|---|
-| Cuenta del personal (administrador, cajero, nutricionista…) | Contraseña del sistema |
-| Estudiante (`@duocuc.cl`) | Cuenta de Microsoft (o acceso de demostración si Microsoft está apagado) |
+Ya está funcionando con un tenant de pruebas. Si se cae, revisar:
 
-Si no defines las variables `ENTRA_*`, Microsoft queda **apagado** y todo sigue funcionando con `SSO_SIMULADO=true`.
+- Las variables `ENTRA_*` en el `.env` (tenant_id, client_id, secret, redirect_uri)
+- Que el redirect_uri coincida exacto con el de Entra: `http://localhost:3000/api/auth/microsoft/callback`
+- Si Microsoft no está configurado, dejar `SSO_SIMULADO=true` y usar el botón de demo
 
-## Crear tu propio tenant de pruebas (gratis, sin pedir permisos a Duoc)
+## Para implementar con Entra de Duoc
 
-1. Entra a <https://entra.microsoft.com> con una cuenta personal y crea un tenant nuevo (Identity → Overview → Manage tenants → Create). Elige "Microsoft Entra ID".
-2. En el tenant nuevo ve a **App registrations → New registration**.
-   - Nombre: `Casino DUOC (pruebas)`.
-   - Tipos de cuenta: *solo este directorio*.
-   - Redirect URI (tipo **Web**): `http://localhost:3000/api/auth/microsoft/callback`.
-3. En **Overview** copia *Directory (tenant) ID* y *Application (client) ID*.
-4. En **Certificates & secrets → New client secret** crea un secreto y copia su **Value** (solo se muestra una vez).
-5. En **Users → New user** crea 2 o 3 usuarios de prueba (por ejemplo `alumno1@tudominio.onmicrosoft.com`).
-6. Completa `backend/.env`:
+Cambiar solo esto en el `.env`:
 
-```
-ENTRA_TENANT_ID=<tenant id>
-ENTRA_CLIENT_ID=<client id>
-ENTRA_CLIENT_SECRET=<secreto>
-ENTRA_REDIRECT_URI=http://localhost:3000/api/auth/microsoft/callback
-ENTRA_DOMINIOS_ESTUDIANTES=tudominio.onmicrosoft.com
-FRONTEND_URL=http://localhost:5173
-```
+- `ENTRA_TENANT_ID` → el tenant de Duoc
+- `ENTRA_CLIENT_ID` → el client_id que entregue Duoc
+- `ENTRA_CLIENT_SECRET` → el secreto que entregue Duoc
+- `ENTRA_REDIRECT_URI` → con `https`, apuntando al dominio real
+- `ENTRA_DOMINIOS_ESTUDIANTES=duocuc.cl`
+- `ENTRA_DOMINIOS_PERSONAL=duoc.cl,profesor.duoc.cl`
 
-`ENTRA_DOMINIOS_ESTUDIANTES` indica qué dominios se registran solos como estudiantes. Si el correo ya existe en el sistema (por ejemplo un cajero), entra con su rol actual.
+## Cosas a tener en cuenta
 
-7. Reinicia el backend. Al escribir un correo de estudiante en el login aparece el botón **Continuar con Microsoft**.
-
-## Dar roles al personal
-
-1. La persona entra una vez con Microsoft: queda registrada como estudiante.
-2. Un administrador va a **Usuarios**, busca su correo y cambia el rol en la lista desplegable (Cajero, Nutricionista, Administrador…).
-3. Desde su próximo ingreso entra con ese rol. Para crearlo antes de que entre, usa **Nuevo usuario** con su correo de Microsoft; la contraseña que pidas no se usará con Microsoft.
-
-Funcionarios (`@duoc.cl`) y docentes (`@profesor.duoc.cl`) no se registran solos: si entran sin estar registrados, ven un aviso para que pidan acceso al administrador. Las cuentas con correo de un dominio que no esté en esas listas (por ejemplo `admin@duocuc.cl` en las pruebas) siguen entrando con contraseña.
-
-## Pasar a Duoc si el casino llega a ser oficial
-
-Cambian estos valores: `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID`, `ENTRA_CLIENT_SECRET` y `ENTRA_REDIRECT_URI` (con `https`), además de `ENTRA_DOMINIOS_ESTUDIANTES=duocuc.cl` y `ENTRA_DOMINIOS_PERSONAL=duoc.cl,profesor.duoc.cl`. El código no cambia. Duoc debe registrar la aplicación en su tenant.
-
-## Cómo funciona (para la defensa)
-
-- Flujo *authorization code* con **PKCE** y parámetros `state` y `nonce`.
-- El `id_token` se valida: firma RS256 con las claves públicas de Microsoft, emisor, audiencia y nonce.
-- La contraseña nunca pasa por el sistema.
-- El navegador no recibe el token en la URL: vuelve con un ticket de un solo uso (60 s) guardado en la base de datos (tabla `ticket_acceso`), que se canjea por la sesión. Sobrevive a reinicios y funciona con varios servidores.
-- La consulta del correo en el login tiene límite por IP (`LIMITE_IDENTIFICAR_POR_IP`, 30 cada 15 minutos por defecto).
-- Pruebas automáticas: `backend/tests/entra.test.js` (usa un Microsoft falso local; verifica que se rechacen tokens con firma, audiencia, nonce o state incorrectos).
-
-## Cuidar el secreto de la aplicación
-
-- El secreto de cliente es como una contraseña: va solo en `backend/.env`, que `.gitignore` excluye del repositorio. No lo compartas ni lo pegues en chats o documentos.
-- Para cambiarlo: en Entra, abre la app, ve a **Certificados y secretos**, crea un secreto nuevo, cópialo a `.env`, reinicia el backend y elimina el secreto anterior.
-- Al terminar las pruebas con tu tenant, elimina ese secreto y la app de pruebas si ya no los usas.
-
-## Limitaciones conocidas
-- El acceso de funcionarios y docentes (`ENTRA_DOMINIOS_PERSONAL`) está probado con pruebas automáticas, pero no con cuentas reales de Duoc.
+- El secreto de cliente va solo en `backend/.env` (que `.gitignore` excluye). No subirlo ni compartirlo.
+- Si se cambia el secreto en Entra, hay que actualizarlo en el `.env` y reiniciar el backend.
+- Los funcionarios y docentes no se registran solos: si entran sin estar registrados, les aparece un aviso para que pidan acceso al admin.
+- Las cuentas con correo de otro dominio (ej: admin@duocuc.cl) siguen entrando con contraseña normal.

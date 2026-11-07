@@ -19,7 +19,8 @@
   background: var(--card-bg); color: var(--text); font: inherit; font-size: 0.9rem; box-shadow: none;
 }
 .v2 .campo input:focus, .v2 .campo select:focus, .v2 .tabla select:focus, .v2 .tabla input:focus {
-  outline: none; border-color: var(--navy-light); box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 35%, transparent);
+  outline: none; border-color: var(--navy-light);
+  box-shadow: 0 1px 2px rgba(31, 56, 100, 0.08), 0 0 0 1px var(--navy-light);
 }
 .v2 .campo-ayuda { margin: 0; font-size: 0.78rem; color: var(--text-muted); }
 .v2 .tabla-contenedor { border: 1px solid var(--v2-borde); border-radius: var(--v2-radio); box-shadow: none; background: var(--card-bg); }
@@ -270,16 +271,20 @@
 .v2-pub .estado-pill.baja_disponibilidad::before { background: var(--baja); }
 .v2-pub .estado-pill.agotado::before { background: var(--agotado); }
 .v2-pub .estado-pill.cerrada::before { background: var(--text-muted); }
-.v2-pub .no-disponible .card-imagen { filter: grayscale(1); opacity: .55; position: relative; }
+.v2-pub .no-disponible .card-imagen { filter: grayscale(1) blur(2px); opacity: .55; position: relative; }
 .v2-pub .no-disponible .badge-categoria, .v2-pub .no-disponible .badge-precio { filter: grayscale(1); opacity: .7; }
 .v2-pub .no-disponible .card-body h2, .v2-pub .no-disponible .card-body h3.card-titulo { color: var(--text-muted); }
 .v2-pub .no-disponible .incluye, .v2-pub .no-disponible .incluye-tipo, .v2-pub .no-disponible .stat .valor { color: var(--text-muted); }
 .v2-pub .no-disponible .estado-pill { color: var(--text-muted); }
 .v2-pub .card-principal.no-disponible, .v2-pub .card-incluye.no-disponible { background: var(--bg); }
-.v2-pub .panel-detalle h3, .v2-pub .card-incluye .subtitulo { color: var(--text); font-size: .88rem; font-weight: 650; margin: 14px 0 6px; }
+.v2-pub .panel-detalle h3 { color: var(--text); font-size: .88rem; font-weight: 650; margin: 14px 0 6px; }
+.v2-pub .card-incluye .subtitulo { color: var(--text); font-size: .88rem; font-weight: 650; margin: 8px 0 2px; }
 .v2-pub .panel-detalle h3:first-child { margin-top: 0; }
 .v2-pub table.tabla-nutricional { border: 1px solid var(--border); border-radius: 10px; border-collapse: separate; border-spacing: 0; overflow: hidden; }
-.v2-pub table.tabla-nutricional thead th, [data-theme='oscuro'] .v2-pub table.tabla-nutricional thead th { background: var(--bg); color: var(--text-muted); font-weight: 600; padding: 8px 12px; }
+.v2-pub table.tabla-nutricional thead th { color: var(--text-muted); font-weight: 600; padding: 8px 12px; }
+.v2-pub .panel-detalle table.tabla-nutricional thead th { background: #e6e8ec; }
+.v2-pub .card-incluye table.tabla-nutricional thead th { background: var(--bg); }
+[data-theme='oscuro'] .v2-pub .panel-detalle table.tabla-nutricional thead th { background: var(--navy-solid); color: #fff; }
 .v2-pub table.tabla-nutricional td { padding: 8px 12px; }
 .v2-pub table.tabla-nutricional tbody tr:last-child td { border-bottom: 0; }
 .v2-pub .pill-alergeno { background: color-mix(in srgb, var(--text) 8%, var(--card-bg)) !important; color: var(--text); font-weight: 600; font-size: .78rem; padding: 4px 12px; border: 1px solid var(--border); }
@@ -298,10 +303,11 @@
 .v2-pub .preguntas-seccion h2 { font-size: 1.05rem; font-weight: 650; color: var(--text); }
 .v2-pub .pregunta-item summary { font-weight: 600; font-size: .92rem; }
 .v2 .login-tarjeta { border: 1px solid var(--v2-borde); box-shadow: none; border-radius: 16px; padding: 36px 32px; max-width: 420px; }
-.v2 .login-tarjeta h1 { font-size: 1.35rem; font-weight: 700; }
+.v2 .login-tarjeta h1 { margin: 0 0 4px; font-size: 1.35rem; font-weight: 700; }
 .v2 .login-tarjeta .segmentado { display: flex; }
 .v2 .login-tarjeta .segmentado button { flex: 1; }
-.v2 .login-tarjeta .formulario { display: grid; gap: 16px; }
+.v2 .login-tarjeta .formulario { display: flex; flex-direction: column; gap: 14px; }
+.v2 .login-tarjeta .login-ayuda { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
 .v2 .login-tarjeta .boton-ancho { min-height: 42px; width: 100%; }
 .v2 .login-tarjeta .boton-enlace { margin-top: 18px; font-size: .88rem; color: var(--text-muted); }
 .v2 .pestanas { border-bottom: 1px solid var(--v2-borde); gap: 4px; margin-bottom: 18px; }
@@ -419,12 +425,12 @@
   background: color-mix(in srgb, var(--acento) 26%, var(--card-bg)); color: color-mix(in srgb, var(--acento) 62%, var(--text)); }
 @media (min-width: 761px) {
   .v2 .plan-grid-3 .plan-card-cabeza { padding: 7px 14px; }
-  .v2 .plan-grid-3 .plan-card-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px 10px; align-items: end; padding: 10px 14px 12px; }
+  .v2 .plan-grid-3 .plan-card-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) 130px; gap: 8px 10px; align-items: end; padding: 10px 14px 12px; }
   .v2 .plan-grid-3 .plan-campos { display: block; }
   .v2 .plan-grid-3 .plan-incluido { display: none; }
   .v2 .plan-grid-3 .plan-sugerencia { grid-column: 1; }
   .v2 .plan-grid-3 .plan-acciones { grid-column: 2; }
-  .v2 .plan-grid-3 .plan-acciones .boton { padding: 0 8px; font-size: .82rem; }
+  .v2 .plan-grid-3 .plan-acciones .boton { padding: 0 6px; font-size: .78rem; white-space: nowrap; }
 }
 @media (min-width: 901px) {
   :root:not([data-theme='oscuro']) .sidebar { background: #0A2239; border-right: 0; color: #fff; }
@@ -467,14 +473,14 @@
 }
 .v2 .etiqueta-panel, .etiqueta-panel {
   display: inline-block;
-  font-size: .72rem;
+  font-size: .7rem;
   font-weight: 600;
   letter-spacing: .02em;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
-  color: var(--navy);
-  background: color-mix(in srgb, var(--navy) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--navy) 22%, transparent);
+  color: #fff;
+  background: var(--navy-solid);
+  border: 1px solid var(--navy-solid);
   width: fit-content;
   white-space: nowrap;
   line-height: 1.2;
@@ -483,12 +489,31 @@
   .sidebar--panel > .etiqueta-panel { margin: -4px 0 16px 20px; font-size: .7rem; letter-spacing: 0; }
   .sidebar--panel > .movil-cabecera .etiqueta-panel { display: none; }
   :root:not([data-theme='oscuro']) .sidebar--panel .etiqueta-panel {
-    color: #fff; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.28);
+    color: var(--navy); background: #ffffff; border-color: color-mix(in srgb, var(--navy) 20%, transparent);
   }
 }
+@media (min-width: 901px) {
+  [data-theme='oscuro'] .sidebar--panel .etiqueta-panel {
+    background: #1A1A45;
+    color: #ffffff;
+    border-color: #2A2A66;
+  }
+}
+
 @media (max-width: 900px) {
   .sidebar--panel > .etiqueta-panel { display: none; }
-  .movil-cabecera .etiqueta-panel { display: block; margin: 6px auto 10px; }
+  .movil-cabecera .etiqueta-panel {
+    display: block;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0 4px 0;
+    color: #ffffff;
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
 }
 .login-volver {
   position: fixed; top: 20px; left: 20px;
@@ -502,7 +527,7 @@
 }
 .login-volver:hover { background: var(--bg); transform: translateX(-2px); }
 .login-volver:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
-.v2 .login-paso { display: grid; gap: 16px; }
+.v2 .login-paso { display: flex; flex-direction: column; gap: 12px; }
 .v2 .login-cuenta {
   display: inline-flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%;
   padding: 6px 12px 6px 10px; border-radius: 999px;
@@ -522,3 +547,37 @@
 .v2-pub .semanal-componentes li.no-disponible .semanal-nombre { color: var(--text-muted); }
 .v2-pub .semanal-componentes li.no-disponible .semanal-tipo { color: var(--text-muted); background: var(--bg); }
 .v2-pub .semanal-estado { align-self: flex-start; font-size: .75rem; font-weight: 600; color: var(--text-muted); }
+@media (min-width: 601px) { .modal.modal-confirmacion { max-width: 440px; } }
+
+.v2-pub .card-principal { position: relative; }
+.v2-pub .sello-agotado {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-6deg);
+  z-index: 10;
+  background: #C53030;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 12px 32px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  text-transform: uppercase;
+}
+@media (max-width: 700px) {
+  .v2-pub .sello-agotado {
+    font-size: 1.1rem;
+    padding: 10px 24px;
+  }
+}
+
+.v2-pub .no-disponible .card-body { opacity: .55; }
+.v2-pub .card-incluye .ingredientes-texto { margin: 0 0 6px; }
+.v2-pub .card-incluye .tabla-nutricional { margin-bottom: 6px; }
+.v2-pub .card-incluye .alergenos-pills { margin-top: 0; }
+.v2-pub .card-incluye .subtitulo + .alergenos-pills { margin-top: 2px; }
+.v2 .plan-seccion > h2 { margin: 0 0 14px; }
+.v2 .plan-seccion-cabeza h2 { margin: 0; }

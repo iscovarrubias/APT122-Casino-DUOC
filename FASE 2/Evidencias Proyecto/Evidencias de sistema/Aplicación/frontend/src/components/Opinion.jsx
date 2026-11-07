@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { useEstudiante } from '../utils/useEstudiante';
+import { navegar } from '../ruteo/useRuta';
 import OpinionModal from './OpinionModal';
 import Mensaje from './Mensaje';
+import { useConfirmar } from '../context/confirmacion-context';
 
 export function Estrellas({ valor, tam = 16 }) {
   const llenas = Math.round(Number(valor) || 0);
@@ -16,6 +18,7 @@ export function Estrellas({ valor, tam = 16 }) {
 }
 
 export default function Opinion({ item }) {
+  const confirmar = useConfirmar();
   const { usuario, calificacionDe, guardarCalificacion, quitarCalificacion } = useEstudiante();
   const [abierto, setAbierto] = useState(false);
   const [estrellas, setEstrellas] = useState(0);
@@ -50,7 +53,7 @@ export default function Opinion({ item }) {
   }
 
   async function borrar() {
-    if (!window.confirm('¿Borrar tu calificación de este plato?')) return;
+    if (!(await confirmar({ titulo: 'Borrar calificación', mensaje: '¿Borrar tu calificación de este plato?', textoConfirmar: 'Borrar', peligro: true }))) return;
     setGuardando(true);
     try {
       await quitarCalificacion(item.id_preparacion);
@@ -82,7 +85,7 @@ export default function Opinion({ item }) {
           </button>
         )}
 
-        {usuario && usuario.rol === 'Estudiante' && (
+        {usuario && usuario.rol === 'Estudiante' ? (
           <>
             <button type="button" className="boton boton-secundario boton-chico" onClick={() => setAbierto(!abierto)}>
               {mia ? 'Editar mi calificación' : 'Calificar'}
@@ -93,6 +96,10 @@ export default function Opinion({ item }) {
               </button>
             )}
           </>
+        ) : (
+          <button type="button" className="boton boton-secundario boton-chico" onClick={() => navegar('/login')}>
+            Inicia sesión para dejar tu opinión
+          </button>
         )}
       </div>
 

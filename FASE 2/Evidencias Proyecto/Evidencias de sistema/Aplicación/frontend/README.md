@@ -37,7 +37,7 @@ Gastronómica del Casino DUOC UC. APT122, Fase 2.
 
 ## Requisitos
 
-- Node.js 18+
+- Node.js 22.22.2+ (requerido por Vite 8, Vitest 5 y jsdom 30)
 - El backend corriendo en paralelo (por defecto en `http://localhost:3000`).
 
 ## Instalación

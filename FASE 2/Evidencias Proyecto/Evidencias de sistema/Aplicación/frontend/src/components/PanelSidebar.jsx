@@ -36,9 +36,9 @@ export default function PanelSidebar({ ruta }) {
     <aside className="sidebar sidebar--panel">
       <header className="movil-cabecera">
         <img src={logo} alt="Casinos DuocUC" className="movil-logo" />
-        <span className="etiqueta-panel">Panel de administración</span>
         <div className="movil-saludo">
           <div>
+            <span className="etiqueta-panel">Panel de administración</span>
             <h2>¡Hola, {primerNombre}!</h2>
             <p>{usuario.rol}</p>
           </div>

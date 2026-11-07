@@ -56,8 +56,12 @@ async function listarActivas() {
             COALESCE(json_agg(DISTINCT i.nombre) FILTER (WHERE i.nombre IS NOT NULL), '[]') AS ingredientes,
             COALESCE(json_agg(DISTINCT a.nombre) FILTER (WHERE a.nombre IS NOT NULL), '[]') AS alergenos,
             CASE WHEN n.calorias IS NOT NULL THEN
-              json_build_object('calorias', n.calorias, 'proteinas_g', n.proteinas_g,
-                                'carbohidratos_g', n.carbohidratos_g, 'grasas_g', n.grasas_g)
+              json_build_object(
+                'calorias', ROUND(n.calorias, 1)::float8,
+                'proteinas_g', ROUND(n.proteinas_g, 1)::float8,
+                'carbohidratos_g', ROUND(n.carbohidratos_g, 1)::float8,
+                'grasas_g', ROUND(n.grasas_g, 1)::float8
+              )
             ELSE NULL END AS informacion_nutricional
      FROM preparacion p
      LEFT JOIN tipo_componente t ON t.id_tipo_componente = p.id_tipo_componente
@@ -81,9 +85,13 @@ async function listarGestion() {
             COALESCE(det.lista, '[]') AS ingredientes_detalle,
             COALESCE(al.lista, '[]') AS alergenos,
             CASE WHEN n.id_preparacion IS NULL THEN NULL ELSE
-              json_build_object('calorias', n.calorias, 'proteinas_g', n.proteinas_g,
-                                'carbohidratos_g', n.carbohidratos_g, 'grasas_g', n.grasas_g,
-                                'origen', n.origen)
+              json_build_object(
+                'calorias', ROUND(n.calorias, 1)::float8,
+                'proteinas_g', ROUND(n.proteinas_g, 1)::float8,
+                'carbohidratos_g', ROUND(n.carbohidratos_g, 1)::float8,
+                'grasas_g', ROUND(n.grasas_g, 1)::float8,
+                'origen', n.origen
+              )
             END AS nutricion
      FROM preparacion p
      LEFT JOIN tipo_componente t ON t.id_tipo_componente = p.id_tipo_componente
@@ -247,7 +255,10 @@ async function actualizarNutricion(id_preparacion, { calorias, proteinas_g, carb
 }
 
 async function calcularNutricion({ porciones_receta, ingredientes }) {
-  const items = normalizarIngredientes(ingredientes).filter((i) => i.id_ingrediente !== undefined);
+  const items = normalizarIngredientes(ingredientes);
+  if (items.some((i) => i.id_ingrediente === undefined)) {
+    throw error(400, 'Cada ingrediente debe indicarse con su id_ingrediente.');
+  }
   const { rows } = await pool.query(
     `SELECT id_ingrediente, nombre, calorias_100g, proteinas_100g, carbohidratos_100g, grasas_100g,
             sin_cuantificar
@@ -255,9 +266,10 @@ async function calcularNutricion({ porciones_receta, ingredientes }) {
     [items.map((i) => i.id_ingrediente)]
   );
   const porId = new Map(rows.map((r) => [r.id_ingrediente, r]));
-  const lista = items
-    .filter((i) => porId.has(i.id_ingrediente))
-    .map((i) => ({ ...porId.get(i.id_ingrediente), cantidad_g: i.cantidad_g }));
+  if (items.some((i) => !porId.has(i.id_ingrediente))) {
+    throw error(400, 'Alguno de los ingredientes indicados no existe.');
+  }
+  const lista = items.map((i) => ({ ...porId.get(i.id_ingrediente), cantidad_g: i.cantidad_g }));
   return calcularPorPorcion({ porciones: porciones_receta, ingredientes: lista });
 }
 

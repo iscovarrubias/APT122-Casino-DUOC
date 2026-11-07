@@ -4,10 +4,10 @@ export default function TablaNutricional({ info }) {
   }
 
   const filas = [
-    ['Calorías', info.calorias, 'kcal'],
-    ['Proteínas', info.proteinas_g, 'g'],
-    ['Carbohidratos', info.carbohidratos_g, 'g'],
-    ['Grasas', info.grasas_g, 'g'],
+    ['Calorías', info.calorias, 'kcal', 0],
+    ['Proteínas', info.proteinas_g, 'g', 1],
+    ['Carbohidratos', info.carbohidratos_g, 'g', 1],
+    ['Grasas', info.grasas_g, 'g', 1],
   ];
 
   return (
@@ -16,10 +16,10 @@ export default function TablaNutricional({ info }) {
         <tr><th>Nutriente</th><th>Cantidad</th></tr>
       </thead>
       <tbody>
-        {filas.map(([nombre, valor, unidad]) => (
+        {filas.map(([nombre, valor, unidad, decimales = 1]) => (
           <tr key={nombre}>
             <td>{nombre}</td>
-            <td>{valor != null ? `${valor}${unidad}` : '—'}</td>
+            <td>{valor != null ? `${Number(valor).toFixed(decimales)} ${unidad}` : '—'}</td>
           </tr>
         ))}
       </tbody>

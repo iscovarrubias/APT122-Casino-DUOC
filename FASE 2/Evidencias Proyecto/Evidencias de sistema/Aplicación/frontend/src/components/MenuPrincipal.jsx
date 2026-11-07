@@ -32,6 +32,8 @@ export default function MenuPrincipal({ categoria, componentes }) {
     );
   }
 
+  const estadoPrincipal = estadoEfectivo(principal);
+  const comboAgotado = NO_DISPONIBLE.includes(estadoPrincipal);
   const caloriasTotales = calcularCaloriasTotales(componentes);
   const precioTotal = calcularPrecioTotal(componentes);
   const nombresCompartidos = compartidos.map((c) => c.componente.toLowerCase()).join(', ');
@@ -41,7 +43,12 @@ export default function MenuPrincipal({ categoria, componentes }) {
     <div style={{ '--accent-categoria': color, '--accent-categoria-light': light }}>
       <AvisoAlergias componentes={componentes} />
       <div className="contenido-principal">
-        <div className={`card-principal ${NO_DISPONIBLE.includes(estadoEfectivo(principal)) ? 'no-disponible' : ''}`}>
+        <div className={`card-principal ${comboAgotado ? 'no-disponible' : ''}`}>
+          {comboAgotado && (
+            <div className="sello-agotado" aria-label="Agotado">
+              AGOTADO
+            </div>
+          )}
           <div className="card-imagen">
             <ImagenOIcono url={principal.imagen_url} tipo={principal.componente} tamano={56} />
             <span className="badge-categoria">{categoria}</span>
@@ -60,13 +67,13 @@ export default function MenuPrincipal({ categoria, componentes }) {
             )}
             <div className="stats-row">
               <div className="stat">
-                <span className="valor">{caloriasTotales != null ? `${caloriasTotales} kcal` : 'No disponible'}</span>
+              <span className="valor">{caloriasTotales != null ? `${Math.round(caloriasTotales)} kcal` : 'No disponible'}</span>
                 <span className="etiqueta">Calorías totales del combo</span>
               </div>
               <div className="stat-divider" />
               <div className="stat">
-                <EstadoBadge estado={estadoEfectivo(principal)} />
-                <Restante item={principal} />
+                <EstadoBadge estado={comboAgotado ? 'agotado' : estadoPrincipal} />
+                {!comboAgotado && <Restante item={principal} />}
               </div>
             </div>
             <button
@@ -103,7 +110,7 @@ export default function MenuPrincipal({ categoria, componentes }) {
     <h2>Incluye en el combo</h2>
     <div className="grid-incluye">
       {compartidos.map((c) => (
-        <div key={c.id_menu_preparacion} className={`card-incluye ${NO_DISPONIBLE.includes(estadoEfectivo(c)) ? 'no-disponible' : ''}`}>
+      <div key={c.id_menu_preparacion} className={`card-incluye ${comboAgotado || NO_DISPONIBLE.includes(estadoEfectivo(c)) ? 'no-disponible' : ''}`}>
           <div className="card-imagen">
             <ImagenOIcono url={c.imagen_url} tipo={c.componente} tamano={40} />
           </div>
@@ -116,15 +123,15 @@ export default function MenuPrincipal({ categoria, componentes }) {
 
             <div className="stats-row">
               <div className="stat">
-                <span className="valor">
-                  {c.informacion_nutricional ? `${c.informacion_nutricional.calorias} kcal` : 'No disponible'}
-                </span>
+              <span className="valor">
+                {c.informacion_nutricional ? `${Math.round(Number(c.informacion_nutricional.calorias))} kcal` : 'No disponible'}
+              </span>
                 <span className="etiqueta">Calorías</span>
               </div>
               <div className="stat-divider" />
               <div className="stat">
-                <EstadoBadge estado={estadoEfectivo(c)} />
-                <Restante item={c} />
+                <EstadoBadge estado={comboAgotado ? 'agotado' : estadoEfectivo(c)} />
+                {!comboAgotado && <Restante item={c} />}
               </div>
             </div>
 

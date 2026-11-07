@@ -7,6 +7,7 @@ import { Beef, Fish, Carrot, Wheat, Milk, Droplet, Package, Plus, ChevronDown, C
 import Mensaje from '../components/Mensaje';
 import ModalFormulario from '../components/ModalFormulario';
 import Cargando from '../components/Cargando';
+import { useConfirmar } from '../context/confirmacion-context';
 
 const NUTRIENTES = ['calorias_100g', 'proteinas_100g', 'carbohidratos_100g', 'grasas_100g'];
 
@@ -152,6 +153,7 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
 const idSeccion = (nombre) => `seccion-${String(nombre).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
 
 export default function IngredientesPage() {
+  const confirmar = useConfirmar();
   const [lista, setLista] = useState(null);
   const [categorias, setCategorias] = useState([]);
   const [catalogoAlergenos, setCatalogoAlergenos] = useState([]);
@@ -191,7 +193,7 @@ export default function IngredientesPage() {
   };
 
   async function borrar(i) {
-    if (!window.confirm(`¿Borrar "${i.nombre}" definitivamente?`)) return;
+    if (!(await confirmar({ titulo: 'Borrar ingrediente', mensaje: `¿Borrar "${i.nombre}" definitivamente?`, textoConfirmar: 'Borrar', peligro: true }))) return;
     try {
       await eliminarIngrediente(i.id_ingrediente);
       setAviso('Ingrediente borrado.');

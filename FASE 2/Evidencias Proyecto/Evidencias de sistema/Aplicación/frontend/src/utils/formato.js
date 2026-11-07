@@ -15,11 +15,12 @@ export const ESTADO_TEXTO = {
 export function calcularCaloriasTotales(componentes) {
   const todosValidados = componentes.every((c) => c.informacion_nutricional);
   if (!todosValidados) return null;
-  return componentes.reduce((suma, c) => suma + Number(c.informacion_nutricional.calorias || 0), 0);
+  const total = componentes.reduce((suma, c) => suma + Number(c.informacion_nutricional.calorias || 0), 0);
+  return Math.round(total);
 }
 
 export function calcularPrecioTotal(componentes) {
-  return componentes.reduce((suma, c) => suma + Number(c.precio || 0), 0);
+  return Math.round(componentes.reduce((suma, c) => suma + Number(c.precio || 0), 0));
 }
 
 const ZONA = 'America/Santiago';

@@ -20,6 +20,14 @@ function validarImagen(imagen_url) {
   }
 }
 
+function validarPorciones(porciones) {
+  if (porciones === undefined || porciones === null || porciones === '') return;
+  const n = Number(porciones);
+  if (!Number.isInteger(n) || n <= 0) {
+    throw new ApiError(400, 'porciones_receta debe ser un entero mayor a 0.');
+  }
+}
+
 async function listar(req, res, next) {
   try {
     res.json(await preparacionModel.listarActivas());
@@ -48,6 +56,7 @@ async function crear(req, res, next) {
     }
     validarIngredientes(ingredientes);
     validarImagen(imagen_url);
+    validarPorciones(porciones_receta);
 
         if (tipo !== undefined && tipo !== null && tipo !== '' && tipo !== 'Entrada' && tipo !== 'Postre' && tipo !== 'Bebida' && tipo !== 'Plato Principal') {
       throw new ApiError(400, 'tipo inválido. Debe ser Entrada, Postre, Bebida o Plato Principal.');
@@ -72,6 +81,7 @@ async function actualizar(req, res, next) {
     }
     validarIngredientes(ingredientes);
     validarImagen(imagen_url);
+    validarPorciones(porciones_receta);
     if (tipo !== undefined && tipo !== null && tipo !== '' && tipo !== 'Entrada' && tipo !== 'Postre' && tipo !== 'Bebida' && tipo !== 'Plato Principal') {
       throw new ApiError(400, 'tipo inválido. Debe ser Entrada, Postre, Bebida o Plato Principal.');
     }

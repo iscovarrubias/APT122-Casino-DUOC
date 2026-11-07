@@ -3,12 +3,12 @@ const SECCIONES = [
     titulo: 'Información nutricional',
     preguntas: [
       {
-        q: '¿Por qué algunos platos dicen "No disponible" en vez de mostrar las calorías?',
-        a: 'Porque la nutricionista del casino todavía no la ha cargado. El sistema nunca muestra un dato nutricional inventado: si no está cargado, prefiere decir "No disponible" antes que arriesgarse a mostrar algo incorrecto.',
+        q: '¿Por qué algunos platos indican "No disponible" en su información nutricional?',
+        a: 'Porque esa información aún no ha sido registrada por el casino. El sistema prioriza la transparencia: si un dato no está confirmado, se muestra como "No disponible" en lugar de entregar un valor que podría ser incorrecto.',
       },
       {
         q: '¿Cómo se calculan las calorías totales de un combo?',
-        a: 'Sumando las calorías de cada componente (entrada, plato principal, postre y bebida). Si a cualquiera de ellos le falta la información nutricional, el total también se muestra como "No disponible", en vez de un número parcial que podría confundir.',
+        a: 'Se suman las calorías de cada componente del combo (entrada, plato principal, postre y bebida). Si alguno de ellos no cuenta con información nutricional registrada, el total también se muestra como "No disponible", para evitar entregar un dato parcial que pueda inducir a error.',
       },
     ],
   },
@@ -16,12 +16,12 @@ const SECCIONES = [
     titulo: 'Alérgenos',
     preguntas: [
       {
-        q: '¿Cómo sé si un plato tiene un alérgeno que me afecta?',
-        a: 'Cada preparación muestra sus alérgenos declarados justo debajo de la información nutricional, tomados de un catálogo fijo (por ejemplo gluten, lácteos, huevo, pescado, mariscos, frutos secos, maní o soya), no de texto libre.',
+        q: '¿Cómo puedo saber si un plato contiene un alérgeno que me afecta?',
+        a: 'Cada preparación muestra sus alérgenos declarados junto a la información nutricional. Estos provienen de un catálogo fijo (gluten, lácteos, huevo, pescado, mariscos, frutos secos, maní y soya), lo que garantiza que la información sea consistente y verificable. Si tienes dudas sobre algún ingrediente o la preparación de un plato, consulta directamente con el personal del casino.',
       },
       {
-        q: '¿Qué pasa si un plato no muestra ningún alérgeno?',
-        a: 'Significa que no tiene ninguno de los alérgenos del catálogo declarado. Si tienes una alergia que no está en esa lista, te recomendamos confirmar directamente con el personal del casino.',
+        q: '¿Qué significa que un plato no muestre alérgenos?',
+        a: 'Significa que no contiene ninguno de los alérgenos del catálogo declarado. Si tienes una alergia que no está en esa lista, te recomendamos confirmar directamente con el personal del casino antes de consumir el plato. Ante cualquier duda o detalle específico, el personal del casino puede entregarte más información.',
       },
     ],
   },
@@ -33,12 +33,8 @@ const SECCIONES = [
         a: 'Sí. La planificación puede ajustarse por motivos operativos (por ejemplo, falta de un ingrediente), y el estado de disponibilidad de cada plato se actualiza en tiempo real por el personal del casino.',
       },
       {
-        q: '¿Cada cuánto se actualiza esta página?',
-        a: 'La consulta se actualiza sola cada 30 segundos, así que no necesitas recargar la página a mano para ver los cambios de disponibilidad.',
-      },
-      {
-        q: '¿Por qué la entrada, el postre y la bebida son iguales en todas las categorías?',
-        a: 'Porque el casino los planifica una sola vez para todo el día: solo el plato principal cambia según la categoría (Principal, JUNAEB, Vegetariano, Hipocalórico).',
+        q: '¿Cada cuánto se actualiza la información de esta página?',
+        a: 'La información se actualiza automáticamente cada 30 segundos, por lo que no necesitas recargar la página para ver los cambios de disponibilidad.',
       },
     ],
   },

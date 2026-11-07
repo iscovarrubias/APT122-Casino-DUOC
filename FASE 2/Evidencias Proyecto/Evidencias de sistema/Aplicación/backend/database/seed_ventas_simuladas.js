@@ -53,11 +53,37 @@ async function limpiar(client) {
   console.log('Los menús creados para la simulación se conservan (ya fueron publicados como cualquier otro).');
 }
 
-async function asegurarComponentes(client, id_menu, preparaciones, categorias, tipos) {
+/**
+ * Carga las preparaciones activas separadas por tipo de componente.
+ * Soporta las dos convenciones del proyecto:
+ *  - Platos principales con id_tipo_componente = NULL (seed_demo.sql)
+ *  - Platos principales con id_tipo_componente = 'Plato Principal' (seed_demo_nutricion.sql)
+ */
+async function cargarPreparacionesPorTipo(client, tipos) {
+  const { rows: todas } = await client.query(
+    `SELECT id_preparacion, id_tipo_componente FROM preparacion WHERE activa = TRUE`
+  );
+
+  const principales = todas
+    .filter((p) => p.id_tipo_componente === null || p.id_tipo_componente === tipos['Plato Principal'])
+    .map((p) => p.id_preparacion);
+  const entradas = todas
+    .filter((p) => p.id_tipo_componente === tipos['Entrada'])
+    .map((p) => p.id_preparacion);
+  const postres = todas
+    .filter((p) => p.id_tipo_componente === tipos['Postre'])
+    .map((p) => p.id_preparacion);
+  const bebidas = todas
+    .filter((p) => p.id_tipo_componente === tipos['Bebida'])
+    .map((p) => p.id_preparacion);
+
+  return { principales, entradas, postres, bebidas };
+}
+
+async function asegurarComponentes(client, id_menu, grupos, categorias, tipos) {
   const { rows } = await client.query('SELECT 1 FROM menu_preparacion WHERE id_menu = $1 LIMIT 1', [id_menu]);
   if (rows.length) return;
 
-  const elegidas = barajar(preparaciones);
   const insertar = (id_preparacion, id_categoria, id_tipo, cantidad) =>
     client.query(
       `INSERT INTO menu_preparacion (id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada)
@@ -65,12 +91,35 @@ async function asegurarComponentes(client, id_menu, preparaciones, categorias, t
       [id_menu, id_preparacion, id_categoria, id_tipo, cantidad]
     );
 
-  for (let i = 0; i < categorias.length; i++) {
-    await insertar(elegidas[i], categorias[i].id_categoria_menu, tipos['Plato Principal'], Math.round(entre(35, 75)));
+  // --- 4 platos principales, uno por categoría ---
+  const principalesBarajados = barajar(grupos.principales);
+  if (principalesBarajados.length < categorias.length) {
+    throw new Error(
+      `Se necesitan al menos ${categorias.length} platos principales activos y hay ${principalesBarajados.length}.`
+    );
   }
-  const compartidos = ['Entrada', 'Postre', 'Bebida'];
-  for (let i = 0; i < compartidos.length; i++) {
-    await insertar(elegidas[categorias.length + i], null, tipos[compartidos[i]], Math.round(entre(150, 230)));
+  for (let i = 0; i < categorias.length; i++) {
+    await insertar(
+      principalesBarajados[i],
+      categorias[i].id_categoria_menu,
+      tipos['Plato Principal'],
+      Math.round(entre(35, 75))
+    );
+  }
+
+  // --- 3 compartidos: entrada, postre y bebida (cada uno de su tipo correcto) ---
+  const compartidos = [
+    { tipo: 'Entrada', opciones: grupos.entradas },
+    { tipo: 'Postre', opciones: grupos.postres },
+    { tipo: 'Bebida', opciones: grupos.bebidas },
+  ];
+  for (const { tipo, opciones } of compartidos) {
+    if (opciones.length === 0) {
+      console.warn(`  ⚠ Sin preparaciones activas de tipo "${tipo}": se omite ese slot.`);
+      continue;
+    }
+    const elegida = barajar(opciones)[0];
+    await insertar(elegida, null, tipos[tipo], Math.round(entre(150, 230)));
   }
 }
 
@@ -85,14 +134,27 @@ async function main() {
       return;
     }
 
-    const preparaciones = (await client.query('SELECT id_preparacion FROM preparacion WHERE activa = TRUE')).rows.map((r) => r.id_preparacion);
-    if (preparaciones.length < 7) {
-      throw new Error(`Se necesitan al menos 7 preparaciones activas y hay ${preparaciones.length}. Créalas desde el panel de administración y vuelve a ejecutar.`);
+    const tipos = Object.fromEntries(
+      (await client.query('SELECT id_tipo_componente, nombre FROM tipo_componente')).rows.map((r) => [
+        r.nombre,
+        r.id_tipo_componente,
+      ])
+    );
+    const grupos = await cargarPreparacionesPorTipo(client, tipos);
+
+    if (grupos.principales.length < 4) {
+      throw new Error(
+        `Se necesitan al menos 4 platos principales activos y hay ${grupos.principales.length}. ` +
+        `Créalos desde el panel de administración y vuelve a ejecutar.`
+      );
     }
 
-    const categorias = (await client.query('SELECT id_categoria_menu, nombre FROM categoria_menu ORDER BY id_categoria_menu')).rows;
-    const tipos = Object.fromEntries((await client.query('SELECT id_tipo_componente, nombre FROM tipo_componente')).rows.map((r) => [r.nombre, r.id_tipo_componente]));
-    const id_sede = (await client.query('SELECT id_sede FROM sede ORDER BY id_sede LIMIT 1')).rows[0].id_sede;
+    const categorias = (
+      await client.query('SELECT id_categoria_menu, nombre FROM categoria_menu ORDER BY id_categoria_menu')
+    ).rows;
+    const id_sede = (
+      await client.query('SELECT id_sede FROM sede ORDER BY id_sede LIMIT 1')
+    ).rows[0].id_sede;
 
     let menus = 0, ventas = 0, agotamientos = 0;
 
@@ -100,20 +162,29 @@ async function main() {
       const fecha = haceDiasChile(atras);
       if (!esDiaHabil(fecha)) continue;
 
-      let menu = (await client.query('SELECT id_menu FROM menu WHERE fecha = $1 AND id_sede = $2', [fecha, id_sede])).rows[0];
+      let menu = (
+        await client.query('SELECT id_menu FROM menu WHERE fecha = $1 AND id_sede = $2', [fecha, id_sede])
+      ).rows[0];
       if (!menu) {
-        menu = (await client.query('INSERT INTO menu (id_sede, fecha, publicado) VALUES ($1, $2, TRUE) RETURNING id_menu', [id_sede, fecha])).rows[0];
+        menu = (
+          await client.query(
+            'INSERT INTO menu (id_sede, fecha, publicado) VALUES ($1, $2, TRUE) RETURNING id_menu',
+            [id_sede, fecha]
+          )
+        ).rows[0];
         menus++;
       }
-      await asegurarComponentes(client, menu.id_menu, preparaciones, categorias, tipos);
+      await asegurarComponentes(client, menu.id_menu, grupos, categorias, tipos);
 
-      const componentes = (await client.query(
-        `SELECT mp.id_menu_preparacion, mp.cantidad_planificada
-         FROM menu_preparacion mp
-         WHERE mp.id_menu = $1
-           AND NOT EXISTS (SELECT 1 FROM venta v WHERE v.id_menu_preparacion = mp.id_menu_preparacion AND v.origen_dato = 'simulado')`,
-        [menu.id_menu]
-      )).rows;
+      const componentes = (
+        await client.query(
+          `SELECT mp.id_menu_preparacion, mp.cantidad_planificada
+           FROM menu_preparacion mp
+           WHERE mp.id_menu = $1
+             AND NOT EXISTS (SELECT 1 FROM venta v WHERE v.id_menu_preparacion = mp.id_menu_preparacion AND v.origen_dato = 'simulado')`,
+          [menu.id_menu]
+        )
+      ).rows;
 
       for (const comp of componentes) {
         const planificado = comp.cantidad_planificada;
@@ -149,7 +220,9 @@ async function main() {
     }
 
     await client.query('COMMIT');
-    console.log(`Listo: ${menus} menús nuevos, ${ventas} registros de venta y ${agotamientos} agotamientos simulados.`);
+    console.log(
+      `Listo: ${menus} menús nuevos, ${ventas} registros de venta y ${agotamientos} agotamientos simulados.`
+    );
     console.log('Para borrar lo simulado: node database/seed_ventas_simuladas.js --limpiar');
   } catch (err) {
     await client.query('ROLLBACK');

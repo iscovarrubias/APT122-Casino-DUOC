@@ -100,7 +100,7 @@ export default function LoginPage() {
           />
         </div>
 
-        <h1 style={{ marginBottom: 6 }}>Iniciar sesión</h1>
+        <h1>Iniciar sesión</h1>
 
         {!metodo && (
           <form onSubmit={continuar} className="formulario">

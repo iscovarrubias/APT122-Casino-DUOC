@@ -188,7 +188,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+  padding-bottom: 2px; 
 }
 
 .tabs {
@@ -352,9 +356,8 @@ body {
   color: var(--text-muted);
   font-size: 0.88rem;
   line-height: 1.5;
-  margin: 0 0 20px;
+  margin: 0 0 8px;
 }
-
 table.tabla-nutricional {
   width: 100%;
   border-collapse: collapse;
@@ -473,7 +476,7 @@ table.tabla-nutricional td {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--navy);
-  margin: 14px 0 4px;
+  margin: 10px 0 2px;
 }
 .card-incluye .subtitulo:first-of-type { margin-top: 4px; }
 .card-incluye .tabla-nutricional {

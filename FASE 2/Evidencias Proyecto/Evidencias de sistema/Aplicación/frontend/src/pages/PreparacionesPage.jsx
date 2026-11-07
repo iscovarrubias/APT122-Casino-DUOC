@@ -10,6 +10,7 @@ import {
 import Mensaje from '../components/Mensaje';
 import Ayuda from '../components/Ayuda';
 import Cargando from '../components/Cargando';
+import { useConfirmar } from '../context/confirmacion-context';
 
 const FORMULARIO_VACIO = {
   nombre: '', descripcion: '', imagen_url: '', ingredientes: [], porciones_receta: '', origen: 'manual',
@@ -526,6 +527,7 @@ function Columna({ titulo, ayuda, textoBoton, lista, soloActivas, onNuevo, onEdi
 }
 
 export default function PreparacionesPage({ soloActivas: soloActivasProp, setSoloActivas: setSoloActivasProp }) {
+  const confirmar = useConfirmar();
   const [lista, setLista] = useState(null);
   const [catalogo, setCatalogo] = useState([]);
   const [ingredientesCat, setIngredientesCat] = useState([]);
@@ -558,7 +560,11 @@ export default function PreparacionesPage({ soloActivas: soloActivasProp, setSol
   async function cambiarEstado(p) {
     setGuia(null);
     const desactivar = p.activa;
-    if (desactivar && !window.confirm(`¿Desactivar "${p.nombre}"? Dejará de poder planificarse, pero se conserva su historial. Puedes reactivarla cuando quieras.`)) return;
+    if (desactivar && !(await confirmar({
+      titulo: 'Desactivar preparación',
+      mensaje: `¿Desactivar "${p.nombre}"? Dejará de poder planificarse, pero se conserva su historial. Puedes reactivarla cuando quieras.`,
+      textoConfirmar: 'Desactivar',
+    }))) return;
     try {
       await (desactivar ? desactivarPreparacion(p.id_preparacion) : reactivarPreparacion(p.id_preparacion));
       setAviso(desactivar ? 'Desactivada.' : 'Reactivada.');
@@ -569,10 +575,12 @@ export default function PreparacionesPage({ soloActivas: soloActivasProp, setSol
   }
 
   async function borrar(p) {
-    if (!window.confirm(
-      `¿Borrar "${p.nombre}" definitivamente? Esta acción no se puede deshacer. ` +
-      'Si ya apareció en algún menú, el sistema no permitirá el borrado y habrá que dejarla desactivada.'
-    )) return;
+    if (!(await confirmar({
+      titulo: 'Borrar preparación',
+      mensaje: `¿Borrar "${p.nombre}" definitivamente? Esta acción no se puede deshacer. Si ya apareció en algún menú, el sistema no permitirá el borrado y habrá que dejarla desactivada.`,
+      textoConfirmar: 'Borrar',
+      peligro: true,
+    }))) return;
     try {
       await eliminarPreparacion(p.id_preparacion);
       setAviso('Borrada.');

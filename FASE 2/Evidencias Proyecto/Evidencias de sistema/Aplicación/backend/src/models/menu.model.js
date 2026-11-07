@@ -28,8 +28,12 @@ async function menuDelDia(fecha, categoria) {
         COALESCE(ing.lista, '[]') AS ingredientes,
         COALESCE(al.lista, '[]') AS alergenos,
         CASE WHEN n.calorias IS NOT NULL THEN
-          json_build_object('calorias', n.calorias, 'proteinas_g', n.proteinas_g,
-                            'carbohidratos_g', n.carbohidratos_g, 'grasas_g', n.grasas_g)
+        json_build_object(
+          'calorias', ROUND(n.calorias, 1)::float8,
+          'proteinas_g', ROUND(n.proteinas_g, 1)::float8,
+          'carbohidratos_g', ROUND(n.carbohidratos_g, 1)::float8,
+          'grasas_g', ROUND(n.grasas_g, 1)::float8
+        )
         ELSE NULL END AS informacion_nutricional
      FROM menu m
      JOIN menu_preparacion mp ON mp.id_menu = m.id_menu

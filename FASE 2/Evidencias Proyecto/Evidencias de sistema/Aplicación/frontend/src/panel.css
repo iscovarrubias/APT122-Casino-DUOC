@@ -145,7 +145,7 @@
 .login-pagina { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .login-tarjeta { width: 100%; max-width: 400px; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 32px 28px; }
 .login-tarjeta h1 { margin: 0 0 6px; font-size: 1.4rem; color: var(--navy); }
-.login-ayuda { margin: 0 0 22px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+.login-ayuda { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
 
 .login-logo {
   justify-content: center;

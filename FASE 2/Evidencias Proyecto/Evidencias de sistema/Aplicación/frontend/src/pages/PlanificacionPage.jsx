@@ -10,6 +10,7 @@ import Ayuda from '../components/Ayuda';
 import ExportarMenu from '../components/ExportarMenu';
 import { Utensils, Ticket, Leaf, Salad, CakeSlice, CupSoda, Copy, Download, X, BarChart3, Trash2 } from 'lucide-react';
 import Cargando from '../components/Cargando';
+import { useConfirmar } from '../context/confirmacion-context';
 
 const PRINCIPALES = [
   { categoria: 'Principal', Icono: Utensils },
@@ -280,6 +281,7 @@ function VistaMes({ mes, onCambiarMes, onElegir, version, copia }) {
 }
 
 export default function PlanificacionPage() {
+  const confirmar = useConfirmar();
   const [fechaBase, setFecha] = useState(hoyChile());
   const [fechaModal, setFechaModal] = useState(null);
   const fecha = fechaModal || fechaBase;
@@ -357,8 +359,13 @@ export default function PlanificacionPage() {
       'Cambios guardados.'
     );
 
-  const quitar = (componente) => {
-    if (!window.confirm(`¿Quitar "${componente.preparacion}" del menú? Se pierde su historial de disponibilidad de ese día.`)) return;
+  const quitar = async (componente) => {
+    if (!(await confirmar({
+      titulo: 'Quitar del menú',
+      mensaje: `¿Quitar "${componente.preparacion}" del menú? Se pierde su historial de disponibilidad de ese día.`,
+      textoConfirmar: 'Quitar',
+      peligro: true,
+    }))) return;
     return ejecutar(() => quitarComponente(componente.id_menu_preparacion), 'Componente quitado.');
   };
 

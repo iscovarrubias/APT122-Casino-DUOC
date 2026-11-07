@@ -23,5 +23,5 @@ export function rutaInicial(rol, kiosco) {
   if (rol === 'Estudiante') return '/';
   if (rol === 'Cajero') return '/panel/caja';
   if (kiosco) return '/panel/kiosco';
-  return rol === 'Administrador' ? '/panel/preparaciones' : '/panel/menu';
+  return '/panel/menu';
 }

@@ -43,7 +43,7 @@ demanda y módulo de perfil del estudiante.
 
 ## Requisitos
 
-- Node.js 18+
+- Node.js 20+
 - PostgreSQL 14+
 
 ## Instalación
@@ -128,7 +128,9 @@ backend/
 │   ├── migracion_sprint8.sql        
 │   ├── migracion_sprint9.sql        
 │   ├── migracion_sprint10.sql
-│   ├── migracion_sprint11.sql       
+│   ├── migracion_sprint11.sql
+│   ├── migracion_sprint12.sql
+│   ├── migracion_sprint13.sql
 │   ├── seed_sprint1.js              
 │   ├── seed_demo.sql                
 │   └── seed_ventas_simuladas.js     

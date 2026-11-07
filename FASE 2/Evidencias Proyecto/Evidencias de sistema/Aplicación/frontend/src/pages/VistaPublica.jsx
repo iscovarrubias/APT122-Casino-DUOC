@@ -97,9 +97,19 @@ const TITULOS_VISTA = {
   preguntas: 'Preguntas frecuentes',
 };
 
+const TITULOS_PESTANA = {
+  diario: 'Menú del día',
+  semanal: 'Menú semanal',
+  preguntas: 'Preguntas frecuentes',
+};
+
 export default function VistaPublica() {
   const [vista, setVista] = useState('diario');
   const [perfilAbierto, setPerfilAbierto] = useState(false);
+
+  useEffect(() => {
+    document.title = `${TITULOS_PESTANA[vista] || 'Casinos DUOC UC'} - Casinos DUOC UC`;
+  }, [vista]);
 
   return (
     <div className="app-layout">

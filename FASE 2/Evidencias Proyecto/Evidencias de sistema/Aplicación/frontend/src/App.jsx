@@ -3,6 +3,7 @@ import './panel.css';
 import './responsive.css';
 import './diseno.css';
 import AuthProvider from './context/AuthProvider';
+import ConfirmacionProvider from './context/ConfirmacionProvider';
 import { EstudianteProvider } from './utils/estudiante';
 import { useAuth } from './context/auth-context';
 import { useRuta, navegar } from './ruteo/useRuta';
@@ -27,17 +28,17 @@ import NoEncontrada from './components/NoEncontrada';
 const NOMBRE_SITIO = 'Casinos DUOC UC';
 
 function useTitulo(titulo) {
-  useEffect(() => { document.title = titulo ? `${titulo} · ${NOMBRE_SITIO}` : NOMBRE_SITIO; }, [titulo]);
+  useEffect(() => { document.title = titulo ? `${titulo} - ${NOMBRE_SITIO}` : NOMBRE_SITIO; }, [titulo]);
 }
 
 const PAGINAS = {
   '/panel/caja': { titulo: 'Caja', descripcion: 'Toca el combo que vendes. Cada toque descuenta una porción del plato y de los acompañamientos.', Pagina: CajaPage },
-  '/panel/kiosco': { titulo: 'Disponibilidad de hoy', ayuda: 'Controla la jornada: porciones que quedan, ventas del día y cierre con conteo de sobrantes.', Pagina: KioscoPage },
-  '/panel/menu': { titulo: 'Planificación del menú', ayuda: 'Define qué se sirve cada día, en qué cantidad y a qué precio. El menú solo lo ven los estudiantes cuando lo publicas.', Pagina: PlanificacionPage },
+  '/panel/kiosco': { titulo: 'Disponibilidad', ayuda: 'Controla la jornada: porciones que quedan, ventas del día y cierre con conteo de sobrantes.', Pagina: KioscoPage },
+  '/panel/menu': { titulo: 'Planificación', ayuda: 'Define qué se sirve cada día, en qué cantidad y a qué precio. El menú solo lo ven los estudiantes cuando lo publicas.', Pagina: PlanificacionPage },
   '/panel/ingredientes': { titulo: 'Ingredientes', ayuda: 'Catálogo base con valores nutricionales por 100 g. De aquí se calculan las preparaciones.', Pagina: IngredientesPage },
   '/panel/preparaciones': { titulo: 'Preparaciones', ayuda: 'Recetas del casino con su información nutricional y alérgenos. Lo que se desactiva deja de poder planificarse.', Pagina: PreparacionesPage },
   '/panel/usuarios': { titulo: 'Usuarios', ayuda: 'Cuentas del personal del casino. Los estudiantes consultan el menú sin cuenta.', Pagina: UsuariosPage },
-  '/panel/analisis': { titulo: 'Análisis de la oferta', ayuda: 'Qué se vende, qué se agota y qué opinan los estudiantes. Elige un período y compara por menú o por preparación.', Pagina: AnalisisPage },
+  '/panel/analisis': { titulo: 'Análisis', ayuda: 'Qué se vende, qué se agota y qué opinan los estudiantes. Elige un período y compara por menú o por preparación.', Pagina: AnalisisPage },
 };
 
 function Redirigir({ a }) {
@@ -123,7 +124,9 @@ export default function App() {
   return (
     <AuthProvider>
       <EstudianteProvider>
-        <Enrutador />
+        <ConfirmacionProvider>
+          <Enrutador />
+        </ConfirmacionProvider>
       </EstudianteProvider>
       {splash && (
         <PantallaCarga forzada saliendo={splash === 'saliendo'} duracionMs={SPLASH_DURACION_MS} mensaje="Cargando Casinos DUOC UC…" />
