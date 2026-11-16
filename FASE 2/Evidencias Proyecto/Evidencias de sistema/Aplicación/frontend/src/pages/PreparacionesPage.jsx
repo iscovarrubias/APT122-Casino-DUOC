@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Trash2, Ellipsis, Plus, Upload, Calculator } from 'lucide-react';
 import ModalFormulario from '../components/ModalFormulario';
 import ImagenOIcono from '../components/ImagenOIcono';
+import RecortarImagen from '../components/RecortarImagen';
 import {
   listarPreparaciones, listarCatalogoAlergenos, crearPreparacion,
   actualizarPreparacion, desactivarPreparacion, reactivarPreparacion, eliminarPreparacion,
@@ -10,7 +11,9 @@ import {
 import Mensaje from '../components/Mensaje';
 import Ayuda from '../components/Ayuda';
 import Cargando from '../components/Cargando';
+import PaginaError from '../components/PaginaError';
 import { useConfirmar } from '../context/confirmacion-context';
+import { resolverUrl } from '../api/cliente';
 
 const FORMULARIO_VACIO = {
   nombre: '', descripcion: '', imagen_url: '', ingredientes: [], porciones_receta: '', origen: 'manual',
@@ -46,7 +49,7 @@ function estadoNutricion(p) {
   return { texto: p.nutricion.origen === 'calculada' ? 'Nutrición calculada' : 'Nutrición ingresada' };
 }
 
-const TIPOS_ACOMPANAMIENTO = ['Entrada', 'Postre', 'Bebida'];
+const TIPOS_ACOMPANAMIENTO = ['Ensalada', 'Sopa', 'Pan', 'Postre', 'Fruta', 'Bebida'];
 
 const FILA_VACIA = { id_ingrediente: '', cantidad_g: '' };
 const MOTIVOS = { sin_cantidad: 'falta la cantidad', sin_datos_nutricionales: 'faltan sus datos nutricionales' };
@@ -65,6 +68,11 @@ function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onC
   const [calculo, setCalculo] = useState(null);
   const [desactualizada, setDesactualizada] = useState(false);
   const [arrastrando, setArrastrando] = useState(false);
+  const [cargandoAjuste, setCargandoAjuste] = useState(false);
+  const [recorte, setRecorte] = useState(null);
+  const [enlaceTexto, setEnlaceTexto] = useState(() =>
+    /^https?:\/\//i.test(editando?.imagen_url || '') ? editando.imagen_url : ''
+  );
 
   const poner = (campo) => (e) => setDatos({ ...datos, [campo]: e.target.value });
   const ponerNutriente = (campo) => (e) => { setDesactualizada(false); setDatos({ ...datos, [campo]: e.target.value, origen: 'manual' }); };
@@ -188,6 +196,7 @@ function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onC
     try {
       const { imagen_url } = await subirImagen(archivo);
       setDatos((d) => ({ ...d, imagen_url }));
+      setEnlaceTexto('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -195,9 +204,48 @@ function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onC
     }
   }
 
+  function quitarImagen() {
+    setDatos({ ...datos, imagen_url: '' });
+    setEnlaceTexto('');
+  }
+
+  function cambiarEnlace(valor) {
+    setEnlaceTexto(valor);
+    const limpio = valor.trim();
+    if (limpio === '') {
+      setDatos((d) => ({ ...d, imagen_url: /^https?:\/\//i.test(d.imagen_url) ? '' : d.imagen_url }));
+    } else {
+      setDatos((d) => ({ ...d, imagen_url: limpio }));
+    }
+  }
+
+  async function ajustarFoto() {
+  if (!datos.imagen_url) return;
+  setError(null);
+  setCargandoAjuste(true);
+  try {
+    const url = resolverUrl(datos.imagen_url);
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('fetch');
+    const blob = await resp.blob();
+    if (!blob.type.startsWith('image/')) throw new Error('no-es-imagen');
+    const ext = blob.type.split('/')[1].replace('jpeg', 'jpg').replace('+xml', '');
+    const file = new File([blob], `foto.${ext}`, { type: blob.type });
+    setRecorte(file);
+  } catch {
+    setError(
+      'No se pudo cargar la imagen para ajustarla. ' +
+      'En ese caso, prueba con otra URL o sube una foto desde tu dispositivo.'
+    );
+  } finally {
+    setCargandoAjuste(false);
+  }
+}
+
   function subirArchivo(evento) {
-    subirFichero(evento.target.files?.[0]);
+    const archivo = evento.target.files?.[0];
     evento.target.value = '';
+    if (archivo) setRecorte(archivo);
   }
 
   const ocupado = subiendo || guardando;
@@ -206,211 +254,231 @@ function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onC
   const TIPOS_IMAGEN = 'image/jpeg,image/png,image/webp,image/gif';
 
   return (
-    <ModalFormulario
-      titulo={titulo}
-      etiqueta={editando ? 'Editar preparación' : 'Nueva preparación'}
-      onSubmit={enviar}
-      onCancelar={onCancelar}
-      guardando={guardando}
-      textoGuardar={textoGuardar}
-      error={error}
-      onCerrarError={() => setError(null)}
-    >
-      <div className="form-cols">
-        <div className="form-col">
-          <div className={esAcompanamiento || editando ? 'rejilla-2' : undefined}>
-            <label className="campo">
-              <span>Nombre</span>
-              <input value={datos.nombre} onChange={poner('nombre')} required />
-            </label>
-            {(esAcompanamiento || editando) && (
+    <>
+      <ModalFormulario
+        titulo={titulo}
+        etiqueta={editando ? 'Editar preparación' : 'Nueva preparación'}
+        onSubmit={enviar}
+        onCancelar={onCancelar}
+        guardando={guardando}
+        textoGuardar={textoGuardar}
+        error={error}
+        onCerrarError={() => setError(null)}
+      >
+        <div className="form-cols">
+          <div className="form-col">
+            <div className={esAcompanamiento || editando ? 'rejilla-2' : undefined}>
               <label className="campo">
-                <span>Tipo de componente</span>
-                <select value={datos.tipo} onChange={poner('tipo')} required={esAcompanamiento}>
-                  <option value="">
-                    {esAcompanamiento ? 'Elegir tipo' : 'Sin tipo (plato principal)'}
-                  </option>
-                  {TIPOS_ACOMPANAMIENTO.map((t) => <option key={t} value={t}>{t}</option>)}
-                </select>
-                {!esAcompanamiento && (
-                  <span className="texto-suave">
-                    Deja sin tipo si es un plato principal: aparecerá en las cuatro categorías.
-                  </span>
-                )}
+                <span>Nombre</span>
+                <input value={datos.nombre} onChange={poner('nombre')} required />
               </label>
-            )}
+              {(esAcompanamiento || editando) && (
+                <label className="campo">
+                  <span>Tipo de componente</span>
+                  <select value={datos.tipo} onChange={poner('tipo')} required={esAcompanamiento}>
+                    <option value="">
+                      {esAcompanamiento ? 'Elegir tipo' : 'Plato Principal'}
+                    </option>
+                    {TIPOS_ACOMPANAMIENTO.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </label>
+              )}
+            </div>
+
+            <label className="campo">
+              <span>Descripción</span>
+              <textarea rows="2" value={datos.descripcion} onChange={poner('descripcion')} />
+            </label>
+
+            <section className="form-card">
+              <h3>Ingredientes de la receta</h3>
+              <p className="texto-suave">
+                Gramos en crudo, para la receta completa (no por porción). Sal, pimienta y especias no necesitan cantidad.
+                Los ingredientes se registran en la sección Ingredientes.
+              </p>
+              {ingredientesCat.length === 0 && <p className="texto-suave">Aún no hay ingredientes registrados.</p>}
+              {datos.ingredientes.length > 0 && (
+                <div className="ing-fila ing-cabecera" aria-hidden="true">
+                  <span>Ingrediente</span><span>Gramos</span><span />
+                </div>
+              )}
+              {datos.ingredientes.map((f, i) => (
+                <div key={i} className="ing-fila">
+                  <select value={f.id_ingrediente} onChange={(e) => cambiarFila(i, 'id_ingrediente', e.target.value)} aria-label={`Ingrediente ${i + 1}`}>
+                    <option value="">Elegir ingrediente</option>
+                    {grupos.map(([categoria, items]) => (
+                      <optgroup key={categoria} label={categoria}>
+                        {items.map((ing) => <option key={ing.id_ingrediente} value={ing.id_ingrediente}>{ing.nombre}</option>)}
+                      </optgroup>
+                    ))}
+                  </select>
+                  <div className="campo-sufijo">
+                    <input
+                      type="number" min="0" step="0.1" placeholder="0"
+                      value={f.cantidad_g} onChange={(e) => cambiarFila(i, 'cantidad_g', e.target.value)}
+                      aria-label={`Gramos del ingrediente ${i + 1}`}
+                    />
+                    <span aria-hidden="true">g</span>
+                  </div>
+                  <button type="button" className="prep-icono prep-icono-peligro" onClick={() => quitarFila(i)}
+                    title="Quitar" aria-label={`Quitar ingrediente ${i + 1}`}>
+                    <Trash2 size={17} />
+                  </button>
+                </div>
+              ))}
+              <div className="ing-pie">
+                <button type="button" className="boton boton-secundario" onClick={agregarFila}>
+                  <Plus size={16} aria-hidden="true" /> Agregar ingrediente
+                </button>
+                <label className="campo campo-en-linea">
+                  <span>La receta rinde (porciones)</span>
+                  <input type="number" min="1" step="1" value={datos.porciones_receta}
+                    onChange={(e) => cambiarReceta({ porciones_receta: e.target.value })} />
+                </label>
+              </div>
+            </section>
           </div>
 
-          <label className="campo">
-            <span>Descripción</span>
-            <textarea rows="2" value={datos.descripcion} onChange={poner('descripcion')} />
-          </label>
+          <div className="form-col">
+            <section className="form-card">
+              <h3>Foto <span className="texto-suave">(opcional)</span></h3>
 
-          <section className="form-card">
-            <h3>Ingredientes de la receta</h3>
-            <p className="texto-suave">
-              Gramos en crudo, para la receta completa (no por porción). Sal, pimienta y especias no necesitan cantidad.
-              Los ingredientes se registran en la sección Ingredientes.
-            </p>
-            {ingredientesCat.length === 0 && <p className="texto-suave">Aún no hay ingredientes registrados.</p>}
-            {datos.ingredientes.length > 0 && (
-              <div className="ing-fila ing-cabecera" aria-hidden="true">
-                <span>Ingrediente</span><span>Gramos</span><span />
-              </div>
-            )}
-            {datos.ingredientes.map((f, i) => (
-              <div key={i} className="ing-fila">
-                <select value={f.id_ingrediente} onChange={(e) => cambiarFila(i, 'id_ingrediente', e.target.value)} aria-label={`Ingrediente ${i + 1}`}>
-                  <option value="">Elegir ingrediente</option>
-                  {grupos.map(([categoria, items]) => (
-                    <optgroup key={categoria} label={categoria}>
-                      {items.map((ing) => <option key={ing.id_ingrediente} value={ing.id_ingrediente}>{ing.nombre}</option>)}
-                    </optgroup>
-                  ))}
-                </select>
-                <div className="campo-sufijo">
-                  <input
-                    type="number" min="0" step="0.1" placeholder="0"
-                    value={f.cantidad_g} onChange={(e) => cambiarFila(i, 'cantidad_g', e.target.value)}
-                    aria-label={`Gramos del ingrediente ${i + 1}`}
+              {datos.imagen_url ? (
+                <div className="foto-vista">
+                  <ImagenOIcono
+                    url={datos.imagen_url}
+                    tipo={datos.tipo || 'Plato Principal'}
+                    tamano={48}
+                    className="foto-vista-img"
                   />
-                  <span aria-hidden="true">g</span>
-                </div>
-                <button type="button" className="prep-icono prep-icono-peligro" onClick={() => quitarFila(i)}
-                  title="Quitar" aria-label={`Quitar ingrediente ${i + 1}`}>
-                  <Trash2 size={17} />
-                </button>
-              </div>
-            ))}
-            <div className="ing-pie">
-              <button type="button" className="boton boton-secundario" onClick={agregarFila}>
-                <Plus size={16} aria-hidden="true" /> Agregar ingrediente
-              </button>
-              <label className="campo campo-en-linea">
-                <span>La receta rinde (porciones)</span>
-                <input type="number" min="1" step="1" value={datos.porciones_receta}
-                  onChange={(e) => cambiarReceta({ porciones_receta: e.target.value })} />
-              </label>
-            </div>
-          </section>
-        </div>
-
-        <div className="form-col">
-          <section className="form-card">
-            <h3>Foto <span className="texto-suave">(opcional)</span></h3>
-            {datos.imagen_url ? (
-              <div className="foto-vista">
-                <ImagenOIcono url={datos.imagen_url} tipo={datos.tipo || 'Plato Principal'} tamano={48} className="foto-vista-img" />
                 <div className="foto-vista-acciones">
+                  <button type="button" className="boton boton-secundario boton-chico"
+                    onClick={ajustarFoto} disabled={ocupado || cargandoAjuste}>
+                    {cargandoAjuste ? 'Cargando…' : 'Ajustar foto'}
+                  </button>
                   <label className="boton boton-secundario boton-chico">
                     {subiendo ? 'Subiendo…' : 'Cambiar foto'}
                     <input type="file" accept={TIPOS_IMAGEN} className="foto-input" onChange={subirArchivo} disabled={ocupado} />
                   </label>
                   <button type="button" className="boton boton-peligro boton-chico"
-                    onClick={() => setDatos({ ...datos, imagen_url: '' })} disabled={subiendo}>
+                    onClick={quitarImagen} disabled={subiendo}>
                     Quitar foto
                   </button>
                 </div>
-              </div>
-            ) : (
-              <label
-                className={`foto-zona ${arrastrando ? 'arrastrando' : ''}`}
-                onDragOver={(e) => { e.preventDefault(); setArrastrando(true); }}
-                onDragLeave={() => setArrastrando(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setArrastrando(false);
-                  if (!ocupado) subirFichero(e.dataTransfer.files?.[0]);
-                }}
-              >
-                <input type="file" accept={TIPOS_IMAGEN} className="foto-input" onChange={subirArchivo} disabled={ocupado} />
-                <Upload size={26} aria-hidden="true" />
-                <strong>{subiendo ? 'Subiendo…' : 'Sube una foto'}</strong>
-                <span>o pega un enlace abajo. JPG, PNG, WEBP o GIF, máximo 3 MB.</span>
-              </label>
-            )}
-            <label className="campo">
-              <span>Enlace</span>
-              <input
-                type="url"
-                value={datos.imagen_url}
-                onChange={poner('imagen_url')}
-                placeholder="https://"
-                disabled={ocupado}
-              />
-            </label>
-          </section>
-
-          <section className="form-card">
-            <h3>Alérgenos declarados</h3>
-            {sugeridos.length > 0 && (
-              <Mensaje tipo="aviso" titulo="Alérgenos sugeridos">
-                Según los ingredientes, la preparación podría contener: <strong>{sugeridos.join(', ')}</strong>.
-                Confírmalo antes de agregarlo; no cubre contaminación cruzada.
-                <div>
-                  <button type="button" className="boton boton-secundario"
-                    onClick={() => setDatos({ ...datos, alergenos: [...datos.alergenos, ...sugeridos] })}>
-                    Agregar los sugeridos
-                  </button>
                 </div>
-              </Mensaje>
-            )}
-            <div className="checks">
-              {catalogo.map((a) => (
-                <label key={a.id_alergeno} className="campo-check">
-                  <input type="checkbox" checked={datos.alergenos.includes(a.nombre)} onChange={() => alternarAlergeno(a.nombre)} />
-                  <span>{a.nombre}</span>
+              ) : (
+                <label
+                  className={`foto-zona ${arrastrando ? 'arrastrando' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setArrastrando(true); }}
+                  onDragLeave={() => setArrastrando(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setArrastrando(false);
+                    const archivo = e.dataTransfer.files?.[0];
+                    if (!ocupado && archivo) setRecorte(archivo);
+                  }}
+                >
+                  <input type="file" accept={TIPOS_IMAGEN} className="foto-input" onChange={subirArchivo} disabled={ocupado} />
+                  <Upload size={26} aria-hidden="true" />
+                  <strong>{subiendo ? 'Subiendo…' : 'Sube una foto'}</strong>
+                  <span>Desde tu PC o celular. JPG, PNG, WEBP o GIF, máximo 3 MB.</span>
                 </label>
-              ))}
-            </div>
-          </section>
-
-          <section className="form-card">
-            <h3>Información nutricional <span className="texto-suave">(por porción)</span></h3>
-            <div className="en-linea">
-              <button type="button" className="boton boton-primario boton-con-icono" onClick={calcular} disabled={calculando || guardando}>
-                <Calculator size={16} aria-hidden="true" /> {calculando ? 'Calculando…' : 'Calcular desde los ingredientes'}
-              </button>
-              {hayNutricion && (
-                <span className={`insignia ${datos.origen === 'calculada' ? 'insignia-aviso' : 'insignia-neutra'}`}>
-                  Origen: {datos.origen === 'calculada' ? 'calculada' : 'manual'}
-                </span>
               )}
-            </div>
 
-            {calculo && !calculo.completo && (
-              <Mensaje tipo="aviso" titulo="Todavía no se puede calcular">
-                <ul>
-                  {calculo.problemas.map((p) => <li key={p}>{PROBLEMAS[p] || p}</li>)}
-                  {calculo.sin_datos.map((s) => <li key={s.nombre}>{s.nombre}: {MOTIVOS[s.motivo] || s.motivo}.</li>)}
-                </ul>
-              </Mensaje>
-            )}
-            {calculo?.completo && (
-              <Mensaje tipo="ok" titulo="Calculado">
-                Calculado y cargado abajo. Es una estimación (en crudo, sin pérdidas por cocción; error esperable ±10–15 %): revísalo antes de guardar.
-                {calculo.omitidos.length > 0 && <> No se contó: {calculo.omitidos.join(', ')}.</>}
-              </Mensaje>
-            )}
+              <label className="campo">
+                <span>Enlace de la imagen</span>
+                <input
+                  type="text"
+                  value={enlaceTexto}
+                  onChange={(e) => cambiarEnlace(e.target.value)}
+                  placeholder={/^\/api\/imagenes\//.test(datos.imagen_url) ? '' : 'https://'}
+                  disabled={ocupado}
+                />
+              </label>
+            </section>
 
-            <div className="rejilla-4">
-              <label className="campo"><span>Calorías (kcal)</span>
-                <input type="number" min="0" step="0.1" value={datos.calorias} onChange={ponerNutriente('calorias')} /></label>
-              <label className="campo"><span>Proteínas (g)</span>
-                <input type="number" min="0" step="0.1" value={datos.proteinas_g} onChange={ponerNutriente('proteinas_g')} /></label>
-              <label className="campo"><span>Carbohidratos (g)</span>
-                <input type="number" min="0" step="0.1" value={datos.carbohidratos_g} onChange={ponerNutriente('carbohidratos_g')} /></label>
-              <label className="campo"><span>Grasas (g)</span>
-                <input type="number" min="0" step="0.1" value={datos.grasas_g} onChange={ponerNutriente('grasas_g')} /></label>
-            </div>
-            {desactualizada && (
-              <Mensaje tipo="aviso">Cambiaste la receta: vuelve a presionar "Calcular desde los ingredientes" antes de guardar.</Mensaje>
-            )}
-            <span className="texto-suave">Al guardar, esta información se publica a los estudiantes. Sin calorías se muestra "No disponible".</span>
-          </section>
+            <section className="form-card">
+              <h3>Alérgenos declarados</h3>
+              {sugeridos.length > 0 && (
+                <Mensaje tipo="aviso" titulo="Alérgenos sugeridos">
+                  Según los ingredientes, la preparación podría contener: <strong>{sugeridos.join(', ')}</strong>.
+                  Confírmalo antes de agregarlo; no cubre contaminación cruzada.
+                  <div>
+                    <button type="button" className="boton boton-secundario"
+                      onClick={() => setDatos({ ...datos, alergenos: [...datos.alergenos, ...sugeridos] })}>
+                      Agregar los sugeridos
+                    </button>
+                  </div>
+                </Mensaje>
+              )}
+              <div className="checks">
+                {catalogo.map((a) => (
+                  <label key={a.id_alergeno} className="campo-check">
+                    <input type="checkbox" checked={datos.alergenos.includes(a.nombre)} onChange={() => alternarAlergeno(a.nombre)} />
+                    <span>{a.nombre}</span>
+                  </label>
+                ))}
+              </div>
+            </section>
+
+            <section className="form-card">
+              <h3>Información nutricional <span className="texto-suave">(por porción)</span></h3>
+              <div className="en-linea">
+                <button type="button" className="boton boton-primario boton-con-icono" onClick={calcular} disabled={calculando || guardando}>
+                  <Calculator size={16} aria-hidden="true" /> {calculando ? 'Calculando…' : 'Calcular desde los ingredientes'}
+                </button>
+                {hayNutricion && (
+                  <span className={`insignia ${datos.origen === 'calculada' ? 'insignia-aviso' : 'insignia-neutra'}`}>
+                    Origen: {datos.origen === 'calculada' ? 'calculada' : 'manual'}
+                  </span>
+                )}
+              </div>
+
+              {calculo && !calculo.completo && (
+                <Mensaje tipo="aviso" titulo="Todavía no se puede calcular">
+                  <ul>
+                    {calculo.problemas.map((p) => <li key={p}>{PROBLEMAS[p] || p}</li>)}
+                    {calculo.sin_datos.map((s) => <li key={s.nombre}>{s.nombre}: {MOTIVOS[s.motivo] || s.motivo}.</li>)}
+                  </ul>
+                </Mensaje>
+              )}
+              {calculo?.completo && (
+                <Mensaje tipo="ok" titulo="Calculado">
+                  Calculado y cargado abajo. Es una estimación (en crudo, sin pérdidas por cocción; error esperable ±10–15 %): revísalo antes de guardar.
+                  {calculo.omitidos.length > 0 && <> No se contó: {calculo.omitidos.join(', ')}.</>}
+                </Mensaje>
+              )}
+
+              <div className="rejilla-4">
+                <label className="campo"><span>Calorías (kcal)</span>
+                  <input type="number" min="0" step="0.1" value={datos.calorias} onChange={ponerNutriente('calorias')} /></label>
+                <label className="campo"><span>Proteínas (g)</span>
+                  <input type="number" min="0" step="0.1" value={datos.proteinas_g} onChange={ponerNutriente('proteinas_g')} /></label>
+                <label className="campo"><span>Carbohidratos (g)</span>
+                  <input type="number" min="0" step="0.1" value={datos.carbohidratos_g} onChange={ponerNutriente('carbohidratos_g')} /></label>
+                <label className="campo"><span>Grasas (g)</span>
+                  <input type="number" min="0" step="0.1" value={datos.grasas_g} onChange={ponerNutriente('grasas_g')} /></label>
+              </div>
+              {desactualizada && (
+                <Mensaje tipo="aviso">Cambiaste la receta: vuelve a presionar "Calcular desde los ingredientes" antes de guardar.</Mensaje>
+              )}
+              <span className="texto-suave">Al guardar, esta información se publica a los estudiantes. Sin calorías se muestra "No disponible".</span>
+            </section>
+          </div>
         </div>
-      </div>
-    </ModalFormulario>
+      </ModalFormulario>
+
+      {recorte && (
+        <RecortarImagen
+          archivo={recorte}
+          onConfirmar={(archivoRecortado) => {
+            setRecorte(null);
+            subirFichero(archivoRecortado);
+          }}
+          onCancelar={() => setRecorte(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -538,6 +606,7 @@ export default function PreparacionesPage({ soloActivas: soloActivasProp, setSol
   const [error, setError] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [guia, setGuia] = useState(null);
+  const [intento, setIntento] = useState(0);
 
   const cargar = useCallback(async () => {
     try {
@@ -547,11 +616,24 @@ export default function PreparacionesPage({ soloActivas: soloActivasProp, setSol
       setIngredientesCat(ings);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err);
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { cargar(); }, [cargar, intento]);
+
+  if (error && typeof error === 'object' && !lista) {
+    return (
+      <div className="v2">
+        <PaginaError 
+          compacta 
+          codigo={error.estado ?? 0} 
+          detalle={error.message} 
+          onReintentar={() => setIntento(i => i + 1)} 
+        />
+      </div>
+    );
+  }
 
   function sinBorrar(p) {
     setGuia(`"${p.nombre}" está activa. Para borrarla, primero desactívala desde el menú ⋯ de su fila. Solo se pueden borrar preparaciones desactivadas que nunca se usaron en un menú.`);
@@ -605,14 +687,15 @@ export default function PreparacionesPage({ soloActivas: soloActivasProp, setSol
         </label>
       </div>
 
-      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+      {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
       {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
       {guia && <Mensaje tipo="aviso" titulo="Primero desactívala" onCerrar={() => setGuia(null)}>{guia}</Mensaje>}
+      
       {!lista && !error && <Cargando>Cargando preparaciones…</Cargando>}
 
       {lista && (
         <div className="prep-columnas">
-          <Columna titulo="Platos" ayuda="Los que se planifican como plato principal. El precio se define en la planificación del menú."
+          <Columna titulo="Platos" ayuda="Los que se planifican como Plato Principal. El precio se define en la planificación del menú."
             textoBoton="Nuevo plato" lista={platos} soloActivas={soloActivas}
             onNuevo={() => abrir('nueva')} onEditar={abrir} onEstado={cambiarEstado} onBorrar={borrar} onSinBorrar={sinBorrar} />
           <Columna titulo="Acompañamientos" ayuda="Entradas, postres y bebidas que se sirven con todos los combos."

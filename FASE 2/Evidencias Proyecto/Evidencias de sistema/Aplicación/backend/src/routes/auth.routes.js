@@ -1,5 +1,5 @@
 const express = require('express');
-const { login, yo, loginDuoc, configPublica, identificar, microsoftInicio, microsoftCallback, microsoftCanje } = require('../controllers/auth.controller');
+const { login, yo, loginDuoc, configPublica, identificar, microsoftInicio, microsoftCallback, microsoftCanje, actualizarTema } = require('../controllers/auth.controller');
 const { autenticar } = require('../middleware/auth');
 const { crearLimitadorDeFallos, crearLimitadorDeSolicitudes } = require('../middleware/limitador');
 
@@ -37,5 +37,6 @@ router.get('/microsoft/callback', microsoftCallback);
 router.post('/microsoft/canje', limitePorIp, microsoftCanje);
 router.get('/config', configPublica);
 router.get('/yo', autenticar, yo);
+router.patch('/tema', autenticar, actualizarTema);
 
 module.exports = router;

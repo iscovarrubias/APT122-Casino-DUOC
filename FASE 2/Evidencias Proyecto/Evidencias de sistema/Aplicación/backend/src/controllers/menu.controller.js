@@ -1,4 +1,6 @@
 const menuModel = require('../models/menu.model');
+const eventos = require('../utils/eventos');
+const cache = require('../utils/cache');
 const { ApiError } = require('../middleware/errorHandler');
 const { hoyChile, haceDiasChile, esFechaISO } = require('../utils/fecha');
 
@@ -16,8 +18,17 @@ async function hoy(req, res, next) {
   try {
     const fecha = fechaDe(req.query.fecha, hoyChile());
     const categoria = req.query.categoria || null;
-    const preparaciones = await menuModel.menuDelDia(fecha, categoria);
-    res.json({ fecha, categoria: categoria || 'todas', preparaciones });
+    const resultado = await cache.con(
+      `${fecha}|${categoria || ''}`,
+      2000,
+      () => menuModel.menuDelDia(fecha, categoria)
+    );
+    res.json({
+      fecha,
+      categoria: categoria || 'todas',
+      preparaciones: resultado.preparaciones,
+      composicion: resultado.composicion,
+    });
   } catch (err) {
     next(err);
   }
@@ -27,7 +38,11 @@ async function verHistorialMenus(req, res, next) {
   try {
     const desde = fechaDe(req.query.desde, haceDiasChile(30));
     const hasta = fechaDe(req.query.hasta, hoyChile());
-    res.json({ desde, hasta, menus: await menuModel.historialMenus(desde, hasta) });
+    const [menus, composicion] = await Promise.all([
+      menuModel.historialMenus(desde, hasta),
+      menuModel.composicionPorCategoria(),
+    ]);
+    res.json({ desde, hasta, menus, composicion });
   } catch (err) {
     next(err);
   }
@@ -106,6 +121,7 @@ async function publicar(req, res, next) {
   try {
     const menu = await menuModel.cambiarPublicacion(req.params.id, true);
     if (!menu) throw new ApiError(404, 'Menú no encontrado.');
+    eventos.emitir();
     res.json({ mensaje: 'Menú publicado.', menu });
   } catch (err) {
     next(err);
@@ -116,6 +132,7 @@ async function despublicar(req, res, next) {
   try {
     const menu = await menuModel.cambiarPublicacion(req.params.id, false);
     if (!menu) throw new ApiError(404, 'Menú no encontrado.');
+    eventos.emitir();
     res.json({ mensaje: 'Menú despublicado.', menu });
   } catch (err) {
     next(err);
@@ -129,6 +146,7 @@ async function actualizarDisponibilidad(req, res, next) {
     const registro = await menuModel.actualizarDisponibilidad(req.params.id, {
       estado, observacion, id_usuario: req.user.id_usuario,
     });
+    eventos.emitir();
     res.status(201).json(registro);
   } catch (err) {
     next(err);

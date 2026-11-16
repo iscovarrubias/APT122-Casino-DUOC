@@ -1,7 +1,7 @@
 import { resumirOpiniones } from '../utils/exportarAnalisis';
 import { fechaCorta } from '../utils/periodos';
 
-const COL = { Principal: '#F5A623', JUNAEB: '#D11B1B', Vegetariano: '#3C7424', Hipocalórico: '#318386', Compartido: '#8a94a6' };
+const COL = { General: '#F5A623', JUNAEB: '#D11B1B', Vegetariano: '#3C7424', Hipocalórico: '#318386', Compartido: '#8a94a6' };
 const num = (n) => (n == null ? '—' : Number(n).toLocaleString('es-CL'));
 const precio = (n) => (n ? `$${Number(n).toLocaleString('es-CL')}` : '—');
 
@@ -82,7 +82,7 @@ export function HojaPreparaciones({ d }) {
         <tbody>
           {filas.map((f) => (
             <tr key={f.id_preparacion}>
-              <td>{f.nombre}<small>{f.componente === 'Plato Principal' ? 'Plato principal' : f.componente}</small></td>
+              <td>{f.nombre}<small>{f.componente === 'Plato Principal' ? 'Plato Principal' : f.componente}</small></td>
               <td>{f.dias}</td><td>{num(f.vendidas)} <small>de {num(f.planificadas)}</small></td>
               <td>{f.porcentaje_consumo != null ? `${f.porcentaje_consumo} %` : '—'}</td>
               <td>{f.dias_agotado} de {f.dias}</td><td>{f.hora_agotamiento || '—'}</td><td>{f.ritmo_hora ?? '—'} u/h</td>
@@ -100,14 +100,14 @@ export function HojaGeneral({ d }) {
   return (
     <div className="ha-hoja">
       <Cabecera titulo="Informe general: qué se agota más rápido" d={d} />
-      <p className="ha-nota">{g.resumen.jornadas_cerradas} jornada(s) cerradas · {g.resumen.con_conteo_de_cocina} con conteo de sobrante de la cocina · {g.resumen.cierres_automaticos} con cierre automático.</p>
+      <p className="ha-nota">{g.resumen.jornadas_cerradas} jornada(s) cerradas - {g.resumen.con_conteo_de_cocina} con conteo de sobrante de la cocina - {g.resumen.cierres_automaticos} con cierre automático - {g.resumen.con_correccion || 0} con corrección manual.</p>
       <table className="ha-tabla">
-        <thead><tr><th>Preparación</th><th>Se agotó</th><th>Minutos hasta agotarse</th><th>Vendidas por jornada</th><th>Sobrante promedio</th></tr></thead>
+        <thead><tr><th>Preparación</th><th>Se agotó</th><th>Minutos hasta agotarse</th><th>Agotado sin hora</th><th>Vendidas por jornada</th><th>Sobrante promedio</th></tr></thead>
         <tbody>
           {g.platos.slice(0, 40).map((p) => (
             <tr key={p.id_preparacion}>
               <td>{p.nombre}</td><td>{p.dias_agotado} de {p.jornadas} ({p.porcentaje_agotado}%)</td>
-              <td>{p.minutos_hasta_agotarse ?? '—'}</td><td>{p.vendidas_por_jornada}</td><td>{p.sobrante_promedio ?? '—'}</td>
+              <td>{p.minutos_hasta_agotarse ?? '—'}</td><td>{p.agotado_sin_hora || '—'}</td><td>{p.vendidas_por_jornada}</td><td>{p.sobrante_promedio ?? '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -160,9 +160,9 @@ export function HojaOpinionesLista({ d }) {
         {lista.map((o) => (
           <article key={o.id_opinion} style={{ borderLeftColor: COL[o.categoria] || '#8a94a6' }}>
             <header><strong>{o.preparacion}</strong><span>{'★'.repeat(o.estrellas)}<em>{'★'.repeat(5 - o.estrellas)}</em></span></header>
-            <small>{o.categoria || 'Menú sin registrar'}{o.fecha_menu ? ` · menú del ${fechaCorta(String(o.fecha_menu).slice(0, 10))}` : ''}</small>
+            <small>{o.categoria || 'Menú sin registrar'}{o.fecha_menu ? ` - menú del ${fechaCorta(String(o.fecha_menu).slice(0, 10))}` : ''}</small>
             <p>“{o.comentario}”</p>
-            <small>{o.autor || 'Estudiante'}{o.estado !== 'vigente' ? ` · ${o.estado === 'eliminada' ? 'eliminada por el estudiante' : 'versión anterior'}` : ''}</small>
+            <small>{o.autor || 'Estudiante'}{o.estado !== 'vigente' ? ` - ${o.estado === 'eliminada' ? 'eliminada por el estudiante' : 'versión anterior'}` : ''}</small>
           </article>
         ))}
       </div>

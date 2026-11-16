@@ -43,7 +43,7 @@ describe('LoginPage', () => {
     await userEvent.type(await screen.findByLabelText('Contraseña'), 'secreto123');
     await userEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
     await waitFor(() => expect(iniciarSesion).toHaveBeenCalledWith('admin@duocuc.cl', 'secreto123', false));
-    expect(navegar).toHaveBeenCalledWith('/panel/preparaciones');
+    expect(navegar).toHaveBeenCalledWith('/panel/menu');
   });
 
   it('ofrece continuar con Microsoft cuando corresponde', async () => {

@@ -10,14 +10,26 @@ async function menuDelDia(fecha, categoria) {
   const params = [fecha];
   let filtroCategoria = '';
   if (categoria) {
-    filtroCategoria = 'AND (c.nombre = $2 OR mp.id_categoria_menu IS NULL)';
+    filtroCategoria = `AND (
+      c.nombre = $2
+      OR (
+        mp.id_categoria_menu IS NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM menu_preparacion mp2
+          JOIN categoria_menu c2 ON c2.id_categoria_menu = mp2.id_categoria_menu
+          WHERE mp2.id_menu = m.id_menu
+            AND mp2.id_tipo_componente = mp.id_tipo_componente
+            AND c2.nombre = $2
+        )
+      )
+    )`;
     params.push(categoria);
   }
 
   const { rows } = await pool.query(
     `SELECT
         mp.id_menu_preparacion, p.id_preparacion, p.nombre, p.descripcion,
-        CASE WHEN mp.id_categoria_menu IS NULL THEN 0 ELSE COALESCE(mp.precio, p.precio) END AS precio, p.imagen_url,
+        CASE WHEN mp.id_categoria_menu IS NULL THEN 0 ELSE COALESCE(NULLIF(mp.precio, 0), p.precio) END AS precio, p.imagen_url,
         c.nombre AS categoria, t.nombre AS componente, mp.cantidad_planificada,
         COALESCE(d.estado, 'disponible') AS disponibilidad,
         j.estado AS jornada_estado,
@@ -70,7 +82,8 @@ async function menuDelDia(fecha, categoria) {
      ORDER BY t.id_tipo_componente`,
     params
   );
-  return rows;
+
+  return { preparaciones: rows, composicion: await composicionPorCategoria() };
 }
 
 async function obtenerOCrearMenu(fecha, id_sede = 1) {
@@ -122,8 +135,17 @@ async function agregarComponente(id_menu, { id_preparacion, tipo_componente, cat
   if (!tipoRes.rows[0]) throw error(400, `Tipo de componente "${tipo_componente}" no existe.`);
 
   const esPlatoPrincipal = tipo_componente === 'Plato Principal';
-  if (esPlatoPrincipal && !categoria) throw error(400, 'El plato principal necesita una categoría de menú.');
-  if (!esPlatoPrincipal && categoria) throw error(400, 'La entrada, el postre y la bebida son compartidos: no llevan categoría.');
+  if (esPlatoPrincipal && !categoria) throw error(400, 'El Plato Principal necesita una categoría de menú.');
+  if (categoria && !esPlatoPrincipal) {
+    const declarada = await pool.query(
+      `SELECT 1 FROM composicion_combo cc
+       JOIN categoria_menu c ON c.id_categoria_menu = cc.id_categoria_menu
+       JOIN tipo_componente t ON t.id_tipo_componente = cc.id_tipo_componente
+       WHERE c.nombre = $1 AND t.nombre = $2`,
+      [categoria, tipo_componente]
+    );
+    if (!declarada.rows[0]) throw error(400, `La categoría ${categoria} no incluye ${tipo_componente}.`);
+  }
 
   const prep = await pool.query('SELECT activa FROM preparacion WHERE id_preparacion = $1', [id_preparacion]);
   if (!prep.rows[0]) throw error(400, 'La preparación indicada no existe.');
@@ -179,10 +201,58 @@ async function eliminarComponente(id_menu_preparacion) {
   }
 }
 
+const OPCIONALES = ['Pan'];
+
+async function validarComposicion(id_menu) {
+  const comps = (await pool.query(
+    `SELECT c.nombre AS categoria, t.nombre AS tipo
+     FROM menu_preparacion mp
+     JOIN tipo_componente t ON t.id_tipo_componente = mp.id_tipo_componente
+     LEFT JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
+     WHERE mp.id_menu = $1`,
+    [id_menu]
+  )).rows;
+
+  if (comps.length === 0) return ['el menú no tiene componentes'];
+
+  const comp = await composicionPorCategoria();
+  const faltantes = [];
+
+  const tieneTipo = (nombreCat, tipo) =>
+    comps.some((x) => x.tipo === tipo && (x.categoria === null || x.categoria === nombreCat));
+
+  const tienePrincipal = (nombreCat) =>
+    comps.some((x) => x.categoria === nombreCat && x.tipo === 'Plato Principal');
+
+  for (const [nombreCat, reglas] of Object.entries(comp)) {
+    if (!tienePrincipal(nombreCat)) {
+      faltantes.push(`Falta el Plato Principal de ${nombreCat}`);
+      continue;
+    }
+
+    const requeridos = reglas.filter((r) => r.grupo_opcion === null && !OPCIONALES.includes(r.tipo));
+    for (const r of requeridos) {
+      if (!tieneTipo(nombreCat, r.tipo)) faltantes.push(`Falta ${r.tipo} para ${nombreCat}`);
+    }
+
+    const grupos = [...new Set(reglas.map((r) => r.grupo_opcion).filter((g) => g !== null))];
+    for (const grupo of grupos) {
+      const tiposDelGrupo = reglas.filter((r) => r.grupo_opcion === grupo).map((r) => r.tipo);
+      if (!tiposDelGrupo.some((t) => tieneTipo(nombreCat, t))) {
+        faltantes.push(`Falta ${tiposDelGrupo.join(' o ')} para ${nombreCat}`);
+      }
+    }
+  }
+
+  return faltantes;
+}
+
 async function cambiarPublicacion(id_menu, publicado) {
   if (publicado) {
-    const { rows } = await pool.query('SELECT COUNT(*)::int AS n FROM menu_preparacion WHERE id_menu = $1', [id_menu]);
-    if (rows[0].n === 0) throw error(400, 'No se puede publicar un menú sin componentes.');
+    const faltantes = await validarComposicion(id_menu);
+    if (faltantes.length > 0) {
+      throw error(400, `No se puede publicar: ${faltantes.join('; ')}.`);
+    }
   }
   const { rows } = await pool.query(
     'UPDATE menu SET publicado = $2 WHERE id_menu = $1 RETURNING id_menu, fecha, publicado',
@@ -339,10 +409,29 @@ async function copiarMenus(copias, { sobrescribir = false } = {}, id_sede = 1) {
   return resultado;
 }
 
+async function composicionPorCategoria() {
+  const { rows } = await pool.query(
+    `SELECT c.nombre AS categoria, t.nombre AS tipo, cc.grupo_opcion
+     FROM composicion_combo cc
+     JOIN categoria_menu c ON c.id_categoria_menu = cc.id_categoria_menu
+     JOIN tipo_componente t ON t.id_tipo_componente = cc.id_tipo_componente
+     ORDER BY c.id_categoria_menu, t.nombre`
+  );
+  const porCat = {};
+  for (const r of rows) {
+    (porCat[r.categoria] = porCat[r.categoria] || []).push({
+      tipo: r.tipo,
+      grupo_opcion: r.grupo_opcion,
+    });
+  }
+  return porCat;
+}
+
 module.exports = {
   menusDelMes, copiarMenus,
   preciosRecientes,
   menuDelDia, obtenerOCrearMenu, obtenerMenuPorFecha, agregarComponente, actualizarComponente,
   eliminarComponente, cambiarPublicacion, listarPorFecha,
   actualizarDisponibilidad, historialDisponibilidad, historialMenus,
+  composicionPorCategoria,
 };

@@ -71,7 +71,7 @@ export default function Opinion({ item }) {
         <Estrellas valor={promedio || 0} />
         <span>
           {promedio != null
-            ? `${Number(promedio).toFixed(1)} · ${total} ${total === 1 ? 'voto' : 'votos'}`
+            ? `${Number(promedio).toFixed(1)} - ${total} ${total === 1 ? 'voto' : 'votos'}`
             : 'Todavía sin calificaciones'}
         </span>
 
@@ -127,9 +127,9 @@ export default function Opinion({ item }) {
             onChange={(e) => setComentario(e.target.value)}
           />
           <p className="texto-suave" style={{ margin: 0, fontSize: '0.78rem' }}>
-            Tu opinión es pública: otros estudiantes verán tu nombre, tu calificación y tu comentario.
+            Tu opinión es pública: otros estudiantes verán tu nombre y la inicial de tu apellido, tu calificación y tu comentario.
           </p>
-          {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+          {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
           <div className="en-linea">
             <button type="submit" className="boton boton-primario boton-chico" disabled={guardando}>
               {guardando ? 'Guardando…' : 'Guardar'}

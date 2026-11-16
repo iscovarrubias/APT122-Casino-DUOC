@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AuthContext } from './auth-context';
 import { configurarCliente } from '../api/cliente';
 import { iniciarSesionApi, consultarSesion, iniciarSesionDuoc as iniciarSesionDuocApi, canjearTicketMicrosoft } from '../api/gestion';
+import { aplicarTema } from '../utils/tema';
 
 const CLAVE = 'casino_sesion';
 
@@ -40,7 +41,10 @@ export default function AuthProvider({ children }) {
     }
     configurarCliente({ token: guardada.token });
     consultarSesion()
-      .then(({ usuario }) => setSesion({ ...guardada, usuario }))
+      .then(({ usuario }) => {
+        setSesion({ ...guardada, usuario });
+        if (usuario.tema_preferido) aplicarTema(usuario.tema_preferido);
+      })
       .catch(() => cerrarSesion())
       .finally(() => setCargando(false));
   }, [cerrarSesion]);
@@ -51,6 +55,7 @@ export default function AuthProvider({ children }) {
     configurarCliente({ token: nueva.token });
     guardar(nueva);
     setSesion(nueva);
+    if (respuesta.usuario.tema_preferido) aplicarTema(respuesta.usuario.tema_preferido);
     return nueva;
   }
 
@@ -60,6 +65,7 @@ export default function AuthProvider({ children }) {
     configurarCliente({ token: nueva.token });
     guardar(nueva);
     setSesion(nueva);
+    if (respuesta.usuario.tema_preferido) aplicarTema(respuesta.usuario.tema_preferido);
     return nueva;
   }
 
@@ -69,6 +75,7 @@ export default function AuthProvider({ children }) {
     configurarCliente({ token: nueva.token });
     guardar(nueva);
     setSesion(nueva);
+    if (respuesta.usuario.tema_preferido) aplicarTema(respuesta.usuario.tema_preferido);
     return nueva;
   }, []);
 

@@ -1,9 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const crypto = require('crypto');
 const { ApiError } = require('./errorHandler');
-
 const RUTA_UPLOADS = path.join(__dirname, '..', '..', 'uploads');
 fs.mkdirSync(RUTA_UPLOADS, { recursive: true });
 
@@ -31,25 +29,18 @@ const recibir = multer({
   },
 });
 
-async function verificarYGuardar(req, res, next) {
+function verificar(req, res, next) {
   if (!req.file) return next();
-  try {
-    const formato = detectarFormato(req.file.buffer);
-    if (!formato || formato.tipo !== req.file.mimetype) {
-      throw new ApiError(400, 'El archivo no es una imagen válida.');
-    }
-    const nombre = `${crypto.randomUUID()}${formato.ext}`;
-    await fs.promises.writeFile(path.join(RUTA_UPLOADS, nombre), req.file.buffer, { flag: 'wx' });
-    req.file.filename = nombre;
-    req.file.buffer = undefined;
-    next();
-  } catch (err) {
-    next(err);
+  const formato = detectarFormato(req.file.buffer);
+  if (!formato || formato.tipo !== req.file.mimetype) {
+    return next(new ApiError(400, 'El archivo no es una imagen válida.'));
   }
+  req.file.formato = formato;
+  next();
 }
 
 const subirImagen = {
-  single: (campo) => [recibir.single(campo), verificarYGuardar],
+  single: (campo) => [recibir.single(campo), verificar],
 };
 
 module.exports = { subirImagen, RUTA_UPLOADS, TAMANO_MAXIMO, detectarFormato };

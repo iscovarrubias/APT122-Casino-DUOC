@@ -16,7 +16,7 @@ const TIPOS = {
     titulo: 'Exportar ventas y agotamiento',
     excel: 'Hojas con resumen, preparaciones, ventas por hora, informe general y día a día, con sus gráficos.',
     imagenes: {
-      resumen: { etiqueta: 'Comparación entre menús', ayuda: 'KPIs y tabla de Principal, JUNAEB, Vegetariano e Hipocalórico', Icono: BarChart3, Hoja: HojaVentasResumen, ancho: 1100 },
+      resumen: { etiqueta: 'Comparación entre menús', ayuda: 'KPIs y tabla de General, JUNAEB, Vegetariano e Hipocalórico', Icono: BarChart3, Hoja: HojaVentasResumen, ancho: 1100 },
       hora: { etiqueta: 'Ventas por hora', ayuda: 'Gráfico de barras por hora del día', Icono: Clock, Hoja: HojaVentasHora, ancho: 900 },
       preparaciones: { etiqueta: 'Preparaciones', ayuda: 'Tabla con las preparaciones más vendidas', Icono: ListChecks, Hoja: HojaPreparaciones, ancho: 1100 },
     },

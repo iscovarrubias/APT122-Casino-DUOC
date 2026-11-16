@@ -8,23 +8,28 @@ import Mensaje from '../components/Mensaje';
 import CampoFecha from '../components/CampoFecha';
 import Ayuda from '../components/Ayuda';
 import ExportarMenu from '../components/ExportarMenu';
-import { Utensils, Ticket, Leaf, Salad, CakeSlice, CupSoda, Copy, Download, X, BarChart3, Trash2 } from 'lucide-react';
+import { Utensils, Ticket, Leaf, Salad, CakeSlice, CupSoda, Soup, Wheat, Apple, Copy, Download, X, BarChart3, Trash2, Plus } from 'lucide-react';
 import Cargando from '../components/Cargando';
+import PaginaError from '../components/PaginaError';
+import ModalAcompanamientoEspecial from '../components/ModalAcompanamientoEspecial';
 import { useConfirmar } from '../context/confirmacion-context';
 
 const PRINCIPALES = [
-  { categoria: 'Principal', Icono: Utensils },
+  { categoria: 'General', Icono: Utensils },
   { categoria: 'JUNAEB', Icono: Ticket },
   { categoria: 'Vegetariano', Icono: Leaf },
   { categoria: 'Hipocalórico', Icono: Salad },
 ];
 
 const ACOMPANAMIENTOS = [
-  { tipo: 'Entrada', Icono: Salad, color: '#318386' },
-  { tipo: 'Postre', Icono: CakeSlice, color: '#B15FBB' },
-  { tipo: 'Bebida', Icono: CupSoda, color: '#4C8FD1' },
+  { tipo: 'Ensalada', Icono: Salad,     color: '#318386', aplica: 'Exclusivo: General, Vegetariano e Hipocalórico' },
+  { tipo: 'Sopa',     Icono: Soup,      color: '#B07C3C', aplica: 'Exclusivo: General, Vegetariano e Hipocalórico' },
+  { tipo: 'Pan',      Icono: Wheat,     color: '#A06B3C', aplica: 'Opcional, exclusivo de General y Vegetariano', opcional: true },
+  { tipo: 'Postre',   Icono: CakeSlice, color: '#B15FBB', aplica: 'Exclusivo: General y Vegetariano (a elección con fruta)' },
+  { tipo: 'Fruta',    Icono: Apple,     color: '#D94040', aplica: 'Exclusivo: General y Vegetariano (a elección con postre) e Hipocalórico' },
+  { tipo: 'Bebida',   Icono: CupSoda,   color: '#4C8FD1', aplica: 'En todos los menús' },
 ];
-
+const REQUERIDOS_COMPARTIDOS = ['Ensalada', 'Sopa', 'Postre', 'Fruta', 'Bebida'];
 const aTexto = (v) => (v === null || v === undefined || v === '' ? '' : String(Number(v)));
 const sumarDias = (f, n) => new Date(new Date(`${f}T12:00:00Z`).getTime() + n * 86400000).toISOString().slice(0, 10);
 const lunesDe = (f) => { const d = new Date(`${f}T12:00:00Z`).getUTCDay(); return sumarDias(f, d === 0 ? -6 : 1 - d); };
@@ -42,7 +47,7 @@ function etiquetaRelativa(f) {
 }
 const corta = (f) => `${f.slice(8, 10)}/${f.slice(5, 7)}`;
 
-function TarjetaRanura({ titulo, Icono, color, esPlato, tipo, categoria, componente, preparaciones, precioSugerido, sugerencia, dia, ocupado, onGuardar, onQuitar, onCambio }) {
+function TarjetaRanura({ titulo, subtitulo, Icono, color, esPlato, tipo, categoria, componente, preparaciones, precioSugerido, sugerencia, dia, ocupado, onGuardar, onQuitar, onCambio }) {
   const precioActual = aTexto(componente?.precio);
   const [idPreparacion, setIdPreparacion] = useState(componente ? String(componente.id_preparacion) : '');
   const [cantidad, setCantidad] = useState(componente ? String(componente.cantidad_planificada) : '');
@@ -68,7 +73,10 @@ function TarjetaRanura({ titulo, Icono, color, esPlato, tipo, categoria, compone
     <article className="plan-card" style={{ '--acento': color }}>
       <header className="plan-card-cabeza">
         <Icono size={18} />
-        <span>{titulo}</span>
+        <div className="plan-card-cabeza-info">
+          <span className="plan-card-titulo">{titulo}</span>
+          {subtitulo && <span className="plan-card-subtitulo">{subtitulo}</span>}
+        </div>
         {componente && <span className="plan-card-estado">Cargado</span>}
       </header>
       <div className="plan-card-cuerpo">
@@ -90,9 +98,7 @@ function TarjetaRanura({ titulo, Icono, color, esPlato, tipo, categoria, compone
               <span>Precio del combo (CLP)</span>
               <input type="number" min="0" step="1" value={precio} onChange={(e) => setPrecio(e.target.value)} />
             </label>
-          ) : (
-            <p className="plan-incluido">Incluido en el precio del combo.</p>
-          )}
+          ) : null}
         </div>
         {sugerencia && (
           <p className="plan-sugerencia" title={sugerencia.n != null ? `Rango probable: ${sugerencia.minimo}–${sugerencia.maximo}` : undefined}>
@@ -205,16 +211,19 @@ function PanelCopiar({ copia, onCambiar, onCopiado, onCerrar }) {
   );
 }
 
-function VistaMes({ mes, onCambiarMes, onElegir, version, copia }) {
+function VistaMes({ mes, onCambiarMes, onElegir, version, copia, onError }) {
   const [dias, setDias] = useState(null);
   const [error, setError] = useState(null);
+  const [intento] = useState(0);
 
   useEffect(() => {
     let activo = true;
     setDias(null);
-    consultarMes(mes).then((d) => { if (activo) { setDias(d.dias); setError(null); } }).catch((e) => { if (activo) setError(e.message); });
+    consultarMes(mes).then((d) => { if (activo) { setDias(d.dias); setError(null); if (onError) onError(null); } }).catch((e) => { if (activo) { setError(e); if (onError) onError(e); } });
     return () => { activo = false; };
-  }, [mes, version]);
+  }, [mes, version, intento, onError]);
+
+  if (error) return null; 
 
   const [anio, m] = mes.split('-').map(Number);
   const total = new Date(Date.UTC(anio, m, 0)).getUTCDate();
@@ -222,9 +231,9 @@ function VistaMes({ mes, onCambiarMes, onElegir, version, copia }) {
   let semana = null;
   for (let d = 1; d <= total; d++) {
     const fecha = `${mes}-${String(d).padStart(2, '0')}`;
-    const dow = (new Date(`${fecha}T12:00:00Z`).getUTCDay() + 6) % 7;
-    if (dow === 6) continue;
-    if (!semana || dow === 0) { semana = Array(6).fill(null); semanas.push(semana); }
+    const dow = (new Date(`${fecha}T12:00:00Z`).getUTCDay() + 6) % 7; 
+    if (dow >= 5) continue;
+    if (!semana || dow === 0) { semana = Array(5).fill(null); semanas.push(semana); } 
     semana[dow] = fecha;
   }
   const mapa = new Map((dias || []).map((d) => [d.fecha, d]));
@@ -242,9 +251,8 @@ function VistaMes({ mes, onCambiarMes, onElegir, version, copia }) {
         </div>
         <span className="texto-suave">{copia ? 'Modo copiar y pegar: sigue los pasos de arriba.' : 'Haz clic en un día para planificarlo.'}</span>
       </div>
-      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
       <div className="mes-grid">
-        {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((n) => <div key={n} className="mes-cabeza">{n}</div>)}
+        {['Lun', 'Mar', 'Mié', 'Jue', 'Vie'].map((n) => <div key={n} className="mes-cabeza">{n}</div>)}
         {semanas.flat().map((f, i) => {
           if (!f) return <div key={`v${i}`} className="mes-celda vacia-fuera" />;
           const info = mapa.get(f);
@@ -293,6 +301,7 @@ export default function PlanificacionPage() {
   const [sugerencias, setSugerencias] = useState(null);
   const [preparaciones, setPreparaciones] = useState([]);
   const [error, setError] = useState(null);
+  const [errorMes, setErrorMes] = useState(null); 
   const [aviso, setAviso] = useState(null);
   const [ocupado, setOcupado] = useState(false);
   const [exportando, setExportando] = useState(false);
@@ -306,6 +315,7 @@ export default function PlanificacionPage() {
     });
   }
   const [guardandoTodo, setGuardandoTodo] = useState(false);
+  const [modalEspecial, setModalEspecial] = useState(false);
   const estadosTarjetas = useRef({});
   const registrarCambioTarjeta = useCallback((estado) => {
     const clave = `${estado.tipo}-${estado.categoria || 'sin'}`;
@@ -322,7 +332,7 @@ export default function PlanificacionPage() {
       setSugerencias(sug);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err);
     }
   }, [fecha]);
 
@@ -331,6 +341,25 @@ export default function PlanificacionPage() {
     setAviso(null);
     cargar();
   }, [cargar]);
+
+  const errorInicialDia = vista === 'dia' && error && typeof error === 'object' && !plan;
+  const errorVistaMes = vista === 'mes' && errorMes;
+
+  if (errorInicialDia || errorVistaMes) {
+    return (
+      <div className="v2 v2-plan">
+        <PaginaError 
+          compacta 
+          codigo={(errorInicialDia ? error : errorMes)?.estado ?? 0} 
+          detalle={(errorInicialDia ? error : errorMes)?.message} 
+          onReintentar={() => { 
+            if (errorInicialDia) { setError(null); cargar(); }
+            else { setErrorMes(null); setVersion(v => v + 1); }
+          }} 
+        />
+      </div>
+    );
+  }
 
   async function ejecutar(accion, mensajeOk) {
     setOcupado(true);
@@ -372,6 +401,19 @@ export default function PlanificacionPage() {
   const buscar = (tipo, categoria) =>
     plan?.componentes.find((c) => c.componente === tipo && (c.categoria || null) === (categoria || null));
 
+  async function crearEspecial(datos) {
+    await agregarComponente({
+      fecha,
+      id_preparacion: datos.id_preparacion,
+      cantidad_planificada: datos.cantidad_planificada,
+      tipo_componente: datos.tipo_componente,
+      categoria: datos.categoria,
+    });
+    setModalEspecial(false);
+    setAviso('Acompañamiento especial creado.');
+    await cargar();
+  }
+
   async function guardarTodo() {
     setError(null);
     setAviso(null);
@@ -382,9 +424,10 @@ export default function PlanificacionPage() {
     for (const r of [...PRINCIPALES, ...ACOMPANAMIENTOS]) {
       const tipo = r.tipo || 'Plato Principal';
       const categoria = r.categoria || null;
-      const nombre = r.categoria ? `Plato principal · ${r.categoria}` : r.tipo;
-      const clave = `${tipo}-${categoria || 'sin'}`;
-      const estado = estadosTarjetas.current[clave];
+      const nombre = r.categoria ? `Plato Principal - ${r.categoria}` : r.tipo;
+      const estado = estadosTarjetas.current[`${tipo}-${categoria || 'sin'}`];
+
+      if (r.opcional && (!estado || !estado.idPreparacion)) continue;
 
       if (!estado || !estado.idPreparacion) {
         faltantes.push(`${nombre}: falta el plato`);
@@ -403,9 +446,8 @@ export default function PlanificacionPage() {
         }
       }
 
-      const componente = buscar(tipo, categoria);
       aGuardar.push({
-        tipo, categoria, componente,
+        tipo, categoria, componente: buscar(tipo, categoria),
         id_preparacion: Number(estado.idPreparacion),
         cantidad: cantidadNum,
         precio: tipo === 'Plato Principal' ? Number(estado.precio) : undefined,
@@ -447,9 +489,23 @@ export default function PlanificacionPage() {
     }
   }
 
+  const sugeridaCompartido = (tipo) => {
+    const n = sugerencias?.compartidos?.por_tipo?.[tipo];
+    return n == null ? null : { sugerido: n };
+  };
   const sugeridaDe = (categoria) => sugerencias?.categorias.find((c) => c.categoria === categoria)?.estimacion || null;
 
-  const faltantes = plan ? Math.max(7 - plan.componentes.length, 0) : 0;
+  const comps = plan?.componentes || [];
+  const principalesOk = comps.filter((c) => c.componente === 'Plato Principal').length;
+  const compartidosOk = comps.filter((c) => !c.categoria && REQUERIDOS_COMPARTIDOS.includes(c.componente)).length;
+  const requeridosOk = principalesOk + compartidosOk;
+  const TOTAL_REQUERIDOS = 9;
+  const faltantes = plan ? Math.max(TOTAL_REQUERIDOS - requeridosOk, 0) : 0;
+  const especiales = comps.filter((c) => c.categoria && c.componente !== 'Plato Principal');
+  const overridesPorTipo = especiales.reduce((acc, c) => {
+    (acc[c.componente] = acc[c.componente] || []).push(c.categoria);
+    return acc;
+  }, {});
   const publicado = !!plan?.menu?.publicado;
   const dia = nombreDia(fecha);
 
@@ -475,9 +531,14 @@ export default function PlanificacionPage() {
   );
   const mensajes = (
     <>
-      {error && (
+      {error && typeof error === 'string' && (
         <Mensaje tipo="error" autoCerrar onCerrar={() => setError(null)}>
           {error}
+        </Mensaje>
+      )}
+      {error && typeof error === 'object' && plan && (
+        <Mensaje tipo="error" autoCerrar onCerrar={() => setError(null)}>
+          {error.message}
         </Mensaje>
       )}
       {aviso && (
@@ -491,7 +552,7 @@ export default function PlanificacionPage() {
     <>
           {plan && (
             <p className={`plan-progreso ${faltantes === 0 ? 'completo' : ''}`}>
-              {faltantes === 0 ? 'Día completo: los 7 componentes están cargados.' : `Faltan ${faltantes} de 7 componentes para completar el día.`}
+            {faltantes === 0 ? 'Día completo: los 9 componentes requeridos están cargados.' : `Faltan ${faltantes} de 9 componentes requeridos para completar el día.`}
             </p>
           )}
           {!plan && !error && <Cargando>Cargando planificación…</Cargando>}
@@ -508,7 +569,7 @@ export default function PlanificacionPage() {
                     onClick={guardarTodo}
                     disabled={ocupado || guardandoTodo || !plan}
                   >
-                    {guardandoTodo ? 'Agregando…' : 'Agregar todo el menú'}
+                    {guardandoTodo ? 'Guardando…' : 'Guardar todo el menú'}
                   </button>
                 </div>
                 <div className="plan-grid">
@@ -530,16 +591,31 @@ export default function PlanificacionPage() {
               </section>
 
               <section className="plan-seccion">
-                <h2>Acompañamientos<Ayuda titulo="Acompañamientos">Iguales para las cuatro categorías: se sirven con todos los combos del día. La cantidad sugerida es la suma de las cuatro categorías.</Ayuda></h2>
+                <div className="plan-seccion-cabeza">
+                  <h2>Acompañamientos<Ayuda titulo="Acompañamientos">Iguales para las cuatro categorías: se sirven con todos los combos del día. La cantidad sugerida suma la demanda estimada de las categorías que llevan ese acompañamiento.</Ayuda></h2>
+                  <button
+                    type="button"
+                    className="boton boton-secundario boton-con-icono"
+                    onClick={() => setModalEspecial(true)}
+                    disabled={ocupado || !plan}
+                  >
+                    <Plus size={16} aria-hidden="true" /> Especial para un menú
+                  </button>
+                </div>
                 <div className="plan-grid plan-grid-3">
-                  {ACOMPANAMIENTOS.map(({ tipo, Icono, color }) => {
+                  {ACOMPANAMIENTOS.map(({ tipo, Icono, color, aplica }) => {
                     const comp = buscar(tipo, null);
+                    const excepto = overridesPorTipo[tipo];
+                    const subtitulo = excepto
+                      ? `${aplica} - excepto ${excepto.join(', ')}`
+                      : aplica;
                     return (
                       <TarjetaRanura
-                        key={`${tipo}-${comp?.id_menu_preparacion ?? 'nuevo'}-${comp?.id_preparacion}-${comp?.cantidad_planificada}-${sugerencias?.compartidos?.sugerido}`}
-                        titulo={tipo} Icono={Icono} color={color}
+                        key={`${tipo}-${comp?.id_menu_preparacion ?? 'nuevo'}-${comp?.id_preparacion}-${comp?.cantidad_planificada}-${sugeridaCompartido(tipo)?.sugerido}`}
+                        titulo={tipo} subtitulo={subtitulo} Icono={Icono} color={color}
                         esPlato={false} tipo={tipo} componente={comp}
-                        preparaciones={preparaciones} sugerencia={sugerencias?.compartidos || null}
+                        preparaciones={preparaciones}
+                        sugerencia={sugeridaCompartido(tipo)}
                         dia={dia}
                         ocupado={ocupado} onGuardar={guardar} onQuitar={quitar}
                         onCambio={registrarCambioTarjeta}
@@ -547,6 +623,32 @@ export default function PlanificacionPage() {
                     );
                   })}
                 </div>
+
+                {especiales.length > 0 && (
+                  <>
+                    <h3 className="v2-subtitulo" style={{ marginTop: 20 }}>Especiales de este día</h3>
+                    <div className="plan-grid plan-grid-3">
+                      {especiales.map((comp) => {
+                        const Icono = ACOMPANAMIENTOS.find((a) => a.tipo === comp.componente)?.Icono || Salad;
+                        const color = ACOMPANAMIENTOS.find((a) => a.tipo === comp.componente)?.color || '#888';
+                        return (
+                          <TarjetaRanura
+                            key={`especial-${comp.id_menu_preparacion}`}
+                            titulo={`${comp.componente} - ${comp.categoria}`}
+                            subtitulo="Solo para este menú"
+                            Icono={Icono} color={color}
+                            esPlato={false} tipo={comp.componente} categoria={comp.categoria}
+                            componente={comp}
+                            preparaciones={preparaciones}
+                            dia={dia}
+                            ocupado={ocupado} onGuardar={guardar} onQuitar={quitar}
+                            onCambio={registrarCambioTarjeta}
+                          />
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </section>
             </>
           )}
@@ -561,7 +663,7 @@ export default function PlanificacionPage() {
             <span className="v2-solo-lector">Fecha del menú</span>
             <CampoFecha value={fechaBase} onChange={(v) => v && setFecha(v)} ariaLabel="Fecha del menú" />
           </label>
-          <span className={`fecha-relativa ${fechaBase === hoyChile() ? 'es-hoy' : ''}`}>{etiquetaRelativa(fechaBase)} · {nombreDia(fechaBase)}</span>
+          <span className={`fecha-relativa ${fechaBase === hoyChile() ? 'es-hoy' : ''}`}>{etiquetaRelativa(fechaBase)} - {nombreDia(fechaBase)}</span>
           <div className="segmentado" role="group" aria-label="Vista">
             <button className={vista === 'dia' ? 'activo' : ''} onClick={() => { setCopia(null); setVista('dia'); }}>Día</button>
             <button className={vista === 'mes' ? 'activo' : ''} onClick={() => { setMes(fechaBase.slice(0, 7)); setVista('mes'); }}>Mes</button>
@@ -593,11 +695,26 @@ export default function PlanificacionPage() {
       )}
 
       {vista === 'mes' && (
-        <VistaMes mes={mes} onCambiarMes={setMes} version={version} copia={copia}
-          onElegir={(f, paraCopia) => { if (paraCopia) elegirParaCopia(f); else setFechaModal(f); }} />
+        <VistaMes 
+          mes={mes} 
+          onCambiarMes={setMes} 
+          version={version} 
+          copia={copia}
+          onError={setErrorMes} 
+          onElegir={(f, paraCopia) => { if (paraCopia) elegirParaCopia(f); else setFechaModal(f); }} 
+        />
       )}
 
       {vista === 'dia' && editorDia}
+
+      {modalEspecial && (
+        <ModalAcompanamientoEspecial
+          fecha={fecha}
+          preparaciones={preparaciones}
+          onCerrar={() => setModalEspecial(false)}
+          onCreado={crearEspecial}
+        />
+      )}
 
       {vista === 'mes' && modalDia && (
         <div className="modal-fondo" role="dialog" aria-modal="true" aria-label="Planificar día">

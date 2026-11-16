@@ -11,6 +11,7 @@ import { obtenerMenuHoy } from '../api/menu';
 import { hoyChile, parseFechaISO, estadoEfectivo, NO_DISPONIBLE, CATEGORIAS_MENU } from '../utils/formato';
 import { suscribirCambios } from '../utils/eventos';
 import Cargando from '../components/Cargando';
+import PaginaError from '../components/PaginaError';
 
 function estadosPorCategoria(preparaciones) {
   const estados = {};
@@ -33,7 +34,7 @@ function formatearFechaLarga(fechaISO) {
 
 function VistaDiario() {
   const { categoriaPreferida } = useEstudiante();
-  const [categoria, setCategoria] = useState(categoriaPreferida || 'Principal');
+  const [categoria, setCategoria] = useState(categoriaPreferida || 'General');
 
   useEffect(() => {
     if (categoriaPreferida) setCategoria(categoriaPreferida);
@@ -48,7 +49,7 @@ function VistaDiario() {
       setDatos(respuesta);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err);
     } finally {
       setCargando(false);
     }
@@ -58,12 +59,18 @@ function VistaDiario() {
     setCargando(true);
     cargar();
     const intervalo = setInterval(cargar, INTERVALO_SONDEO_MS);
-    const cerrar = suscribirCambios(cargar);
+    const cerrar = suscribirCambios(cargar, { dispersionMs: 2000 });
     return () => { clearInterval(intervalo); cerrar(); };
   }, [cargar]);
 
   const delDia = datos?.preparaciones || [];
-  const visibles = delDia.filter((p) => !p.categoria || p.categoria === categoria);
+  const especificos = delDia.filter((p) => p.categoria === categoria);
+  const compartidos = delDia.filter((p) => {
+    if (p.categoria) return false;
+    return !delDia.some((x) => x.categoria === categoria && x.componente === p.componente);
+  });
+
+  const visibles = [...especificos, ...compartidos];
   const estados = estadosPorCategoria(delDia);
 
   return (
@@ -78,7 +85,12 @@ function VistaDiario() {
       {cargando && datos && <Cargando>Cargando menú del día…</Cargando>}
 
       {!cargando && error && (
-        <div className="estado-info">No se pudo cargar el menú. Inténtalo de nuevo en unos minutos. ({error})</div>
+        <PaginaError
+          compacta
+          codigo={error.estado ?? 0}
+          detalle={error.message}
+          onReintentar={() => { setCargando(true); cargar(); }}
+        />
       )}
 
       {!cargando && !error && datos && visibles.length === 0 && (
@@ -86,7 +98,11 @@ function VistaDiario() {
       )}
 
       {!cargando && !error && datos && visibles.length > 0 && (
-        <MenuPrincipal categoria={categoria} componentes={visibles} />
+        <MenuPrincipal
+          categoria={categoria}
+          componentes={visibles}
+          composicionDeCategoria={datos.composicion?.[categoria] || []}
+        />
       )}
     </>
   );

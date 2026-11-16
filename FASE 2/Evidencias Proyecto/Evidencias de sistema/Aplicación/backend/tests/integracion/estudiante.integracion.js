@@ -59,9 +59,11 @@ const servidor = app.listen(PUERTO, async () => {
     const prep = (await llamar('GET', '/preparaciones/gestion', null, adm)).d;
     const id = (n) => prep.find((p) => p.nombre === n).id_preparacion;
     const plan = [
-      ['Pollo arvejado con arroz', 'Plato Principal', 'Principal', 10], ['Arroz con pollo', 'Plato Principal', 'JUNAEB', 10],
+      ['Pollo arvejado con arroz', 'Plato Principal', 'General', 10], ['Arroz con pollo', 'Plato Principal', 'JUNAEB', 10],
       ['Budín de zapallito italiano', 'Plato Principal', 'Vegetariano', 10], ['Pollo a la plancha con ensalada', 'Plato Principal', 'Hipocalórico', 10],
-      ['Sopa de verduras', 'Entrada', undefined, 40], ['Flan de caramelo', 'Postre', undefined, 40], ['Jugo de naranja', 'Bebida', undefined, 40],
+      ['Ensalada chilena', 'Ensalada', undefined, 40], ['Sopa de verduras', 'Sopa', undefined, 40],
+      ['Pan amasado', 'Pan', undefined, 30], ['Flan de caramelo', 'Postre', undefined, 40],
+      ['Manzana', 'Fruta', undefined, 40], ['Jugo de naranja', 'Bebida', undefined, 40],
     ];
     let idMenu;
     for (const [n, tipo, categoria, c] of plan) {
@@ -86,7 +88,7 @@ const servidor = app.listen(PUERTO, async () => {
     assert.equal((await llamar('PUT', `/estudiante/calificaciones/${pid}`, { estrellas: 3, comentario: 'x'.repeat(301) }, est1)).s, 400);
     assert.equal((await llamar('PUT', `/estudiante/calificaciones/${pid}`, { estrellas: 5, comentario: 'Excelente' }, est1)).s, 200);
     await llamar('PUT', `/estudiante/calificaciones/${pid}`, { estrellas: 4 }, est2);
-    const pub = (await llamar('GET', '/menu/hoy?categoria=Principal')).d.preparaciones.find((c) => c.componente === 'Plato Principal');
+    const pub = (await llamar('GET', '/menu/hoy?categoria=General')).d.preparaciones.find((c) => c.componente === 'Plato Principal');
     assert.equal(pub.calificacion_promedio, 4.5); assert.equal(pub.calificaciones_total, 2); ok('una calificación por estudiante (se actualiza) y promedio público');
     const op = await llamar('GET', '/opiniones', null, adm);
     assert.ok(op.d.promedios.find((x) => x.id_preparacion === pid)); assert.ok(op.d.comentarios.some((c) => c.comentario === 'Excelente'));
@@ -115,7 +117,7 @@ const servidor = app.listen(PUERTO, async () => {
     assert.equal((await llamar('POST', '/menu/copiar', { copias: [{ origen: hoy, destino }] }, caj)).s, 403); ok('copiar valida fechas y el cajero no puede');
     const mes = (await llamar('GET', `/menu/mes?mes=${destino.slice(0, 7)}`, null, nut)).d;
     const dia = mes.dias.find((d) => d.fecha === destino);
-    assert.equal(dia.publicado, false); assert.equal(dia.componentes.length, 7); assert.equal((await llamar('GET', '/menu/mes?mes=2026-13', null, nut)).s, 400); ok('vista mensual: día copiado sin publicar, con 7 componentes');
+    assert.equal(dia.publicado, false); assert.equal(dia.componentes.length, 10); assert.equal((await llamar('GET', '/menu/mes?mes=2026-13', null, nut)).s, 400); ok('vista mensual: día copiado sin publicar, con 10 componentes');
     const pl = (await llamar('GET', `/menu/planificacion?fecha=${destino}`, null, nut)).d;
     assert.equal(pl.componentes.filter((c) => c.categoria).length, 4); ok('lo copiado conserva categorías y precios');
 

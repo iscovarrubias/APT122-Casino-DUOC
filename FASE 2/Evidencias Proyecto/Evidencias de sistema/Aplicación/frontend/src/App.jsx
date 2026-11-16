@@ -21,9 +21,9 @@ const IngredientesPage = lazy(() => import('./pages/IngredientesPage'));
 const PreparacionesPage = lazy(() => import('./pages/PreparacionesPage'));
 const UsuariosPage = lazy(() => import('./pages/UsuariosPage'));
 const AnalisisPage = lazy(() => import('./pages/AnalisisPage'));
-import Mensaje from './components/Mensaje';
 import Cargando from './components/Cargando';
 import NoEncontrada from './components/NoEncontrada';
+import PaginaError from './components/PaginaError';
 
 const NOMBRE_SITIO = 'Casinos DUOC UC';
 
@@ -53,10 +53,13 @@ function Enrutador() {
 
   const tituloPagina = ruta === '/login' ? 'Iniciar sesión'
     : ruta.startsWith('/panel') ? (PAGINAS[ruta]?.titulo || 'Panel')
+    : ruta.startsWith('/error') ? 'Error'
     : ruta === '/' ? 'Menú del día' : 'Página no encontrada';
   useTitulo(tituloPagina);
 
   if (ruta.startsWith('/acceso')) return <AccesoPage />;
+
+  if (ruta.startsWith('/error')) return <PaginaError codigo={ruta.split('/')[2] ?? null} />;
 
   if (ruta === '/login') {
     if (cargando) return <PantallaCarga mensaje="Cargando…" />;
@@ -80,10 +83,13 @@ function Enrutador() {
     if (!PERMISOS[ruta].includes(usuario.rol)) {
       return (
         <PanelLayout ruta={ruta} titulo="Sin permiso">
-          <Mensaje tipo="error" titulo="Sin permiso">
-            Tu rol (<strong>{usuario.rol}</strong>) no tiene acceso a esta sección.
-          </Mensaje>
-          <button className="boton boton-primario" onClick={() => navegar(rutaInicial(usuario.rol, false))}>Ir a mi panel</button>
+          <PaginaError
+            codigo={403}
+            compacta
+            mensaje={`Tu rol (${usuario.rol}) no tiene acceso a esta sección.`}
+            rutaInicio={rutaInicial(usuario.rol, false)}
+            textoInicio="Ir a mi panel"
+          />
         </PanelLayout>
       );
     }

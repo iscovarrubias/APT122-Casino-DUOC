@@ -49,8 +49,8 @@ CREATE TABLE tipo_componente (
 );
 COMMENT ON TABLE tipo_componente IS
     'No confundir con categoria_menu. categoria_menu clasifica la DIETA '
-    '(Principal, JUNAEB, Vegetariano, Hipocalórico); tipo_componente '
-    'clasifica la PARTE del combo (entrada, plato principal, postre, '
+    '(General, JUNAEB, Vegetariano, Hipocalórico); tipo_componente '
+    'clasifica la PARTE del combo (entrada, Plato Principal, postre, '
     'bebida). Un mismo combo del día tiene una categoria_menu y cuatro '
     'componentes, uno de cada tipo_componente.';
 
@@ -139,12 +139,12 @@ CREATE TABLE menu_preparacion (
 );
 COMMENT ON TABLE menu_preparacion IS
     'Entidad central de la planificación. id_categoria_menu es NULABLE a '
-    'propósito: el plato principal SÍ varía por categoría (Principal, '
+    'propósito: el Plato Principal SÍ varía por categoría (General, '
     'JUNAEB, Vegetariano, Hipocalórico), pero la entrada, el postre y la '
     'bebida son compartidos para todas las categorías del mismo día, y se '
     'guardan con id_categoria_menu en NULL para no duplicar la misma fila '
     'cuatro veces. El combo completo que ve un estudiante de una categoría '
-    'se arma juntando su plato principal (id_categoria_menu = esa '
+    'se arma juntando su Plato Principal (id_categoria_menu = esa '
     'categoría) con los componentes compartidos del mismo id_menu '
     '(id_categoria_menu IS NULL). Es el dato PLANIFICADO; el estado real '
     'durante la jornada se registra por separado en disponibilidad '
@@ -162,8 +162,6 @@ CREATE UNIQUE INDEX ux_menu_prep_por_categoria
 CREATE UNIQUE INDEX ux_menu_prep_compartido
     ON menu_preparacion (id_menu, id_tipo_componente)
     WHERE id_categoria_menu IS NULL;
-
-
 
 CREATE TABLE disponibilidad (
     id_disponibilidad   SERIAL PRIMARY KEY,
@@ -209,7 +207,7 @@ INSERT INTO sede (nombre, id_concesionario)
 INSERT INTO rol (nombre) VALUES ('Estudiante'), ('Personal Casino'), ('Administrador');
 
 INSERT INTO categoria_menu (nombre) VALUES
-    ('Principal'), ('JUNAEB'), ('Vegetariano'), ('Hipocalórico');
+    ('General'), ('JUNAEB'), ('Vegetariano'), ('Hipocalórico');
 
 INSERT INTO tipo_componente (nombre) VALUES
     ('Entrada'), ('Plato Principal'), ('Postre'), ('Bebida');

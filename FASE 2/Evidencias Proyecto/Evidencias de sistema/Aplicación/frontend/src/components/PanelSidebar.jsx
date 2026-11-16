@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavAnimada } from '../utils/navAnimada';
 import { Store, ClipboardList, Carrot, ChefHat, Users, ChartColumn, Globe, LogOut, Sun, Moon } from 'lucide-react';
 import { useTema } from '../utils/tema';
@@ -32,111 +33,125 @@ export default function PanelSidebar({ ruta }) {
   const salir = () => { cerrarSesion(); navegar('/'); };
   const verMenuPublico = () => navegar('/');
 
+  const botonTema = (
+    <div className="app-toggle-tema-pos">
+      <button
+        type="button"
+        className="app-toggle-tema"
+        onClick={alternar}
+        aria-label={esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+        title={esOscuro ? 'Modo claro' : 'Modo oscuro'}
+      >
+        {esOscuro ? <Sun size={18} /> : <Moon size={18} />}
+      </button>
+    </div>
+  );
+
   return (
-    <aside className="sidebar sidebar--panel">
-      <header className="movil-cabecera">
-        <img src={logo} alt="Casinos DuocUC" className="movil-logo" />
-        <div className="movil-saludo">
-          <div>
-            <span className="etiqueta-panel">Panel de administración</span>
-            <h2>¡Hola, {primerNombre}!</h2>
-            <p>{usuario.rol}</p>
+    <>
+      {createPortal(botonTema, document.body)}
+
+      <aside className="sidebar sidebar--panel">
+        <header className="movil-cabecera">
+          <img src={logo} alt="Casinos DuocUC" className="movil-logo" />
+          <div className="movil-saludo">
+            <div>
+              <span className="etiqueta-panel">Panel de administración</span>
+              <h2>¡Hola, {primerNombre}!</h2>
+              <p>{usuario.rol}</p>
+            </div>
+            <button
+              type="button"
+              className="avatar avatar-boton"
+              onClick={() => setAjustes(true)}
+              aria-label="Abrir configuración"
+            >
+              {inicial}
+            </button>
           </div>
-          <button
-            type="button"
-            className="avatar avatar-boton"
-            onClick={() => setAjustes(true)}
-            aria-label="Abrir configuración"
-          >
-            {inicial}
-          </button>
+        </header>
+
+        <div className="sidebar-logo">
+          <img src="/logooscuro.svg" alt="Casinos DuocUC" className="sidebar-logo-img" />
         </div>
-      </header>
 
-      <div className="sidebar-logo">
-        <img src="/logooscuro.svg" alt="Casinos DuocUC" className="sidebar-logo-img" />
-      </div>
+        <span className="etiqueta-panel">Panel de administración</span>
 
-      <span className="etiqueta-panel">Panel de administración</span>
+        <div className="sidebar-greeting">
+          <h2>¡Hola, {primerNombre}!</h2>
+          <p>{usuario.rol}</p>
+        </div>
 
-      <div className="sidebar-greeting">
-        <h2>¡Hola, {primerNombre}!</h2>
-        <p>{usuario.rol}</p>
-      </div>
+        {items.length > 0 && (
+          <nav className={`sidebar-nav ${items.length > 4 ? 'sidebar-nav--compacta' : ''}`} aria-label="Secciones del panel">
+            {items.map((item) => {
+              const Icono = ICONOS[item.ruta];
+              const activo = item.ruta === activa;
+              return (
+                <button
+                  key={item.ruta}
+                  ref={ref(item.ruta)}
+                  className={`sidebar-nav-item ${activo ? 'active' : ''}`}
+                  aria-current={activo ? 'page' : undefined}
+                  title={item.etiqueta}
+                  aria-label={item.etiqueta}
+                  onClick={() => ir(item.ruta)}
+                >
+                  <Icono size={20} /> <span className="sidebar-nav-texto">{item.corta}</span>
+                </button>
+              );
+            })}
+            <span className="nav-indicador" ref={indicadorRef} aria-hidden="true" />
+          </nav>
+        )}
 
-      {items.length > 0 && (
-        <nav className={`sidebar-nav ${items.length > 4 ? 'sidebar-nav--compacta' : ''}`} aria-label="Secciones del panel">
-          {items.map((item) => {
-            const Icono = ICONOS[item.ruta];
-            const activo = item.ruta === activa;
-            return (
-              <button
-                key={item.ruta}
-                ref={ref(item.ruta)}
-                className={`sidebar-nav-item ${activo ? 'active' : ''}`}
-                aria-current={activo ? 'page' : undefined}
-                title={item.etiqueta}
-                aria-label={item.etiqueta}
-                onClick={() => ir(item.ruta)}
-              >
-                <Icono size={20} /> <span className="sidebar-nav-texto">{item.corta}</span>
-              </button>
-            );
-          })}
-          <span className="nav-indicador" ref={indicadorRef} aria-hidden="true" />
-        </nav>
-      )}
-
-      <div className="sidebar-bottom">
-        <button
-          className="sidebar-link"
-          onClick={alternar}
-          title={esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-        >
-          {esOscuro ? <Sun size={16} /> : <Moon size={16} />}
-          {esOscuro ? 'Modo claro' : 'Modo oscuro'}
-        </button>
-        {!kiosco && (
+        <div className="sidebar-bottom">
           <button className="sidebar-link" onClick={verMenuPublico}>
             <Globe size={16} /> Ver menú público
           </button>
-        )}
-        <button className="sidebar-logout" onClick={salir}>
-          <LogOut size={16} /> Cerrar sesión
-        </button>
-      </div>
-
-      {ajustes && (
-        <div className="hoja-fondo" onClick={cerrarHoja}>
-          <div
-            className="hoja"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Configuración"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="hoja-asa" aria-hidden="true" />
-            <div className="hoja-titulo">
-              <h2>Configuración</h2>
-              <button
-                type="button"
-                className="interruptor-tema"
-                onClick={alternar}
-                aria-label={esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                aria-pressed={esOscuro}
-              >
-                <span className="interruptor-bola">{esOscuro ? <Moon size={16} /> : <Sun size={16} />}</span>
-              </button>
-            </div>
-            {!kiosco && (
-              <button className="hoja-opcion" onClick={accion(verMenuPublico)}>
-                Ver menú público <span aria-hidden="true">›</span>
-              </button>
-            )}
-            <button className="hoja-salir" onClick={accion(salir)}>Cerrar sesión</button>
-          </div>
+          <button className="sidebar-logout" onClick={salir}>
+            <LogOut size={16} /> Cerrar sesión
+          </button>
         </div>
-      )}
-    </aside>
+
+        {ajustes && (
+          <div className="hoja-fondo" onClick={cerrarHoja}>
+            <div
+              className="hoja"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Configuración"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="hoja-asa" aria-hidden="true" />
+              <div className="hoja-titulo">
+                <h2>Configuración</h2>
+                <button
+                  type="button"
+                  className="interruptor-tema"
+                  onClick={alternar}
+                  aria-label={esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                  aria-pressed={esOscuro}
+                >
+                  <span className="interruptor-bola">{esOscuro ? <Moon size={16} /> : <Sun size={16} />}</span>
+                </button>
+              </div>
+                <button
+                  type="button"
+                  className="hoja-opcion hoja-panel-cta"
+                  onClick={accion(verMenuPublico)}
+                >
+                  <span className="hoja-panel-cta-izq">
+                    <Globe size={18} aria-hidden="true" />
+                    <span>Ver menú público</span>
+                  </span>
+                  <span aria-hidden="true">›</span>
+                </button>
+              <button className="hoja-salir" onClick={accion(salir)}>Cerrar sesión</button>
+            </div>
+          </div>
+        )}
+      </aside>
+    </>
   );
 }

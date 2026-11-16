@@ -13,7 +13,7 @@ const analisisRoutes = require('./routes/analisis.routes');
 const estudianteRoutes = require('./routes/estudiante.routes');
 const opinionesRoutes = require('./routes/opiniones.routes');
 const prediccionRoutes = require('./routes/prediccion.routes');
-
+const imagenesRoutes = require('./routes/imagenes.routes');
 const entra = require('./utils/entra');
 
 const ES_PRODUCCION = process.env.NODE_ENV === 'production';
@@ -84,6 +84,7 @@ app.use('/api/analisis', analisisRoutes);
 app.use('/api/estudiante', estudianteRoutes);
 app.use('/api/opiniones', opinionesRoutes);
 app.use('/api/prediccion', prediccionRoutes);
+app.use('/api/imagenes', imagenesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada.' });

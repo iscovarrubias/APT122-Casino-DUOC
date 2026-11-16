@@ -8,6 +8,8 @@ process.env.JWT_SECRET = 'secreto-de-prueba-para-entra-123456789';
 process.env.ENTRA_TENANT_ID = 'tenant-prueba';
 process.env.ENTRA_CLIENT_ID = 'cliente-prueba';
 process.env.ENTRA_REDIRECT_URI = 'http://localhost:3000/api/auth/microsoft/callback';
+process.env.ENTRA_DOMINIOS_ESTUDIANTES = 'duocuc.cl';
+process.env.ENTRA_DOMINIOS_PERSONAL = 'duoc.cl,profesor.duoc.cl';
 
 const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'k1', alg: 'RS256', use: 'sig' };

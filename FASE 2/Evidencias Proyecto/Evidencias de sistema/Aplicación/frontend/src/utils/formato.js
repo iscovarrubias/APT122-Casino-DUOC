@@ -23,6 +23,45 @@ export function calcularPrecioTotal(componentes) {
   return Math.round(componentes.reduce((suma, c) => suma + Number(c.precio || 0), 0));
 }
 
+export function conGrupoOpcion(componentes, composicionDeCategoria) {
+  const mapa = new Map((composicionDeCategoria || []).map((r) => [r.tipo, r.grupo_opcion]));
+  return componentes.map((c) => ({ ...c, grupo_opcion: mapa.get(c.componente) ?? null }));
+}
+
+
+export function agruparComponentes(componentes) {
+  const base = [];
+  const grupos = {};
+  for (const c of componentes) {
+    if (c.grupo_opcion == null) base.push(c);
+    else (grupos[c.grupo_opcion] = grupos[c.grupo_opcion] || []).push(c);
+  }
+  return { base, grupos };
+}
+
+/**
+ * Calorías totales del combo según las opciones elegidas por grupo.
+ *   - Cada grupo se resuelve con la opción elegida (`opciones[grupo]`).
+ *   - Si un grupo no tiene opción elegida, se usa el primero disponible (orden natural de la respuesta).
+ *   - Si algún componente no tiene información nutricional, devuelve null (regla "todo o nada",
+ *     igual que `calcularCaloriasTotales`).
+ *
+ * @param {Array} componentes  
+ * @param {Object} opciones    
+ */
+export function calcularCaloriasConOpcion(componentes, opciones = {}) {
+  const { base, grupos } = agruparComponentes(componentes);
+  const elegidos = [];
+  for (const [grupo, items] of Object.entries(grupos)) {
+    const tipoElegido = opciones[grupo];
+    const elegido = tipoElegido
+      ? items.find((c) => c.componente === tipoElegido) || items[0]
+      : items[0];
+    if (elegido) elegidos.push(elegido);
+  }
+  return calcularCaloriasTotales([...base, ...elegidos]);
+}
+
 const ZONA = 'America/Santiago';
 
 export function aISOChile(fecha) {
@@ -48,16 +87,16 @@ export function formatearHora(marca) {
 }
 
 export const CATEGORIAS_COLOR = {
-  Principal:     { color: '#F5A623', light: '#FDECD2' },
+  General:     { color: '#F5A623', light: '#FDECD2' },
   JUNAEB:        { color: '#D11B1B', light: '#FBE3E3' },
   Vegetariano:   { color: '#3C7424', light: '#E1EFD8' },
   Hipocalórico:  { color: '#318386', light: '#D7EAEB' },
 };
 
-export const CATEGORIAS_MENU = ['Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
+export const CATEGORIAS_MENU = ['General', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
 
 export function colorDeCategoria(categoria) {
-  return CATEGORIAS_COLOR[categoria] || CATEGORIAS_COLOR.Principal;
+  return CATEGORIAS_COLOR[categoria] || CATEGORIAS_COLOR.General;
 }
 
 export function colorTextoSobre(hex) {

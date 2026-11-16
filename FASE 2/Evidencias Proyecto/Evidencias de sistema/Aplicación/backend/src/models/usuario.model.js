@@ -1,11 +1,11 @@
 const pool = require('../config/db');
 
-const COLUMNAS_PUBLICAS = `u.id_usuario, u.nombre, u.email, r.nombre AS rol, u.id_sede, u.activo, u.creado_en`;
+const COLUMNAS_PUBLICAS = `u.id_usuario, u.nombre, u.email, r.nombre AS rol, u.id_sede, u.activo, u.tema_preferido, u.creado_en`;
 
 async function buscarPorEmail(email) {
   const { rows } = await pool.query(
     `SELECT u.id_usuario, u.nombre, u.email, u.password_hash, u.activo,
-            r.nombre AS rol, u.id_sede
+            r.nombre AS rol, u.id_sede, u.tema_preferido
      FROM usuario u
      JOIN rol r ON r.id_rol = u.id_rol
      WHERE LOWER(u.email) = LOWER($1)`,
@@ -22,10 +22,18 @@ async function buscarPorId(id) {
   return rows[0] || null;
 }
 
-async function listar() {
+async function listar({ q, rol, limite = 200 } = {}) {
+  const cond = ['TRUE'];
+  const par = [];
+  if (q) { par.push(`%${q}%`); cond.push(`(u.nombre ILIKE $${par.length} OR u.email ILIKE $${par.length})`); }
+  if (rol) { par.push(rol); cond.push(`r.nombre = $${par.length}`); }
+  else cond.push(`r.nombre <> 'Estudiante'`);
+  par.push(Math.min(Number(limite) || 200, 500));
   const { rows } = await pool.query(
     `SELECT ${COLUMNAS_PUBLICAS} FROM usuario u JOIN rol r ON r.id_rol = u.id_rol
-     ORDER BY u.activo DESC, r.nombre, u.nombre`
+     WHERE ${cond.join(' AND ')}
+     ORDER BY u.activo DESC, r.nombre, u.nombre LIMIT $${par.length}`,
+    par
   );
   return rows;
 }
@@ -62,4 +70,8 @@ async function cambiarPassword(id, passwordHash) {
   return rowCount > 0;
 }
 
-module.exports = { buscarPorEmail, buscarPorId, listar, listarRoles, crear, actualizar, cambiarPassword };
+async function actualizarTema(id, tema) {
+  await pool.query('UPDATE usuario SET tema_preferido = $2 WHERE id_usuario = $1', [id, tema]);
+}
+
+module.exports = { buscarPorEmail, buscarPorId, listar, listarRoles, crear, actualizar, cambiarPassword, actualizarTema };

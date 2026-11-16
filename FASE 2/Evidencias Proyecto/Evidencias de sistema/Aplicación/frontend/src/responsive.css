@@ -1,13 +1,23 @@
-html { -webkit-text-size-adjust: 100%; }
-body { overflow-x: hidden; }
-img { max-width: 100%; }
-button, .boton, .caja-boton, .tab, .sidebar-nav-item { touch-action: manipulation; }
-
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  overflow-x: hidden;
+}
+img {
+  max-width: 100%;
+}
+button, .boton, .caja-boton, .tab, .sidebar-nav-item {
+  touch-action: manipulation;
+}
 .movil-cabecera,
 .hoja-fondo,
-.boton-detalles { display: none; }
-.sidebar-nav .sidebar-nav-item:nth-child(2) { order: -1; }
-
+.boton-detalles {
+  display: none;
+}
+.sidebar-nav .sidebar-nav-item:nth-child(2) {
+  order: -1;
+}
 @media (pointer: coarse) {
   .boton, .sidebar--panel .sidebar-nav-item, .chip-alergia, .segmentado button, .boton-icono { min-height: 44px; }
   .boton-chico { min-height: 36px; }
@@ -15,7 +25,6 @@ button, .boton, .caja-boton, .tab, .sidebar-nav-item { touch-action: manipulatio
   .campo-check input[type='checkbox']::after { width: 22px; height: 22px; }
   .campo-check input[type='checkbox']:checked::after { transform: translateX(20px); }
 }
-
 @media (max-width: 1100px) {
   .sidebar { width: 190px; padding: 24px 14px; }
   .sidebar-logo-img { height: 68px; }
@@ -25,7 +34,6 @@ button, .boton, .caja-boton, .tab, .sidebar-nav-item { touch-action: manipulatio
   .panel-contenido { padding: 22px 18px 56px; }
   .rejilla-analisis { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
 }
-
 @media (max-width: 900px) {
   .app-layout { display: block; min-height: 100dvh; }
 
@@ -150,9 +158,7 @@ button, .boton, .caja-boton, .tab, .sidebar-nav-item { touch-action: manipulatio
   .rejilla-analisis { grid-template-columns: 1fr; }
   .barra-herramientas { align-items: stretch; }
 }
-
 @keyframes hoja-sube { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
-
 @media (max-width: 600px) {
   .sidebar { padding-left: 16px; padding-right: 16px; }
   .main { padding-left: 16px; padding-right: 16px; }
@@ -199,14 +205,12 @@ button, .boton, .caja-boton, .tab, .sidebar-nav-item { touch-action: manipulatio
   .login-tarjeta { padding: 24px 18px; }
   .opiniones-lista { max-height: 55dvh; }
 }
-
 @media (max-width: 380px) {
   .tab { font-size: 0.58rem; padding: 12px 2px 8px; }
   .caja-boton { min-height: 136px; }
   .caja-restante { font-size: 2rem; }
   .sidebar-nav-item { font-size: 0.62rem; }
 }
-
 @media (orientation: landscape) and (max-height: 640px) {
   .caja-boton { min-height: 120px; }
   .caja-restante { font-size: 2.2rem; }
@@ -214,7 +218,6 @@ button, .boton, .caja-boton, .tab, .sidebar-nav-item { touch-action: manipulatio
   .modal-fondo { align-items: center; padding: 12px; }
   .modal { border-radius: var(--radius); max-height: 96dvh; }
 }
-
 @media (min-width: 601px) and (max-width: 1100px) {
   .caja-botones { gap: 18px; }
   .caja-boton { min-height: 200px; }

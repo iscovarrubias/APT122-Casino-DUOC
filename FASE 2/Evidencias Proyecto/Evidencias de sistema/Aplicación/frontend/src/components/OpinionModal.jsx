@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { consultarOpinionesDePlato } from '../api/gestion';
 import { Estrellas } from './Opinion';
 import Mensaje from './Mensaje';
+import PaginaError from './PaginaError'; 
 
 export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
   const [datos, setDatos] = useState(null);
@@ -12,7 +13,7 @@ export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
     let activo = true;
     consultarOpinionesDePlato(idPreparacion)
       .then((d) => { if (activo) setDatos(d); })
-      .catch((err) => { if (activo) setError(err.message); });
+      .catch((err) => { if (activo) setError(err); }); 
     return () => { activo = false; };
   }, [idPreparacion]);
 
@@ -32,7 +33,11 @@ export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
       <div className="modal">
         <h2>Opiniones de "{nombrePlato}"</h2>
 
-        {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+        {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+        {error && typeof error === 'object' && !datos && (
+          <PaginaError compacta codigo={error.estado ?? 0} detalle={error.message} onReintentar={() => window.location.reload()} />
+        )}
+        
         {!datos && !error && <Cargando>Cargando opiniones…</Cargando>}
 
         {datos && opiniones.length === 0 && (
@@ -47,7 +52,7 @@ export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
               <Estrellas valor={promedio} tam={20} />
               <strong>{promedio.toFixed(1)}</strong>
               <span className="texto-suave" style={{ margin: 0 }}>
-                · {opiniones.length} {opiniones.length === 1 ? 'opinión con texto' : 'opiniones con texto'}
+                - {opiniones.length} {opiniones.length === 1 ? 'opinión con texto' : 'opiniones con texto'}
               </span>
             </div>
 

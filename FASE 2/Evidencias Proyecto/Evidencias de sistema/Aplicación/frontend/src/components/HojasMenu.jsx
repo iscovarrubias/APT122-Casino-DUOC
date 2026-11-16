@@ -17,7 +17,7 @@ function Cabecera({ periodo, titulo }) {
         </div>
         <span className="hx-mes">{periodo.etiquetaMes}</span>
       </div>
-      {titulo && <div className="hx-subtitulo">{titulo}  ·  {periodo.subtitulo}</div>}
+      {titulo && <div className="hx-subtitulo">{titulo} - {periodo.subtitulo}</div>}
     </header>
   );
 }

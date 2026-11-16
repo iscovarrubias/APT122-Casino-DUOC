@@ -1,7 +1,11 @@
 BEGIN;
 
+DELETE FROM movimiento_stock;
+DELETE FROM venta_combo;
+DELETE FROM jornada;
+DELETE FROM disponibilidad;
 DELETE FROM venta;
-DELETE FROM menu_preparacion;  
+DELETE FROM menu_preparacion;
 DELETE FROM menu;
 DELETE FROM informacion_nutricional;
 DELETE FROM preparacion_alergeno;
@@ -25,7 +29,7 @@ INSERT INTO ingrediente (nombre) VALUES
 ON CONFLICT (nombre) DO NOTHING;
 
 INSERT INTO preparacion (nombre, descripcion, precio, activa) VALUES
-  ('Pollo arvejado con arroz', 'Pollo cocido con arvejas, zanahoria y arroz. Plato principal clásico de casino.', 4500, TRUE),
+  ('Pollo arvejado con arroz', 'Pollo cocido con arvejas, zanahoria y arroz. Plato Principal clásico de casino.', 4500, TRUE),
   ('Pastel de choclo', 'Pastel tradicional chileno con carne, pollo, cebolla y choclo.', 5000, TRUE),
   ('Cazuela de vacuno', 'Cazuela de carne de vacuno con verduras de temporada y papa.', 4800, TRUE),
   ('Arroz con pollo', 'Arroz con trozos de pollo salteados con verduras.', 3500, TRUE),
@@ -41,24 +45,31 @@ INSERT INTO preparacion (nombre, descripcion, precio, activa) VALUES
 
 INSERT INTO preparacion (nombre, descripcion, precio, activa, id_tipo_componente) VALUES
   ('Ensalada chilena', 'Tomate, cebolla y cilantro con aliño.', 0, TRUE,
-    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Entrada')),
+    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Ensalada')),
   ('Sopa de verduras', 'Sopa casera de verduras de temporada.', 0, TRUE,
-    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Entrada')),
+    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Sopa')),
   ('Consomé de ave', 'Consomé claro de ave con arroz y perejil.', 0, TRUE,
-    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Entrada')),
+    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Sopa')),
+  ('Pan amasado', 'Pan amasado del día, una unidad.', 0, TRUE,
+    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Pan')),
   ('Mousse de chocolate', 'Mousse de chocolate con crema.', 0, TRUE,
     (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Postre')),
   ('Jalea de frutilla', 'Jalea de frutilla individual.', 0, TRUE,
     (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Postre')),
   ('Flan de caramelo', 'Flan casero con caramelo.', 0, TRUE,
     (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Postre')),
+  ('Manzana', 'Manzana fresca de la estación.', 0, TRUE,
+    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Fruta')),
+  ('Naranja', 'Naranja fresca de la estación.', 0, TRUE,
+    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Fruta')),
+  ('Durazno', 'Durazno fresco de la estación.', 0, TRUE,
+    (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Fruta')),
   ('Jugo de naranja', 'Jugo natural de naranja recién exprimido.', 0, TRUE,
     (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Bebida')),
   ('Agua mineral', 'Vaso de agua mineral.', 0, TRUE,
     (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Bebida')),
   ('Té helado', 'Té helado con limón.', 0, TRUE,
     (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Bebida'));
-
 
 INSERT INTO preparacion_ingrediente (id_preparacion, id_ingrediente)
 SELECT p.id_preparacion, i.id_ingrediente
@@ -165,6 +176,26 @@ SELECT p.id_preparacion, i.id_ingrediente
 FROM preparacion p, ingrediente i
 WHERE p.nombre = 'Té helado' AND i.nombre IN ('Té', 'Limón', 'Azúcar');
 
+INSERT INTO preparacion_ingrediente (id_preparacion, id_ingrediente)
+SELECT p.id_preparacion, i.id_ingrediente
+FROM preparacion p, ingrediente i
+WHERE p.nombre = 'Pan amasado' AND i.nombre IN ('Harina', 'Agua mineral');
+
+INSERT INTO preparacion_ingrediente (id_preparacion, id_ingrediente)
+SELECT p.id_preparacion, i.id_ingrediente
+FROM preparacion p, ingrediente i
+WHERE p.nombre = 'Manzana' AND i.nombre = 'Manzana';
+
+INSERT INTO preparacion_ingrediente (id_preparacion, id_ingrediente)
+SELECT p.id_preparacion, i.id_ingrediente
+FROM preparacion p, ingrediente i
+WHERE p.nombre = 'Naranja' AND i.nombre = 'Naranja';
+
+INSERT INTO preparacion_ingrediente (id_preparacion, id_ingrediente)
+SELECT p.id_preparacion, i.id_ingrediente
+FROM preparacion p, ingrediente i
+WHERE p.nombre = 'Durazno' AND i.nombre = 'Durazno';
+
 INSERT INTO preparacion_alergeno (id_preparacion, id_alergeno)
 SELECT p.id_preparacion, a.id_alergeno
 FROM preparacion p, alergeno a
@@ -263,6 +294,18 @@ SELECT id_preparacion, 0, 0, 0, 0, 'Nutricionista del casino', TRUE, CURRENT_TIM
 INSERT INTO informacion_nutricional (id_preparacion, calorias, proteinas_g, carbohidratos_g, grasas_g, fuente, validado, actualizado_en)
 SELECT id_preparacion, 60, 0, 15.0, 0, 'Nutricionista del casino', TRUE, CURRENT_TIMESTAMP FROM preparacion WHERE nombre = 'Té helado';
 
+INSERT INTO informacion_nutricional (id_preparacion, calorias, proteinas_g, carbohidratos_g, grasas_g, fuente, validado, actualizado_en)
+SELECT id_preparacion, 135, 4.5, 25.0, 1.0, 'Estimado para una unidad de 50 g', TRUE, CURRENT_TIMESTAMP FROM preparacion WHERE nombre = 'Pan amasado';
+
+INSERT INTO informacion_nutricional (id_preparacion, calorias, proteinas_g, carbohidratos_g, grasas_g, fuente, validado, actualizado_en)
+SELECT id_preparacion, 78, 0.5, 21.0, 0.3, 'Manzana mediana (~150 g)', TRUE, CURRENT_TIMESTAMP FROM preparacion WHERE nombre = 'Manzana';
+
+INSERT INTO informacion_nutricional (id_preparacion, calorias, proteinas_g, carbohidratos_g, grasas_g, fuente, validado, actualizado_en)
+SELECT id_preparacion, 62, 1.2, 15.4, 0.2, 'Naranja mediana (~150 g)', TRUE, CURRENT_TIMESTAMP FROM preparacion WHERE nombre = 'Naranja';
+
+INSERT INTO informacion_nutricional (id_preparacion, calorias, proteinas_g, carbohidratos_g, grasas_g, fuente, validado, actualizado_en)
+SELECT id_preparacion, 58, 1.4, 14.0, 0.4, 'Durazno mediano (~150 g)', TRUE, CURRENT_TIMESTAMP FROM preparacion WHERE nombre = 'Durazno';
+
 INSERT INTO menu (id_sede, fecha, publicado)
 SELECT 1, d, TRUE FROM (VALUES
   ('2026-10-05'::date),
@@ -281,48 +324,66 @@ SELECT
   (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = t.tipo),
   t.cantidad
 FROM (VALUES
-  ('2026-10-05'::date, 'Pollo arvejado con arroz', 'Principal', 'Plato Principal', 40),
+  ('2026-10-05'::date, 'Pollo arvejado con arroz', 'General', 'Plato Principal', 40),
   ('2026-10-05', 'Arroz con pollo', 'JUNAEB', 'Plato Principal', 45),
   ('2026-10-05', 'Budín de zapallito italiano', 'Vegetariano', 'Plato Principal', 25),
   ('2026-10-05', 'Pollo a la plancha con ensalada', 'Hipocalórico', 'Plato Principal', 20),
-  ('2026-10-05', 'Sopa de verduras', NULL, 'Entrada', 100),
-  ('2026-10-05', 'Flan de caramelo', NULL, 'Postre', 100),
-  ('2026-10-05', 'Jugo de naranja', NULL, 'Bebida', 120),
-  ('2026-10-06', 'Pastel de choclo', 'Principal', 'Plato Principal', 40),
+  ('2026-10-05', 'Ensalada chilena', NULL, 'Ensalada', 110),
+  ('2026-10-05', 'Sopa de verduras', NULL, 'Sopa', 110),
+  ('2026-10-05', 'Pan amasado', NULL, 'Pan', 90),
+  ('2026-10-05', 'Flan de caramelo', NULL, 'Postre', 70),
+  ('2026-10-05', 'Manzana', NULL, 'Fruta', 110),
+  ('2026-10-05', 'Jugo de naranja', NULL, 'Bebida', 140),
+  ('2026-10-06', 'Pastel de choclo', 'General', 'Plato Principal', 40),
   ('2026-10-06', 'Guiso de carne con papas', 'JUNAEB', 'Plato Principal', 45),
   ('2026-10-06', 'Lasagna de verduras', 'Vegetariano', 'Plato Principal', 25),
   ('2026-10-06', 'Salmón al vapor con verduras', 'Hipocalórico', 'Plato Principal', 20),
-  ('2026-10-06', 'Ensalada chilena', NULL, 'Entrada', 100),
-  ('2026-10-06', 'Mousse de chocolate', NULL, 'Postre', 100),
-  ('2026-10-06', 'Agua mineral', NULL, 'Bebida', 120),
-  ('2026-10-07', 'Cazuela de vacuno', 'Principal', 'Plato Principal', 40),
+  ('2026-10-06', 'Ensalada chilena', NULL, 'Ensalada', 110),
+  ('2026-10-06', 'Consomé de ave', NULL, 'Sopa', 110),
+  ('2026-10-06', 'Pan amasado', NULL, 'Pan', 90),
+  ('2026-10-06', 'Mousse de chocolate', NULL, 'Postre', 70),
+  ('2026-10-06', 'Naranja', NULL, 'Fruta', 110),
+  ('2026-10-06', 'Agua mineral', NULL, 'Bebida', 140),
+  ('2026-10-07', 'Cazuela de vacuno', 'General', 'Plato Principal', 40),
   ('2026-10-07', 'Tallarines con salsa', 'JUNAEB', 'Plato Principal', 45),
   ('2026-10-07', 'Ensalada de quinoa', 'Vegetariano', 'Plato Principal', 25),
   ('2026-10-07', 'Pechuga de pavo con arroz integral', 'Hipocalórico', 'Plato Principal', 20),
-  ('2026-10-07', 'Consomé de ave', NULL, 'Entrada', 100),
-  ('2026-10-07', 'Jalea de frutilla', NULL, 'Postre', 100),
-  ('2026-10-07', 'Té helado', NULL, 'Bebida', 120),
-  ('2026-10-08', 'Pollo arvejado con arroz', 'Principal', 'Plato Principal', 40),
+  ('2026-10-07', 'Ensalada chilena', NULL, 'Ensalada', 110),
+  ('2026-10-07', 'Sopa de verduras', NULL, 'Sopa', 110),
+  ('2026-10-07', 'Pan amasado', NULL, 'Pan', 90),
+  ('2026-10-07', 'Jalea de frutilla', NULL, 'Postre', 70),
+  ('2026-10-07', 'Durazno', NULL, 'Fruta', 110),
+  ('2026-10-07', 'Té helado', NULL, 'Bebida', 140),
+  ('2026-10-08', 'Pollo arvejado con arroz', 'General', 'Plato Principal', 40),
   ('2026-10-08', 'Arroz con pollo', 'JUNAEB', 'Plato Principal', 45),
   ('2026-10-08', 'Budín de zapallito italiano', 'Vegetariano', 'Plato Principal', 25),
   ('2026-10-08', 'Salmón al vapor con verduras', 'Hipocalórico', 'Plato Principal', 20),
-  ('2026-10-08', 'Sopa de verduras', NULL, 'Entrada', 100),
-  ('2026-10-08', 'Flan de caramelo', NULL, 'Postre', 100),
-  ('2026-10-08', 'Jugo de naranja', NULL, 'Bebida', 120),
-  ('2026-10-09', 'Pastel de choclo', 'Principal', 'Plato Principal', 40),
+  ('2026-10-08', 'Ensalada chilena', NULL, 'Ensalada', 110),
+  ('2026-10-08', 'Consomé de ave', NULL, 'Sopa', 110),
+  ('2026-10-08', 'Pan amasado', NULL, 'Pan', 90),
+  ('2026-10-08', 'Flan de caramelo', NULL, 'Postre', 70),
+  ('2026-10-08', 'Manzana', NULL, 'Fruta', 110),
+  ('2026-10-08', 'Jugo de naranja', NULL, 'Bebida', 140),
+  ('2026-10-09', 'Pastel de choclo', 'General', 'Plato Principal', 40),
   ('2026-10-09', 'Guiso de carne con papas', 'JUNAEB', 'Plato Principal', 45),
   ('2026-10-09', 'Lasagna de verduras', 'Vegetariano', 'Plato Principal', 25),
   ('2026-10-09', 'Pechuga de pavo con arroz integral', 'Hipocalórico', 'Plato Principal', 20),
-  ('2026-10-09', 'Ensalada chilena', NULL, 'Entrada', 100),
-  ('2026-10-09', 'Mousse de chocolate', NULL, 'Postre', 100),
-  ('2026-10-09', 'Agua mineral', NULL, 'Bebida', 120),
-  ('2026-10-10', 'Cazuela de vacuno', 'Principal', 'Plato Principal', 40),
+  ('2026-10-09', 'Ensalada chilena', NULL, 'Ensalada', 110),
+  ('2026-10-09', 'Sopa de verduras', NULL, 'Sopa', 110),
+  ('2026-10-09', 'Pan amasado', NULL, 'Pan', 90),
+  ('2026-10-09', 'Mousse de chocolate', NULL, 'Postre', 70),
+  ('2026-10-09', 'Naranja', NULL, 'Fruta', 110),
+  ('2026-10-09', 'Agua mineral', NULL, 'Bebida', 140),
+  ('2026-10-10', 'Cazuela de vacuno', 'General', 'Plato Principal', 40),
   ('2026-10-10', 'Tallarines con salsa', 'JUNAEB', 'Plato Principal', 45),
   ('2026-10-10', 'Ensalada de quinoa', 'Vegetariano', 'Plato Principal', 25),
   ('2026-10-10', 'Pollo a la plancha con ensalada', 'Hipocalórico', 'Plato Principal', 20),
-  ('2026-10-10', 'Consomé de ave', NULL, 'Entrada', 100),
-  ('2026-10-10', 'Jalea de frutilla', NULL, 'Postre', 100),
-  ('2026-10-10', 'Té helado', NULL, 'Bebida', 120)
+  ('2026-10-10', 'Ensalada chilena', NULL, 'Ensalada', 110),
+  ('2026-10-10', 'Consomé de ave', NULL, 'Sopa', 110),
+  ('2026-10-10', 'Pan amasado', NULL, 'Pan', 90),
+  ('2026-10-10', 'Jalea de frutilla', NULL, 'Postre', 70),
+  ('2026-10-10', 'Durazno', NULL, 'Fruta', 110),
+  ('2026-10-10', 'Té helado', NULL, 'Bebida', 140)
 ) AS t(fecha, preparacion, categoria, tipo, cantidad);
 
 INSERT INTO disponibilidad (id_menu_preparacion, estado, observacion)

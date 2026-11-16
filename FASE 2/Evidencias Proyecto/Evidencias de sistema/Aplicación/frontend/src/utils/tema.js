@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from 'react';
+import { useAuth } from '../context/auth-context';
+import { pedir } from '../api/cliente';
 
 const CLAVE = 'casino_tema';
 const suscriptores = new Set();
@@ -12,7 +14,7 @@ function leerGuardado() {
   }
 }
 
-function aplicar(nuevo) {
+export function aplicarTema(nuevo) {
   temaActual = nuevo;
   document.documentElement.dataset.theme = nuevo === 'oscuro' ? 'oscuro' : '';
   try { localStorage.setItem(CLAVE, nuevo); } catch {}
@@ -29,11 +31,18 @@ function leer() {
   return temaActual;
 }
 
-export function alternarTema() {
-  aplicar(leer() === 'oscuro' ? 'claro' : 'oscuro');
-}
-
 export function useTema() {
   const tema = useSyncExternalStore(suscribir, leer, () => 'claro');
-  return { tema, esOscuro: tema === 'oscuro', alternar: alternarTema };
+  const { usuario } = useAuth();
+
+  const alternar = () => {
+    const nuevo = tema === 'oscuro' ? 'claro' : 'oscuro';
+    aplicarTema(nuevo);
+    
+    if (usuario) {
+      pedir('/api/auth/tema', { metodo: 'PATCH', cuerpo: { tema: nuevo } }).catch(() => {});
+    }
+  };
+
+  return { tema, esOscuro: tema === 'oscuro', alternar };
 }

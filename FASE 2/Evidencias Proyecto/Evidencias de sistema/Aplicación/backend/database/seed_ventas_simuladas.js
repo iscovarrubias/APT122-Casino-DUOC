@@ -53,12 +53,9 @@ async function limpiar(client) {
   console.log('Los menús creados para la simulación se conservan (ya fueron publicados como cualquier otro).');
 }
 
-/**
- * Carga las preparaciones activas separadas por tipo de componente.
- * Soporta las dos convenciones del proyecto:
- *  - Platos principales con id_tipo_componente = NULL (seed_demo.sql)
- *  - Platos principales con id_tipo_componente = 'Plato Principal' (seed_demo_nutricion.sql)
- */
+const TIPOS_COMPARTIDOS = ['Ensalada', 'Sopa', 'Pan', 'Postre', 'Fruta', 'Bebida'];
+const OBLIGATORIOS = ['Ensalada', 'Sopa', 'Postre', 'Fruta', 'Bebida'];
+
 async function cargarPreparacionesPorTipo(client, tipos) {
   const { rows: todas } = await client.query(
     `SELECT id_preparacion, id_tipo_componente FROM preparacion WHERE activa = TRUE`
@@ -67,17 +64,13 @@ async function cargarPreparacionesPorTipo(client, tipos) {
   const principales = todas
     .filter((p) => p.id_tipo_componente === null || p.id_tipo_componente === tipos['Plato Principal'])
     .map((p) => p.id_preparacion);
-  const entradas = todas
-    .filter((p) => p.id_tipo_componente === tipos['Entrada'])
-    .map((p) => p.id_preparacion);
-  const postres = todas
-    .filter((p) => p.id_tipo_componente === tipos['Postre'])
-    .map((p) => p.id_preparacion);
-  const bebidas = todas
-    .filter((p) => p.id_tipo_componente === tipos['Bebida'])
-    .map((p) => p.id_preparacion);
 
-  return { principales, entradas, postres, bebidas };
+  const compartidos = {};
+  for (const tipo of TIPOS_COMPARTIDOS) {
+    compartidos[tipo] = todas.filter((p) => p.id_tipo_componente === tipos[tipo]).map((p) => p.id_preparacion);
+  }
+
+  return { principales, compartidos };
 }
 
 async function asegurarComponentes(client, id_menu, grupos, categorias, tipos) {
@@ -91,7 +84,6 @@ async function asegurarComponentes(client, id_menu, grupos, categorias, tipos) {
       [id_menu, id_preparacion, id_categoria, id_tipo, cantidad]
     );
 
-  // --- 4 platos principales, uno por categoría ---
   const principalesBarajados = barajar(grupos.principales);
   if (principalesBarajados.length < categorias.length) {
     throw new Error(
@@ -107,19 +99,14 @@ async function asegurarComponentes(client, id_menu, grupos, categorias, tipos) {
     );
   }
 
-  // --- 3 compartidos: entrada, postre y bebida (cada uno de su tipo correcto) ---
-  const compartidos = [
-    { tipo: 'Entrada', opciones: grupos.entradas },
-    { tipo: 'Postre', opciones: grupos.postres },
-    { tipo: 'Bebida', opciones: grupos.bebidas },
-  ];
-  for (const { tipo, opciones } of compartidos) {
+  for (const tipo of TIPOS_COMPARTIDOS) {
+    const opciones = grupos.compartidos[tipo];
     if (opciones.length === 0) {
-      console.warn(`  ⚠ Sin preparaciones activas de tipo "${tipo}": se omite ese slot.`);
+      console.warn(`  Sin preparaciones activas de tipo "${tipo}": se omite ese componente.`);
       continue;
     }
-    const elegida = barajar(opciones)[0];
-    await insertar(elegida, null, tipos[tipo], Math.round(entre(150, 230)));
+    const cantidad = tipo === 'Pan' ? Math.round(entre(90, 160)) : Math.round(entre(150, 230));
+    await insertar(barajar(opciones)[0], null, tipos[tipo], cantidad);
   }
 }
 
@@ -141,6 +128,11 @@ async function main() {
       ])
     );
     const grupos = await cargarPreparacionesPorTipo(client, tipos);
+
+    const sinTipo = OBLIGATORIOS.filter((t) => grupos.compartidos[t].length === 0);
+    if (sinTipo.length > 0) {
+      throw new Error(`Faltan preparaciones activas de tipo: ${sinTipo.join(', ')}. Carga el catálogo de demostración antes de simular ventas.`);
+    }
 
     if (grupos.principales.length < 4) {
       throw new Error(

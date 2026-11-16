@@ -38,7 +38,13 @@ async function login(req, res, next) {
     res.json({
       token,
       kiosco: sesionLarga,
-      usuario: { id_usuario: usuario.id_usuario, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
+      usuario: { 
+        id_usuario: usuario.id_usuario, 
+        nombre: usuario.nombre, 
+        email: usuario.email, 
+        rol: usuario.rol,
+        tema_preferido: usuario.tema_preferido 
+      },
     });
   } catch (err) {
     next(err);
@@ -80,7 +86,16 @@ async function loginDuoc(req, res, next) {
     const token = jwt.sign(
       { id_usuario: usuario.id_usuario, email: usuario.email, rol: usuario.rol, id_sede: usuario.id_sede },
       process.env.JWT_SECRET, { expiresIn: '8h' });
-    res.json({ token, usuario: { id_usuario: usuario.id_usuario, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol } });
+    res.json({ 
+      token, 
+      usuario: { 
+        id_usuario: usuario.id_usuario, 
+        nombre: usuario.nombre, 
+        email: usuario.email, 
+        rol: usuario.rol,
+        tema_preferido: usuario.tema_preferido 
+      } 
+    });
   } catch (err) {
     next(err);
   }
@@ -174,7 +189,13 @@ async function microsoftCallback(req, res) {
       process.env.JWT_SECRET, { expiresIn: sesionLarga ? (process.env.JWT_EXPIRES_IN_KIOSCO || '7d') : (process.env.JWT_EXPIRES_IN || '8h') });
     const ticket = await entra.crearTicket({
       token, kiosco: sesionLarga,
-      usuario: { id_usuario: usuario.id_usuario, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
+      usuario: { 
+        id_usuario: usuario.id_usuario, 
+        nombre: usuario.nombre, 
+        email: usuario.email, 
+        rol: usuario.rol,
+        tema_preferido: usuario.tema_preferido // <-- AGREGADO AQUÍ
+      },
     });
     res.redirect(`${frontend}/#/acceso?ticket=${ticket}`);
   } catch (err) {
@@ -196,4 +217,15 @@ async function microsoftCanje(req, res, next) {
   }
 }
 
-module.exports = { login, yo, loginDuoc, configPublica, identificar, microsoftInicio, microsoftCallback, microsoftCanje };
+async function actualizarTema(req, res, next) {
+  try {
+    const { tema } = req.body;
+    if (tema !== 'claro' && tema !== 'oscuro') throw new ApiError(400, 'Tema inválido.');
+    await usuarioModel.actualizarTema(req.user.id_usuario, tema);
+    res.json({ tema });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { login, yo, loginDuoc, configPublica, identificar, microsoftInicio, microsoftCallback, microsoftCanje, actualizarTema };

@@ -2,7 +2,7 @@ import { UtensilsCrossed, Ticket, Leaf, Salad } from 'lucide-react';
 import { CATEGORIAS_COLOR, colorTextoSobre } from '../utils/formato';
 
 const CATEGORIAS = [
-  { nombre: 'Principal', Icono: UtensilsCrossed },
+  { nombre: 'General', Icono: UtensilsCrossed },
   { nombre: 'JUNAEB', Icono: Ticket },
   { nombre: 'Vegetariano', Icono: Leaf },
   { nombre: 'Hipocalórico', Icono: Salad },
@@ -15,7 +15,7 @@ export default function CategoriaTabs({ categoriaActiva, onSeleccionar, estados 
     <div className="tabs">
       {CATEGORIAS.map(({ nombre, Icono }) => {
         const activa = categoriaActiva === nombre;
-        const color = (CATEGORIAS_COLOR[nombre] || CATEGORIAS_COLOR.Principal).color;
+        const color = (CATEGORIAS_COLOR[nombre] || CATEGORIAS_COLOR.General).color;
         const estado = estados[nombre];
         const agotada = Boolean(estado);
         return (

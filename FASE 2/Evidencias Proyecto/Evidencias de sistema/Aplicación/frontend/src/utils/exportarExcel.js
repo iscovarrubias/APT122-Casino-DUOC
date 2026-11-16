@@ -162,7 +162,7 @@ function encabezadoHoja(ws, p, logo, titulo, anchos, colLogo) {
   ws.getRow(3).height = 26;
   ws.mergeCells(3, 1, 3, 5);
   const sub = ws.getCell(3, 1);
-  sub.value = `${titulo}  ·  ${p.subtitulo}`;
+  sub.value = `${titulo} - ${p.subtitulo}`;
   sub.font = { name: FUENTE, size: 12, bold: true, color: { argb: OSCURO } };
   sub.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
   for (let c = 1; c <= 5; c++) { ws.getCell(3, c).fill = relleno(GRIS_FONDO); ws.getCell(3, c).border = caja(LINEA); }

@@ -57,10 +57,10 @@ async function mensual(req, res, next) {
       const hasta = req.query.hasta || hoyChile();
       if (!esFechaISO(desde) || !esFechaISO(hasta)) throw new ApiError(400, 'Las fechas deben tener el formato AAAA-MM-DD.');
       if (desde > hasta) throw new ApiError(400, 'La fecha "desde" no puede ser posterior a "hasta".');
-      return res.json(await analisisModel.rankingPeriodo(desde, hasta));
+      return res.json(await analisisModel.rankingPeriodo(desde, hasta, req.user.id_sede));
     }
     const mes = validarMes(req.query.mes);
-    res.json(await analisisModel.rankingMensual(mes));
+    res.json(await analisisModel.rankingMensual(mes, req.user.id_sede));
   } catch (err) {
     next(err);
   }

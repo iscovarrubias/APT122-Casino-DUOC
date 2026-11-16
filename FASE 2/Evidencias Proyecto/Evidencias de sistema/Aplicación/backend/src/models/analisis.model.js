@@ -101,16 +101,19 @@ async function origenes(desde, hasta, id_sede) {
   };
 }
 
-async function rankingPeriodo(desde, hasta) {
+async function rankingPeriodo(desde, hasta, id_sede) {
   const resumen = (await pool.query(
     `SELECT
         COUNT(*) FILTER (WHERE j.estado = 'cerrada')::int AS jornadas_cerradas,
         COUNT(*) FILTER (WHERE j.estado = 'cerrada' AND j.sobrante_contado)::int AS con_conteo_de_cocina,
-        COUNT(*) FILTER (WHERE j.estado = 'cerrada' AND j.cierre_automatico)::int AS cierres_automaticos
+        COUNT(*) FILTER (WHERE j.estado = 'cerrada' AND j.cierre_automatico)::int AS cierres_automaticos,
+        COUNT(*) FILTER (WHERE j.estado = 'cerrada' AND EXISTS (
+          SELECT 1 FROM movimiento_stock ms JOIN menu_preparacion mp ON mp.id_menu_preparacion = ms.id_menu_preparacion
+          WHERE mp.id_menu = j.id_menu AND ms.tipo = 'correccion'))::int AS con_correccion
      FROM jornada j
      JOIN menu m ON m.id_menu = j.id_menu
-     WHERE m.fecha BETWEEN $1::date AND $2::date`,
-    [desde, hasta]
+     WHERE m.fecha BETWEEN $1::date AND $2::date AND m.id_sede = $3`,
+    [desde, hasta, id_sede]
   )).rows[0];
 
   const { rows } = await pool.query(
@@ -119,6 +122,7 @@ async function rankingPeriodo(desde, hasta) {
         FROM jornada j
         JOIN menu m ON m.id_menu = j.id_menu
         WHERE m.fecha BETWEEN $1::date AND $2::date
+          AND m.id_sede = $3
           AND j.estado = 'cerrada'
      ),
      apariciones AS (
@@ -133,7 +137,8 @@ async function rankingPeriodo(desde, hasta) {
         SELECT
           a.id_jornada, a.id_menu_preparacion,
           COALESCE(SUM(ms.delta), 0)::int AS stock_final,
-          COALESCE(-SUM(ms.delta) FILTER (WHERE ms.tipo = 'venta'), 0)::int AS vendidas
+          COALESCE(-SUM(ms.delta) FILTER (WHERE ms.tipo = 'venta'), 0)::int AS vendidas,
+          COALESCE(BOOL_OR(ms.tipo = 'correccion'), FALSE) AS corregido
         FROM apariciones a
         LEFT JOIN movimiento_stock ms ON ms.id_menu_preparacion = a.id_menu_preparacion
         GROUP BY a.id_jornada, a.id_menu_preparacion
@@ -143,7 +148,7 @@ async function rankingPeriodo(desde, hasta) {
                MIN(ms.registrado_en) AS momento
         FROM apariciones a
         JOIN movimiento_stock ms ON ms.id_menu_preparacion = a.id_menu_preparacion
-        WHERE (
+        WHERE ms.tipo <> 'correccion' AND (
           SELECT SUM(ms2.delta) FROM movimiento_stock ms2
           WHERE ms2.id_menu_preparacion = ms.id_menu_preparacion
             AND ms2.registrado_en <= ms.registrado_en
@@ -159,6 +164,8 @@ async function rankingPeriodo(desde, hasta) {
               / NULLIF(COUNT(DISTINCT a.id_jornada), 0), 1)::float8 AS porcentaje_agotado,
         ROUND(AVG(EXTRACT(EPOCH FROM (pa.momento - a.iniciada_en)) / 60.0)
               FILTER (WHERE pa.momento IS NOT NULL))::int AS minutos_hasta_agotarse,
+        COUNT(DISTINCT CASE WHEN s.stock_final <= 0 AND pa.momento IS NULL THEN a.id_jornada END)::int AS agotado_sin_hora,
+        COUNT(DISTINCT CASE WHEN s.corregido THEN a.id_jornada END)::int AS jornadas_corregidas,
         ROUND(AVG(s.vendidas)::numeric, 1)::float8 AS vendidas_por_jornada,
         ROUND((AVG(s.stock_final) FILTER (WHERE a.sobrante_contado AND s.stock_final > 0))::numeric, 1)::float8 AS sobrante_promedio
      FROM apariciones a
@@ -166,16 +173,16 @@ async function rankingPeriodo(desde, hasta) {
      LEFT JOIN primer_agotado pa ON pa.id_jornada = a.id_jornada AND pa.id_menu_preparacion = a.id_menu_preparacion
      GROUP BY a.id_preparacion, a.nombre
      ORDER BY porcentaje_agotado DESC NULLS LAST, dias_agotado DESC, a.nombre`,
-    [desde, hasta]
+    [desde, hasta, id_sede]
   );
 
   return { desde, hasta, resumen, platos: rows };
 }
 
-async function rankingMensual(mes) {
+async function rankingMensual(mes, id_sede) {
   const [a, m] = mes.split('-').map(Number);
   const ultimo = new Date(Date.UTC(a, m, 0)).getUTCDate();
-  return rankingPeriodo(`${mes}-01`, `${mes}-${String(ultimo).padStart(2, '0')}`);
+  return rankingPeriodo(`${mes}-01`, `${mes}-${String(ultimo).padStart(2, '0')}`, id_sede);
 }
 
 const aHora = (seg) => (seg == null ? null
@@ -184,7 +191,7 @@ const aHora = (seg) => (seg == null ? null
 const BASE_DETALLE = `
   WITH base AS (
     SELECT mp.id_menu_preparacion, mp.id_preparacion, p.nombre AS preparacion, t.nombre AS componente,
-           COALESCE(c.nombre, 'Compartido') AS categoria, (mp.id_categoria_menu IS NOT NULL) AS es_principal,
+           COALESCE(c.nombre, 'Compartido') AS categoria, (t.nombre = 'Plato Principal') AS es_principal,
            mp.cantidad_planificada AS planificadas, mp.precio, m.fecha,
            COALESCE(v.vendidas, 0)::int AS vendidas, v.primera, v.ultima, ag.agotado_en
     FROM menu_preparacion mp

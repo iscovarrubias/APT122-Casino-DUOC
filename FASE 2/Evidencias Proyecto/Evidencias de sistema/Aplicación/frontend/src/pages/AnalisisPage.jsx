@@ -9,8 +9,9 @@ import Mensaje from '../components/Mensaje';
 import Ayuda from '../components/Ayuda';
 import SelectorPeriodo from '../components/SelectorPeriodo';
 import ExportarAnalisis from '../components/ExportarAnalisis';
+import PaginaError from '../components/PaginaError';
 
-const CATEGORIAS = ['Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
+const CATEGORIAS = ['General', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
 const colorCat = (c) => (c === 'Compartido' ? '#8a94a6' : colorDeCategoria(c).color);
 const num = (n) => (n === null || n === undefined ? '—' : Number(n).toLocaleString('es-CL'));
 const fechaCorta = (f) => `${String(f).slice(8, 10)}/${String(f).slice(5, 7)}`;
@@ -120,7 +121,7 @@ function TablaPreparaciones({ filas, onElegir, limite = 25 }) {
             <tr key={f.id_preparacion}>
               <td>
                 <button type="button" className="enlace-tabla" onClick={() => onElegir(f.id_preparacion)} title="Analizar esta preparación">{f.nombre}</button>
-                <small className="celda-sub">{f.componente === 'Plato Principal' ? 'Plato principal' : f.componente}</small>
+                <small className="celda-sub">{f.componente === 'Plato Principal' ? 'Plato Principal' : f.componente}</small>
               </td>
               <td>{f.dias}</td>
               <td>{num(f.vendidas)}<small className="celda-sub">de {num(f.planificadas)}</small></td>
@@ -152,6 +153,7 @@ function VentasYAgotamiento({ onVerOpiniones }) {
   const [foco, setFoco] = useState(null);
   const [error, setError] = useState(null);
   const [exportando, setExportando] = useState(false);
+  const [, setIntento] = useState(0);
 
   const cargar = useCallback(async () => {
     setError(null);
@@ -163,7 +165,7 @@ function VentasYAgotamiento({ onVerOpiniones }) {
       else setFoco(base);
     } catch (err) {
       setTodos(null); setFoco(null);
-      setError(err.message);
+      setError(err); 
     }
   }, [desde, hasta, modo, categoria, idPrep]);
 
@@ -176,6 +178,17 @@ function VentasYAgotamiento({ onVerOpiniones }) {
   const prepElegida = idPrep ? todos?.preparaciones.find((p) => String(p.id_preparacion) === String(idPrep)) : null;
   const filasPrep = foco && idPrep ? foco.por_categoria : [];
   const opcionesPrep = [...(todos?.preparaciones || [])].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+  if (error && typeof error === 'object' && !todos) {
+    return (
+      <PaginaError 
+        compacta 
+        codigo={error.estado ?? 0} 
+        detalle={error.message} 
+        onReintentar={() => setIntento((i) => i + 1)} 
+      />
+    );
+  }
 
   return (
     <>
@@ -193,7 +206,7 @@ function VentasYAgotamiento({ onVerOpiniones }) {
             <div className="campo-en-linea">
               <span className="etiqueta-segmentado">Analizar por
                 <Ayuda titulo="Menú o preparación">
-                  <b>Menú</b> compara las categorías (Principal, JUNAEB, Vegetariano, Hipocalórico). <b>Preparación</b> sigue un plato en particular y lo separa por la
+                  <b>Menú</b> compara las categorías (General, JUNAEB, Vegetariano, Hipocalórico). <b>Preparación</b> sigue un plato en particular y lo separa por la
                   categoría en que se vendió: sirve cuando el mismo plato se vende distinto según el precio o el menú.
                 </Ayuda>
               </span>
@@ -226,7 +239,14 @@ function VentasYAgotamiento({ onVerOpiniones }) {
       </section>
 
       {exportando && <ExportarAnalisis tipo="ventas" desdeInicial={desde} hastaInicial={hasta} onCerrar={() => setExportando(false)} />}
-      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+      
+      {error && typeof error === 'object' && todos && (
+        <Mensaje tipo="error" onCerrar={() => setError(null)}>{error.message}</Mensaje>
+      )}
+      {error && typeof error === 'string' && (
+        <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>
+      )}
+
       {!todos && !error && <div className="estado-info">Calculando análisis…</div>}
       {sinDatos && (
         <div className="estado-info">
@@ -241,15 +261,15 @@ function VentasYAgotamiento({ onVerOpiniones }) {
             <Kpi titulo="Consumo" valor={totalPlan ? `${Math.round((1000 * totalVend) / totalPlan) / 10} %` : '—'} ayuda="Lo vendido frente a lo planificado, sumando las cuatro categorías." />
             <Kpi titulo="Días analizados" valor={Math.max(0, ...principales.map((c) => c.dias))} />
           </div>
-          {hallazgo(principales, 'El plato principal') && (
-            <div className="hallazgo"><Lightbulb size={18} aria-hidden="true" /> <span>{hallazgo(principales, 'El plato principal')}</span></div>
+          {hallazgo(principales, 'El Plato Principal') && (
+            <div className="hallazgo"><Lightbulb size={18} aria-hidden="true" /> <span>{hallazgo(principales, 'El Plato Principal')}</span></div>
           )}
           <section className="tarjeta">
             <h2>Comparación entre menús</h2>
             <TablaCategorias filas={principales} />
           </section>
           <section className="tarjeta">
-            <h2>Ventas por hora{categoria ? ` · ${categoria}` : ''}</h2>
+            <h2>Ventas por hora{categoria ? ` - ${categoria}` : ''}</h2>
             <p className="texto-suave">Unidades vendidas en todo el rango, según la hora del día.</p>
             <VentasPorHora horas={foco?.ventas_por_hora || []} />
           </section>
@@ -274,7 +294,7 @@ function VentasYAgotamiento({ onVerOpiniones }) {
           <div className="encabezado-prep">
             <div>
               <h2>{prepElegida.nombre}</h2>
-              <span className="texto-suave">{prepElegida.componente === 'Plato Principal' ? 'Plato principal' : prepElegida.componente} · {prepElegida.dias} {prepElegida.dias === 1 ? 'día' : 'días'} en el menú</span>
+              <span className="texto-suave">{prepElegida.componente === 'Plato Principal' ? 'Plato Principal' : prepElegida.componente} - {prepElegida.dias} {prepElegida.dias === 1 ? 'día' : 'días'} en el menú</span>
             </div>
             <button type="button" className="boton boton-secundario" onClick={() => onVerOpiniones(prepElegida.id_preparacion)}>Ver opiniones de esta preparación</button>
           </div>

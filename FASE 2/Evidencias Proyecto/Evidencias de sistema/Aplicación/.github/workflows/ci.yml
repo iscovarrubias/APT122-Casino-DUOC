@@ -43,6 +43,7 @@ jobs:
           node database/migrar.js
           node database/seed_sprint1.js
           psql "$DATABASE_URL" -q -f database/seed_demo.sql
+          psql "$DATABASE_URL" -q -f database/seed_bebida_sin_azucar.sql
           node database/seed_ventas_simuladas.js
       - name: Pruebas de integración
         run: DATABASE_URL=postgres://nadie@localhost:5432/otra npm run test:db

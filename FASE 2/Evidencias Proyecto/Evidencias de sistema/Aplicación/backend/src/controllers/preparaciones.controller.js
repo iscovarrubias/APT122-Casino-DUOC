@@ -1,8 +1,15 @@
 const preparacionModel = require('../models/preparacion.model');
 const estudianteModel = require('../models/estudiante.model');
 const { ApiError } = require('../middleware/errorHandler');
+const imagenModel = require('../models/imagen.model');
 
-const URL_VALIDA = /^https?:\/\/\S+$/i;
+const URL_VALIDA = /^(https?:\/\/\S+|\/(?:api\/imagenes|uploads)\/\S+)$/i;
+
+function validarImagen(imagen_url) {
+  if (imagen_url && !URL_VALIDA.test(imagen_url)) {
+    throw new ApiError(400, 'La imagen debe ser un enlace http(s) o una ruta interna (/api/imagenes/...).');
+  }
+}
 
 function esNumeroValido(valor) {
   return valor !== null && valor !== '' && !isNaN(Number(valor)) && Number(valor) >= 0;
@@ -11,12 +18,6 @@ function esNumeroValido(valor) {
 function validarIngredientes(ingredientes) {
   if (ingredientes !== undefined && !Array.isArray(ingredientes)) {
     throw new ApiError(400, 'ingredientes debe ser una lista de nombres.');
-  }
-}
-
-function validarImagen(imagen_url) {
-  if (imagen_url && !URL_VALIDA.test(imagen_url)) {
-    throw new ApiError(400, 'imagen_url debe ser un enlace que empiece con http:// o https://.');
   }
 }
 
@@ -189,8 +190,8 @@ async function actualizarNutricion(req, res, next) {
 async function subirImagen(req, res, next) {
   try {
     if (!req.file) throw new ApiError(400, 'No se recibió ningún archivo.');
-    const url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-    res.status(201).json({ imagen_url: url });
+    const id = await imagenModel.guardar(req.file.buffer, req.file.formato.tipo);
+    res.status(201).json({ imagen_url: `${imagenModel.RUTA}${id}` });
   } catch (err) {
     next(err);
   }

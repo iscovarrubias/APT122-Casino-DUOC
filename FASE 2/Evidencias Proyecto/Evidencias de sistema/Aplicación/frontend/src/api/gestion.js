@@ -40,6 +40,10 @@ export const iniciarJornada = (cantidades = {}) =>
 
 export const cerrarJornada = (sobrantes = {}) =>
   pedir('/api/jornada/cerrar', { metodo: 'POST', cuerpo: { sobrantes } });
+export const corregirCierre = (sobrantes) =>
+  pedir('/api/jornada/corregir', { metodo: 'POST', cuerpo: { sobrantes } });
+export const reabrirJornada = () =>
+  pedir('/api/jornada/reabrir', { metodo: 'POST' });
 
 export const ajustarStock = (idComponente, { accion, cantidad, observacion }) =>
   pedir(`/api/jornada/componentes/${idComponente}/stock`, {
@@ -47,13 +51,19 @@ export const ajustarStock = (idComponente, { accion, cantidad, observacion }) =>
     cuerpo: { accion, cantidad, observacion },
   });
 
-export const registrarVenta = (categoria) =>
-  pedir('/api/jornada/ventas', { metodo: 'POST', cuerpo: { categoria } });
+export const registrarVenta = (categoria, opcion = null, tipo_venta = 'combo') =>
+  pedir('/api/jornada/ventas', { metodo: 'POST', cuerpo: { categoria, opcion, tipo_venta } });
 
 export const anularVenta = (idVentaCombo) =>
   pedir(`/api/jornada/ventas/${idVentaCombo}/anular`, { metodo: 'POST' });
 
-export const listarUsuarios = () => pedir('/api/usuarios');
+export const listarUsuarios = (q, rol) => {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (rol) params.set('rol', rol);
+  const qs = params.toString();
+  return pedir(`/api/usuarios${qs ? `?${qs}` : ''}`);
+};
 export const crearUsuario = (datos) => pedir('/api/usuarios', { metodo: 'POST', cuerpo: datos });
 export const actualizarUsuario = (id, datos) => pedir(`/api/usuarios/${id}`, { metodo: 'PATCH', cuerpo: datos });
 export const cambiarClave = (id, password) => pedir(`/api/usuarios/${id}/password`, { metodo: 'PUT', cuerpo: { password } });

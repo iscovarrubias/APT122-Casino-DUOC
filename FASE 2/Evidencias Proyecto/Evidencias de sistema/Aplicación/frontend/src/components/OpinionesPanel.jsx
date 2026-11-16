@@ -3,15 +3,15 @@ import { MessageSquareText, Trash2, PencilLine, Download, Heart } from 'lucide-r
 import { consultarOpiniones, consultarOpinionesDetalle, consultarFavoritosDetalle } from '../api/gestion';
 import { Estrellas } from './Opinion';
 import { colorDeCategoria, parseFechaISO } from '../utils/formato';
-import Mensaje from './Mensaje';
 import Ayuda from './Ayuda';
 import CampoFecha from './CampoFecha';
 import ExportarAnalisis from './ExportarAnalisis';
 import { hoyChile, haceDiasChile, CATEGORIAS_MENU as CATEGORIAS } from '../utils/formato';
 import Cargando from './Cargando';
+import PaginaError from './PaginaError';
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes'];
 
 function fechaMenu(f) {
   if (!f) return null;
@@ -52,7 +52,7 @@ function TarjetaOpinion({ o, onFiltrarPlato }) {
         ? <p className="opinion-texto">“{o.comentario}”</p>
         : <p className="opinion-texto opinion-texto--vacio">Solo calificó, sin comentario.</p>}
       <footer className="opinion-pie">
-        <span>{o.autor || 'Estudiante'}{o.correo ? ` · ${o.correo}` : ''} · {fechaHora(o.creado_en)}</span>
+        <span>{o.autor || 'Estudiante'}{o.correo ? ` - ${o.correo}` : ''} - {fechaHora(o.creado_en)}</span>
         {o.estado === 'eliminada' && <span className="opinion-estado opinion-estado--eliminada"><Trash2 size={13} aria-hidden="true" /> Eliminada por el estudiante el {fechaHora(o.cerrada_en)}</span>}
         {o.estado === 'editada' && <span className="opinion-estado opinion-estado--editada"><PencilLine size={13} aria-hidden="true" /> Versión anterior: el estudiante la editó el {fechaHora(o.cerrada_en)}</span>}
       </footer>
@@ -60,11 +60,10 @@ function TarjetaOpinion({ o, onFiltrarPlato }) {
   );
 }
 
-function ListaOpiniones({ filtroInicial, onFiltroAplicado }) {
+function ListaOpiniones({ filtroInicial, onFiltroAplicado, setErrorGlobal }) {
   const [filtros, setFiltros] = useState({ id_preparacion: '', categoria: '', estrellas: '', estado: '', con_comentario: false, desde: '', hasta: '' });
   const [datos, setDatos] = useState(null);
   const [resumen, setResumen] = useState(null);
-  const [error, setError] = useState(null);
   const [verPromedios, setVerPromedios] = useState(false);
   const [exportando, setExportando] = useState(false);
 
@@ -78,11 +77,12 @@ function ListaOpiniones({ filtroInicial, onFiltroAplicado }) {
   useEffect(() => {
     let activo = true;
     setDatos(null);
+    setErrorGlobal(null);
     consultarOpinionesDetalle(filtros)
-      .then((d) => { if (activo) { setDatos(d); setError(null); } })
-      .catch((e) => { if (activo) setError(e.message); });
+      .then((d) => { if (activo) { setDatos(d); setErrorGlobal(null); } })
+      .catch((e) => { if (activo) setErrorGlobal(e); }); 
     return () => { activo = false; };
-  }, [filtros]);
+  }, [filtros, setErrorGlobal]);
 
   useEffect(() => { consultarOpiniones().then(setResumen).catch(() => {}); }, []);
 
@@ -91,6 +91,8 @@ function ListaOpiniones({ filtroInicial, onFiltroAplicado }) {
   const limpiar = () => setFiltros({ id_preparacion: '', categoria: '', estrellas: '', estado: '', con_comentario: false, desde: '', hasta: '' });
   const filtrarPlato = (id) => setFiltros((f) => ({ ...f, id_preparacion: String(id) }));
   const r = datos?.resumen;
+
+  if (!datos) return <Cargando>Cargando opiniones…</Cargando>;
 
   return (
     <div className="opiniones">
@@ -148,28 +150,22 @@ function ListaOpiniones({ filtroInicial, onFiltroAplicado }) {
       </section>
 
       {exportando && <ExportarAnalisis tipo="opiniones" desdeInicial={filtros.desde || haceDiasChile(30)} hastaInicial={filtros.hasta || hoyChile()} onCerrar={() => setExportando(false)} />}
-      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
-      {!datos && !error && <Cargando>Cargando opiniones…</Cargando>}
 
-      {datos && (
-        <>
-          <div className="kpis">
-            <div className="kpi"><span>Opiniones</span><strong>{r.total}</strong></div>
-            <div className="kpi"><span>Con comentario</span><strong>{r.con_comentario}</strong></div>
-            <div className="kpi"><span>Promedio (vigentes)</span><strong>{r.promedio_vigentes != null ? r.promedio_vigentes.toFixed(1) : '—'}</strong></div>
-            <div className="kpi kpi--alerta"><span>Eliminadas por estudiantes</span><strong>{r.eliminadas}</strong></div>
-            <div className="kpi"><span>Editadas</span><strong>{r.editadas}</strong></div>
-          </div>
+      <div className="kpis">
+        <div className="kpi"><span>Opiniones</span><strong>{r.total}</strong></div>
+        <div className="kpi"><span>Con comentario</span><strong>{r.con_comentario}</strong></div>
+        <div className="kpi"><span>Promedio (vigentes)</span><strong>{r.promedio_vigentes != null ? r.promedio_vigentes.toFixed(1) : '—'}</strong></div>
+        <div className="kpi kpi--alerta"><span>Eliminadas por estudiantes</span><strong>{r.eliminadas}</strong></div>
+        <div className="kpi"><span>Editadas</span><strong>{r.editadas}</strong></div>
+      </div>
 
-          {datos.opiniones.length === 0 ? (
-            <div className="estado-info"><MessageSquareText size={20} aria-hidden="true" /> No hay opiniones con estos filtros.</div>
-          ) : (
-            <div className="opiniones-lista">
-              {datos.opiniones.map((o) => <TarjetaOpinion key={o.id_opinion} o={o} onFiltrarPlato={filtrarPlato} />)}
-              {datos.opiniones.length >= 500 && <p className="texto-suave">Se muestran las 500 más recientes. Usa los filtros para acotar.</p>}
-            </div>
-          )}
-        </>
+      {datos.opiniones.length === 0 ? (
+        <div className="estado-info"><MessageSquareText size={20} aria-hidden="true" /> No hay opiniones con estos filtros.</div>
+      ) : (
+        <div className="opiniones-lista">
+          {datos.opiniones.map((o) => <TarjetaOpinion key={o.id_opinion} o={o} onFiltrarPlato={filtrarPlato} />)}
+          {datos.opiniones.length >= 500 && <p className="texto-suave">Se muestran las 500 más recientes. Usa los filtros para acotar.</p>}
+        </div>
       )}
 
       {resumen && resumen.promedios.length > 0 && (
@@ -206,23 +202,25 @@ function ListaOpiniones({ filtroInicial, onFiltroAplicado }) {
   );
 }
 
-function ListaFavoritos() {
+function ListaFavoritos({ setErrorGlobal }) {
   const [filtros, setFiltros] = useState({ id_preparacion: '', desde: '', hasta: '' });
   const [datos, setDatos] = useState(null);
-  const [error, setError] = useState(null);
   const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
     let activo = true;
     setDatos(null);
+    setErrorGlobal(null);
     consultarFavoritosDetalle(filtros)
-      .then((d) => { if (activo) { setDatos(d); setError(null); } })
-      .catch((e) => { if (activo) setError(e.message); });
+      .then((d) => { if (activo) { setDatos(d); setErrorGlobal(null); } })
+      .catch((e) => { if (activo) setErrorGlobal(e); }); 
     return () => { activo = false; };
-  }, [filtros]);
+  }, [filtros, setErrorGlobal]);
 
   const max = Math.max(1, ...(datos?.por_preparacion || []).map((x) => x.total));
   const hayFiltros = Object.values(filtros).some(Boolean);
+
+  if (!datos) return <Cargando>Cargando favoritos…</Cargando>;
 
   return (
     <div className="opiniones">
@@ -255,51 +253,46 @@ function ListaFavoritos() {
         </div>
       </section>
       {exportando && <ExportarAnalisis tipo="opiniones" desdeInicial={filtros.desde || haceDiasChile(30)} hastaInicial={filtros.hasta || hoyChile()} onCerrar={() => setExportando(false)} />}
-      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
-      {!datos && !error && <Cargando>Cargando favoritos…</Cargando>}
-      {datos && (
-        <>
-          <div className="kpis">
-            <div className="kpi"><span>Marcas de favorito</span><strong>{datos.resumen.total}</strong></div>
-            <div className="kpi"><span>Estudiantes</span><strong>{datos.resumen.estudiantes}</strong></div>
-            <div className="kpi"><span>Preparaciones</span><strong>{datos.resumen.preparaciones}</strong></div>
-          </div>
-          {datos.favoritos.length === 0 ? (
-            <div className="estado-info"><Heart size={20} aria-hidden="true" /> No hay favoritos con estos filtros.</div>
-          ) : (
-            <div className="rejilla-analisis">
-              <section className="tarjeta">
-                <h2>Más marcadas como favoritas</h2>
-                <div className="barras-horas">
-                  {datos.por_preparacion.slice(0, 15).map((p) => (
-                    <div key={p.id_preparacion} className="barra-fila">
-                      <button type="button" className="enlace-tabla barra-nombre" onClick={() => setFiltros((f) => ({ ...f, id_preparacion: String(p.id_preparacion) }))}>{p.nombre}</button>
-                      <div className="barra"><div className="barra-relleno" style={{ width: `${(p.total / max) * 100}%`, background: '#D11B1B' }} /></div>
-                      <span>{p.total}</span>
-                    </div>
-                  ))}
+      
+      <div className="kpis">
+        <div className="kpi"><span>Marcas de favorito</span><strong>{datos.resumen.total}</strong></div>
+        <div className="kpi"><span>Estudiantes</span><strong>{datos.resumen.estudiantes}</strong></div>
+        <div className="kpi"><span>Preparaciones</span><strong>{datos.resumen.preparaciones}</strong></div>
+      </div>
+      {datos.favoritos.length === 0 ? (
+        <div className="estado-info"><Heart size={20} aria-hidden="true" /> No hay favoritos con estos filtros.</div>
+      ) : (
+        <div className="rejilla-analisis">
+          <section className="tarjeta">
+            <h2>Más marcadas como favoritas</h2>
+            <div className="barras-horas">
+              {datos.por_preparacion.slice(0, 15).map((p) => (
+                <div key={p.id_preparacion} className="barra-fila">
+                  <button type="button" className="enlace-tabla barra-nombre" onClick={() => setFiltros((f) => ({ ...f, id_preparacion: String(p.id_preparacion) }))}>{p.nombre}</button>
+                  <div className="barra"><div className="barra-relleno" style={{ width: `${(p.total / max) * 100}%`, background: '#D11B1B' }} /></div>
+                  <span>{p.total}</span>
                 </div>
-              </section>
-              <section className="tarjeta">
-                <h2>Quién la marcó</h2>
-                <div className="tabla-scroll tabla-alta">
-                  <table className="tabla tabla-compacta">
-                    <thead><tr><th>Preparación</th><th>Estudiante</th><th>Fecha</th></tr></thead>
-                    <tbody>
-                      {datos.favoritos.map((f, i) => (
-                        <tr key={`${f.id_preparacion}-${f.correo}-${i}`}>
-                          <td>{f.preparacion}</td>
-                          <td>{f.autor}<small className="celda-sub">{f.correo}</small></td>
-                          <td>{fechaHora(f.creado_en).slice(0, 10)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+              ))}
             </div>
-          )}
-        </>
+          </section>
+          <section className="tarjeta">
+            <h2>Quién la marcó</h2>
+            <div className="tabla-scroll tabla-alta">
+              <table className="tabla tabla-compacta">
+                <thead><tr><th>Preparación</th><th>Estudiante</th><th>Fecha</th></tr></thead>
+                <tbody>
+                  {datos.favoritos.map((f, i) => (
+                    <tr key={`${f.id_preparacion}-${f.correo}-${i}`}>
+                      <td>{f.preparacion}</td>
+                      <td>{f.autor}<small className="celda-sub">{f.correo}</small></td>
+                      <td>{fechaHora(f.creado_en).slice(0, 10)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
       )}
     </div>
   );
@@ -307,13 +300,35 @@ function ListaFavoritos() {
 
 export default function OpinionesPanel(props) {
   const [vista, setVista] = useState('opiniones');
+  const [errorGlobal, setErrorGlobal] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  if (errorGlobal) {
+    return (
+      <PaginaError 
+        compacta 
+        codigo={errorGlobal.estado ?? 0} 
+        detalle={errorGlobal.message} 
+        onReintentar={() => { 
+          setErrorGlobal(null); 
+          setReloadKey(k => k + 1); 
+        }} 
+      />
+    );
+  }
+
   return (
     <>
       <div className="segmentado vista-opiniones" role="group" aria-label="Qué ver">
         <button type="button" className={vista === 'opiniones' ? 'activo' : ''} onClick={() => setVista('opiniones')}>Opiniones</button>
         <button type="button" className={vista === 'favoritos' ? 'activo' : ''} onClick={() => setVista('favoritos')}><Heart size={14} aria-hidden="true" /> Favoritos</button>
       </div>
-      {vista === 'opiniones' ? <ListaOpiniones {...props} /> : <ListaFavoritos />}
+      
+      {vista === 'opiniones' ? (
+        <ListaOpiniones key={`op-${reloadKey}`} {...props} setErrorGlobal={setErrorGlobal} />
+      ) : (
+        <ListaFavoritos key={`fav-${reloadKey}`} setErrorGlobal={setErrorGlobal} />
+      )}
     </>
   );
 }

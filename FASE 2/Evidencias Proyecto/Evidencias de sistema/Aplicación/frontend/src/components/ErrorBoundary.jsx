@@ -1,10 +1,11 @@
 import { Component } from 'react';
+import PaginaError from './PaginaError';
 
 export default class ErrorBoundary extends Component {
-  state = { fallo: false };
+  state = { fallo: false, detalle: null };
 
-  static getDerivedStateFromError() {
-    return { fallo: true };
+  static getDerivedStateFromError(error) {
+    return { fallo: true, detalle: error?.message || null };
   }
 
   componentDidCatch(error) {
@@ -14,11 +15,13 @@ export default class ErrorBoundary extends Component {
   render() {
     if (!this.state.fallo) return this.props.children;
     return (
-      <main className="no-encontrada" role="alert">
-        <h1>Algo salió mal</h1>
-        <p>Ocurrió un error inesperado. Recarga la página para continuar.</p>
-        <button type="button" className="boton boton-primario" onClick={() => window.location.reload()}>Recargar</button>
-      </main>
+      <PaginaError
+        codigo={500}
+        titulo="Algo salió mal"
+        mensaje="Ocurrió un error inesperado en la aplicación. Recarga la página para continuar."
+        detalle={this.state.detalle}
+        onReintentar={() => window.location.reload()}
+      />
     );
   }
 }

@@ -8,7 +8,7 @@ const SECCIONES = [
       },
       {
         q: '¿Cómo se calculan las calorías totales de un combo?',
-        a: 'Se suman las calorías de cada componente del combo (entrada, plato principal, postre y bebida). Si alguno de ellos no cuenta con información nutricional registrada, el total también se muestra como "No disponible", para evitar entregar un dato parcial que pueda inducir a error.',
+        a: 'Se suman las calorías de cada componente del combo (entrada, Plato Principal, postre y bebida). Si alguno de ellos no cuenta con información nutricional registrada, el total también se muestra como "No disponible", para evitar entregar un dato parcial que pueda inducir a error.',
       },
     ],
   },

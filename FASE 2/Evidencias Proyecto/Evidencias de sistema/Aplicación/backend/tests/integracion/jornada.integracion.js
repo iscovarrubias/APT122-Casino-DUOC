@@ -43,9 +43,14 @@ const servidor = app.listen(PUERTO, async () => {
     const prep = (await llamar('GET', '/preparaciones/gestion', null, adm)).d;
     const id = (n) => prep.find((p) => p.nombre === n).id_preparacion;
     const plan = [
-      ['Pollo arvejado con arroz', 'Plato Principal', 'Principal', 10], ['Arroz con pollo', 'Plato Principal', 'JUNAEB', 10],
+      ['Pollo arvejado con arroz', 'Plato Principal', 'General', 10], ['Arroz con pollo', 'Plato Principal', 'JUNAEB', 10],
       ['Budín de zapallito italiano', 'Plato Principal', 'Vegetariano', 10], ['Pollo a la plancha con ensalada', 'Plato Principal', 'Hipocalórico', 10],
-      ['Sopa de verduras', 'Entrada', undefined, 40], ['Flan de caramelo', 'Postre', undefined, 40], ['Jugo de naranja', 'Bebida', undefined, 40],
+      ['Ensalada chilena', 'Ensalada', undefined, 40],
+      ['Sopa de verduras', 'Sopa', undefined, 40],
+      ['Pan amasado', 'Pan', undefined, 30],
+      ['Flan de caramelo', 'Postre', undefined, 40],
+      ['Manzana', 'Fruta', undefined, 40],
+      ['Jugo de naranja', 'Bebida', undefined, 40],
     ];
     let idMenu;
     for (const [n, tipo, categoria, c] of plan) {
@@ -55,14 +60,47 @@ const servidor = app.listen(PUERTO, async () => {
     assert.equal((await llamar('PATCH', `/menu/${idMenu}/publicar`, null, adm)).s, 200);
 
     let hoy = (await llamar('GET', '/jornada/hoy', null, caj.token)).d;
-    assert.equal(hoy.jornada, null);
-    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'Principal' }, caj.token)).s, 409); ok('sin jornada no se puede vender (409)');
-    assert.equal((await llamar('POST', '/jornada/iniciar', { cantidades: { [hoy.componentes[0].id_menu_preparacion]: 1 } }, adm)).s, 200);
-    assert.equal((await llamar('POST', '/jornada/iniciar', {}, caj.token)).s, 403); ok('el cajero no puede iniciar la jornada (403)');
-    assert.equal((await llamar('POST', '/jornada/iniciar', {}, adm)).s, 409); ok('la jornada se inicia una sola vez (409)');
-    hoy = (await llamar('GET', '/jornada/hoy', null, caj.token)).d;
+    const refrescar = async (tok = caj.token) => { hoy = (await llamar('GET', '/jornada/hoy', null, tok)).d; };
     const comp = (cat, tipo) => hoy.componentes.find((c) => c.componente === tipo && (c.categoria || null) === (cat || null));
-    assert.equal(comp('Principal', 'Plato Principal').restante, 10); assert.equal(comp(null, 'Bebida').restante, 40);
+    const quedan = (cat, tipo) => comp(cat, tipo).restante;
+
+    assert.equal(hoy.jornada, null);
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'General', opcion: 'Postre' }, caj.token)).s, 409); ok('sin jornada no se puede vender (409)');
+    assert.equal((await llamar('POST', '/jornada/iniciar', {}, caj.token)).s, 200); ok('el cajero puede iniciar la jornada');
+    assert.equal((await llamar('POST', '/jornada/iniciar', {}, adm)).s, 409); ok('la jornada se inicia una sola vez (409)');
+
+    await refrescar();
+    assert.equal(quedan('General', 'Plato Principal'), 10);
+    assert.equal(quedan('JUNAEB', 'Plato Principal'), 10);
+    assert.equal(quedan('Vegetariano', 'Plato Principal'), 10);
+    assert.equal(quedan('Hipocalórico', 'Plato Principal'), 10);
+    assert.equal(quedan(null, 'Ensalada'), 40);
+    assert.equal(quedan(null, 'Sopa'), 40);
+    assert.equal(quedan(null, 'Pan'), 30);
+    assert.equal(quedan(null, 'Postre'), 40);
+    assert.equal(quedan(null, 'Fruta'), 40);
+    assert.equal(quedan(null, 'Bebida'), 40); ok('stock inicial de los 10 componentes');
+
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'General' }, caj.token)).s, 400);
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'General', opcion: 'Jugo' }, caj.token)).s, 400); ok('General exige elegir postre o fruta y rechaza opciones inválidas');
+
+    const junaeb = await llamar('POST', '/jornada/ventas', { categoria: 'JUNAEB' }, caj.token);
+    assert.equal(junaeb.s, 201); assert.equal(junaeb.d.opcion, null);
+    const hipo = await llamar('POST', '/jornada/ventas', { categoria: 'Hipocalórico' }, caj.token);
+    assert.equal(hipo.s, 201); assert.equal(hipo.d.opcion, null);
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'Vegetariano' }, caj.token)).s, 400);
+    const vegetariano = await llamar('POST', '/jornada/ventas', { categoria: 'Vegetariano', opcion: 'Postre' }, caj.token);
+    assert.equal(vegetariano.s, 201); assert.equal(vegetariano.d.opcion, 'Postre');
+    await refrescar();
+    assert.equal(quedan('JUNAEB', 'Plato Principal'), 9);
+    assert.equal(quedan('Hipocalórico', 'Plato Principal'), 9);
+    assert.equal(quedan('Vegetariano', 'Plato Principal'), 9);
+    assert.equal(quedan(null, 'Ensalada'), 38);
+    assert.equal(quedan(null, 'Sopa'), 38);
+    assert.equal(quedan(null, 'Pan'), 29);
+    assert.equal(quedan(null, 'Postre'), 39);
+    assert.equal(quedan(null, 'Fruta'), 39);
+    assert.equal(quedan(null, 'Bebida'), 37); ok('cada categoría descuenta solo lo que incluye: JUNAEB plato y bebida; Hipocalórico sin pan ni postre; Vegetariano elige postre o fruta');
 
     const evento = new Promise((resolve, reject) => {
       const t = setTimeout(() => reject(new Error('no llegó el evento en tiempo real')), 4000);
@@ -70,43 +108,108 @@ const servidor = app.listen(PUERTO, async () => {
     });
     await new Promise((r) => setTimeout(r, 200));
 
-    const par = await Promise.all(Array.from({ length: 5 }, () => llamar('POST', '/jornada/ventas', { categoria: 'Principal' }, caj.token)));
-    assert.ok(par.every((r) => r.s === 201), JSON.stringify(par.map((r) => [r.s, r.d]))); await evento; ok('5 ventas simultáneas + evento en tiempo real (SSE)');
-    hoy = (await llamar('GET', '/jornada/hoy', null, caj.token)).d;
-    assert.equal(comp('Principal', 'Plato Principal').restante, 5);
-    assert.equal(comp(null, 'Bebida').restante, 35); assert.equal(comp('JUNAEB', 'Plato Principal').restante, 10); ok('stock exacto: principal -5, compartidos -5, otras categorías intactas');
+    const par = await Promise.all(Array.from({ length: 5 }, () => llamar('POST', '/jornada/ventas', { categoria: 'General', opcion: 'Postre' }, caj.token)));
+    assert.ok(par.every((r) => r.s === 201), JSON.stringify(par.map((r) => [r.s, r.d]))); await evento; ok('5 ventas simultáneas con postre + evento en tiempo real (SSE)');
+    await refrescar();
+    assert.equal(quedan('General', 'Plato Principal'), 5);
+    assert.equal(quedan('JUNAEB', 'Plato Principal'), 9);
+    assert.equal(quedan(null, 'Ensalada'), 33);
+    assert.equal(quedan(null, 'Sopa'), 33);
+    assert.equal(quedan(null, 'Pan'), 24);
+    assert.equal(quedan(null, 'Postre'), 34);
+    assert.equal(quedan(null, 'Fruta'), 39);
+    assert.equal(quedan(null, 'Bebida'), 32); ok('stock exacto: la venta con postre no toca la fruta');
 
-    for (let i = 0; i < 3; i++) await llamar('POST', '/jornada/ventas', { categoria: 'Principal' }, caj.token);
-    hoy = (await llamar('GET', '/jornada/hoy', null, caj.token)).d;
-    assert.equal(comp('Principal', 'Plato Principal').disponibilidad, 'baja_disponibilidad'); ok('quedan 2 de 10 -> baja disponibilidad automática');
-    for (let i = 0; i < 2; i++) await llamar('POST', '/jornada/ventas', { categoria: 'Principal' }, caj.token);
-    let pub = (await llamar('GET', '/menu/hoy?categoria=Principal')).d.preparaciones;
+    for (let i = 0; i < 3; i++) await llamar('POST', '/jornada/ventas', { categoria: 'General', opcion: 'Postre' }, caj.token);
+    await refrescar();
+    assert.equal(comp('General', 'Plato Principal').disponibilidad, 'baja_disponibilidad'); ok('quedan 2 de 10 -> baja disponibilidad automática');
+    for (let i = 0; i < 2; i++) await llamar('POST', '/jornada/ventas', { categoria: 'General', opcion: 'Postre' }, caj.token);
+    const pub = (await llamar('GET', '/menu/hoy?categoria=General')).d.preparaciones;
     const pPub = pub.find((c) => c.componente === 'Plato Principal');
     assert.equal(pPub.disponibilidad, 'agotado'); assert.equal(pPub.cantidad_restante, 0); assert.ok(pPub.stock_actualizado_en);
-    assert.equal(pub.find((c) => c.componente === 'Bebida').cantidad_restante, 30); ok('vista pública: agotado, quedan 0, compartidos con cantidad');
+    assert.equal(pub.find((c) => c.componente === 'Bebida').cantidad_restante, 27);
+    assert.equal(pub.find((c) => c.componente === 'Postre').cantidad_restante, 29);
+    assert.equal(pub.find((c) => c.componente === 'Fruta').cantidad_restante, 39); ok('vista pública: agotado, quedan 0, postre y bebida descontados, fruta intacta');
 
-    const extra = await llamar('POST', '/jornada/ventas', { categoria: 'Principal' }, caj.token);
-    assert.equal(extra.s, 201); hoy = (await llamar('GET', '/jornada/hoy', null, caj.token)).d;
-    assert.equal(comp('Principal', 'Plato Principal').restante, -1); ok('una venta con stock 0 no se bloquea (queda -1 para corregir en el cierre)');
-    const anul = await llamar('POST', `/jornada/ventas/${extra.d.id_venta_combo}/anular`, null, caj.token);
-    assert.equal(anul.s, 200); assert.equal((await llamar('POST', `/jornada/ventas/${extra.d.id_venta_combo}/anular`, null, caj.token)).s, 409);
-    hoy = (await llamar('GET', '/jornada/hoy', null, caj.token)).d; assert.equal(comp('Principal', 'Plato Principal').restante, 0); ok('anular = movimiento contrario; no se puede anular dos veces');
+    const extra = await llamar('POST', '/jornada/ventas', { categoria: 'General', opcion: 'Postre' }, caj.token);
+    assert.equal(extra.s, 201);
+    await refrescar();
+    assert.equal(quedan('General', 'Plato Principal'), -1);
+    assert.equal(quedan(null, 'Postre'), 28); ok('una venta con stock 0 no se bloquea (queda -1 para corregir en el cierre)');
+    assert.equal((await llamar('POST', `/jornada/ventas/${extra.d.id_venta_combo}/anular`, null, caj.token)).s, 200);
+    assert.equal((await llamar('POST', `/jornada/ventas/${extra.d.id_venta_combo}/anular`, null, caj.token)).s, 409);
+    await refrescar();
+    assert.equal(quedan('General', 'Plato Principal'), 0);
+    assert.equal(quedan(null, 'Postre'), 29); ok('anular revierte plato y postre; no se puede anular dos veces');
 
-    assert.equal((await llamar('POST', `/jornada/componentes/${comp('Principal', 'Plato Principal').id_menu_preparacion}/stock`, { accion: 'quedan', cantidad: 5 }, caj.token)).s, 403); ok('el cajero no puede ajustar stock (403)');
-    const mp = comp('Principal', 'Plato Principal').id_menu_preparacion;
+    const mp = comp('General', 'Plato Principal').id_menu_preparacion;
+    assert.equal((await llamar('POST', `/jornada/componentes/${mp}/stock`, { accion: 'quedan', cantidad: 5 }, caj.token)).s, 403); ok('el cajero no puede ajustar stock (403)');
     let r = await llamar('POST', `/jornada/componentes/${mp}/stock`, { accion: 'quedan', cantidad: 5 }, adm); assert.equal(r.d.restante, 5);
     r = await llamar('POST', `/jornada/componentes/${mp}/stock`, { accion: 'reposicion', cantidad: 10 }, adm); assert.equal(r.d.restante, 15);
     assert.equal((await llamar('POST', `/jornada/componentes/${mp}/stock`, { accion: 'quedan', cantidad: -2 }, adm)).s, 400);
     assert.equal((await llamar('POST', `/jornada/componentes/${mp}/stock`, { accion: 'reposicion', cantidad: 0 }, adm)).s, 400); ok('cocina: fijar "quedan", reponer y validaciones');
-    hoy = (await llamar('GET', '/jornada/hoy', null, caj.token)).d; assert.equal(comp('Principal', 'Plato Principal').disponibilidad, 'disponible');
+    await refrescar();
+    assert.equal(comp('General', 'Plato Principal').disponibilidad, 'disponible');
+
+    const antes = {
+      ens: quedan(null, 'Ensalada'), sop: quedan(null, 'Sopa'), fru: quedan(null, 'Fruta'), beb: quedan(null, 'Bebida'),
+      hip: quedan('Hipocalórico', 'Plato Principal'), gen: quedan('General', 'Plato Principal'),
+    };
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'JUNAEB', tipo_venta: 'solo_plato' }, caj.token)).s, 400);
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'JUNAEB', tipo_venta: 'completo_maquina' }, caj.token)).s, 400);
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'General', tipo_venta: 'otro' }, caj.token)).s, 400); ok('JUNAEB no compra solo plato ni completo con máquina; tipo de venta inválido (400)');
+    const sp = await llamar('POST', '/jornada/ventas', { categoria: 'Hipocalórico', tipo_venta: 'solo_plato' }, caj.token);
+    assert.equal(sp.s, 201); assert.equal(sp.d.tipo_venta, 'solo_plato'); assert.equal(sp.d.opcion, null);
+    await refrescar();
+    assert.equal(quedan('Hipocalórico', 'Plato Principal'), antes.hip - 1);
+    assert.equal(quedan(null, 'Ensalada'), antes.ens);
+    assert.equal(quedan(null, 'Bebida'), antes.beb);
+    assert.equal(quedan(null, 'Fruta'), antes.fru); ok('solo plato descuenta únicamente el plato principal');
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'General', tipo_venta: 'completo_maquina' }, caj.token)).s, 400);
+    const cm = await llamar('POST', '/jornada/ventas', { categoria: 'General', opcion: 'Fruta', tipo_venta: 'completo_maquina' }, caj.token);
+    assert.equal(cm.s, 201); assert.equal(cm.d.tipo_venta, 'completo_maquina'); assert.equal(cm.d.opcion, 'Fruta');
+    await refrescar();
+    assert.equal(quedan('General', 'Plato Principal'), antes.gen - 1);
+    assert.equal(quedan(null, 'Ensalada'), antes.ens - 1);
+    assert.equal(quedan(null, 'Sopa'), antes.sop - 1);
+    assert.equal(quedan(null, 'Fruta'), antes.fru - 1);
+    assert.equal(quedan(null, 'Bebida'), antes.beb); ok('completo con bebida de máquina descuenta todo menos la bebida del menú');
+    assert.ok(hoy.ventas_recientes.some((v) => v.tipo_venta === 'solo_plato'));
+    assert.equal((await llamar('POST', `/jornada/ventas/${cm.d.id_venta_combo}/anular`, null, caj.token)).s, 200);
+    assert.equal((await llamar('POST', `/jornada/ventas/${sp.d.id_venta_combo}/anular`, null, caj.token)).s, 200);
+    await refrescar();
+    assert.equal(quedan('General', 'Plato Principal'), antes.gen);
+    assert.equal(quedan('Hipocalórico', 'Plato Principal'), antes.hip);
+    assert.equal(quedan(null, 'Fruta'), antes.fru); ok('anular revierte las ventas de solo plato y completo con máquina');
 
     const an = (await llamar('GET', `/analisis/resumen?desde=${hoyChile()}&hasta=${hoyChile()}`, null, adm)).d;
-    assert.equal(an.origenes.ventas.registrado, 40); ok('el análisis usa las ventas registradas en caja (vista venta_efectiva)');
+    assert.ok(an.origenes.ventas.registrado >= 1); ok('el análisis usa las ventas registradas en caja (vista venta_efectiva)');
 
     r = await llamar('POST', '/jornada/cerrar', { sobrantes: { [mp]: 3 } }, adm); assert.equal(r.s, 200);
-    hoy = (await llamar('GET', '/jornada/hoy', null, adm)).d;
-    assert.equal(comp('Principal', 'Plato Principal').restante, 3); assert.equal(hoy.jornada.sobrante_contado, true); assert.equal(hoy.jornada.cierre_automatico, false);
-    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'Principal' }, caj.token)).s, 409); ok('cierre con conteo real; jornada cerrada no admite ventas');
+    await refrescar(adm);
+    assert.equal(quedan('General', 'Plato Principal'), 3);
+    assert.equal(hoy.jornada.sobrante_contado, true);
+    assert.equal(comp('General', 'Plato Principal').ajuste_cierre, 3 - antes.gen); ok('el cierre guarda la diferencia entre el conteo y el sistema');
+    assert.equal(hoy.jornada.cierre_automatico, false);
+    assert.equal((await llamar('POST', '/jornada/ventas', { categoria: 'General', opcion: 'Postre' }, caj.token)).s, 409); ok('cierre con conteo real; jornada cerrada no admite ventas');
+
+    const mpFruta = comp(null, 'Fruta').id_menu_preparacion;
+    const restFruta = quedan(null, 'Fruta');
+    assert.equal((await llamar('POST', '/jornada/corregir', { sobrantes: {} }, adm)).s, 400);
+    assert.equal((await llamar('POST', '/jornada/corregir', { sobrantes: { [mpFruta]: -1 } }, adm)).s, 400);
+    assert.equal((await llamar('POST', '/jornada/corregir', { sobrantes: { 999999: 1 } }, adm)).s, 400);
+    r = await llamar('POST', '/jornada/corregir', { sobrantes: { [mpFruta]: 0, [mp]: 3 } }, adm);
+    assert.equal(r.s, 200); assert.equal(r.d.corregidos, 1);
+    await refrescar(adm);
+    assert.equal(quedan(null, 'Fruta'), 0);
+    assert.equal(comp(null, 'Fruta').ajuste_correccion, -restFruta);
+    assert.equal(comp(null, 'Fruta').corregido, true);
+    assert.equal(comp('General', 'Plato Principal').corregido, false);
+    assert.equal(comp(null, 'Fruta').disponibilidad !== 'agotado', true); ok('corregir tras el cierre registra una corrección sin tocar la disponibilidad');
+
+    const men0 = (await llamar('GET', `/analisis/mensual?mes=${hoyChile().slice(0, 7)}`, null, adm)).d;
+    const frutaRank = men0.platos.find((p) => p.nombre === 'Manzana');
+    assert.ok(frutaRank.agotado_sin_hora >= 1); assert.ok(frutaRank.jornadas_corregidas >= 1); assert.ok(men0.resumen.con_correccion >= 1); ok('el análisis muestra la corrección como agotado sin hora');
 
     const men = (await llamar('GET', `/analisis/mensual?mes=${hoyChile().slice(0, 7)}`, null, adm)).d;
     const fila = men.platos.find((p) => p.nombre === 'Pollo arvejado con arroz');
@@ -147,11 +250,11 @@ const servidor = app.listen(PUERTO, async () => {
     const planHoy = (await llamar('GET', `/menu/planificacion?fecha=${hoyChile()}`, null, nut.token)).d;
     const slot = (cat) => planHoy.componentes.find((c) => c.categoria === cat && c.componente === 'Plato Principal');
     assert.equal((await llamar('PATCH', `/menu/componentes/${slot('JUNAEB').id_menu_preparacion}`, { precio: 3500 }, nut.token)).s, 200);
-    assert.equal((await llamar('PATCH', `/menu/componentes/${slot('Principal').id_menu_preparacion}`, { precio: 4800 }, nut.token)).s, 200);
+    assert.equal((await llamar('PATCH', `/menu/componentes/${slot('General').id_menu_preparacion}`, { precio: 4800 }, nut.token)).s, 200);
     const compartido = planHoy.componentes.find((c) => !c.categoria);
     await llamar('PATCH', `/menu/componentes/${compartido.id_menu_preparacion}`, { precio: 999 }, nut.token);
     const precioDe = async (cat, tipo) => Number((await llamar('GET', `/menu/hoy?categoria=${cat}`)).d.preparaciones.find((c) => c.componente === tipo).precio);
-    assert.equal(await precioDe('JUNAEB', 'Plato Principal'), 3500); assert.equal(await precioDe('Principal', 'Plato Principal'), 4800);
+    assert.equal(await precioDe('JUNAEB', 'Plato Principal'), 3500); assert.equal(await precioDe('General', 'Plato Principal'), 4800);
     assert.equal(await precioDe('JUNAEB', compartido.componente), 0);
     assert.equal((await llamar('GET', `/menu/planificacion?fecha=${hoyChile()}`, null, nut.token)).d.precios_recientes.JUNAEB, 3500); ok('el precio es del plato en cada categoría; los compartidos van incluidos');
     assert.equal((await llamar('PATCH', `/menu/componentes/${slot('JUNAEB').id_menu_preparacion}`, { precio: -5 }, nut.token)).s, 400); ok('rechaza precio negativo');

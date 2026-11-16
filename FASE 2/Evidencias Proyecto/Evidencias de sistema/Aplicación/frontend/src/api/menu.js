@@ -1,33 +1,34 @@
+import { ErrorApi } from './cliente';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-export async function obtenerMenuHoy(categoria, fecha) {
+async function obtener(ruta, textoError) {
+  let res;
+  try {
+    res = await fetch(`${API_URL}${ruta}`);
+  } catch {
+    throw new ErrorApi('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 0);
+  }
+  if (!res.ok) {
+    throw new ErrorApi(`${textoError} (${res.status})`, res.status);
+  }
+  return res.json();
+}
+
+export function obtenerMenuHoy(categoria, fecha) {
   const params = new URLSearchParams();
   if (categoria) params.set('categoria', categoria);
   if (fecha) params.set('fecha', fecha);
-
-  const res = await fetch(`${API_URL}/api/menu/hoy?${params.toString()}`);
-  if (!res.ok) {
-    throw new Error(`Error al consultar el menú (${res.status})`);
-  }
-  return res.json();
+  return obtener(`/api/menu/hoy?${params.toString()}`, 'Error al consultar el menú');
 }
 
-export async function obtenerPreparaciones() {
-  const res = await fetch(`${API_URL}/api/preparaciones`);
-  if (!res.ok) {
-    throw new Error(`Error al consultar preparaciones (${res.status})`);
-  }
-  return res.json();
+export function obtenerPreparaciones() {
+  return obtener('/api/preparaciones', 'Error al consultar preparaciones');
 }
 
-export async function obtenerHistorialMenu(desde, hasta) {
+export function obtenerHistorialMenu(desde, hasta) {
   const params = new URLSearchParams();
   if (desde) params.set('desde', desde);
   if (hasta) params.set('hasta', hasta);
-
-  const res = await fetch(`${API_URL}/api/menu/historial?${params.toString()}`);
-  if (!res.ok) {
-    throw new Error(`Error al consultar el historial (${res.status})`);
-  }
-  return res.json();
+  return obtener(`/api/menu/historial?${params.toString()}`, 'Error al consultar el historial');
 }

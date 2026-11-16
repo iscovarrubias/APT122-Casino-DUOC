@@ -1,0 +1,55 @@
+.modal.modal-opcion {
+  max-width: 440px;
+  padding: 24px;
+}
+.modal-opcion h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.opcion-botones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.opcion-boton {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 16px 18px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.opcion-boton:hover:not(:disabled) {
+  border-color: var(--navy-solid);
+  background: var(--bg);
+}
+.opcion-boton:active:not(:disabled) {
+  transform: scale(0.985);
+}
+.opcion-boton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.opcion-boton:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+.opcion-boton strong {
+  font-size: 1rem;
+  color: var(--navy);
+}
+.opcion-boton span {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+[data-theme='oscuro'] .opcion-boton strong {
+  color: var(--text);
+}

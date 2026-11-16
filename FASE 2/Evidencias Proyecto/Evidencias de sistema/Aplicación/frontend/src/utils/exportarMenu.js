@@ -2,16 +2,16 @@ import { consultarMes } from '../api/gestion';
 
 const sumar = (f, n) => new Date(new Date(`${f}T12:00:00Z`).getTime() + n * 86400000).toISOString().slice(0, 10);
 const lunesDe = (f) => { const d = new Date(`${f}T12:00:00Z`).getUTCDay(); return sumar(f, d === 0 ? -6 : 1 - d); };
-const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes'];
 const DIAS_CORTOS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const dia = (f) => Number(f.slice(8, 10));
 const mesNombre = (f) => MESES[Number(f.slice(5, 7)) - 1];
 const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
-export const ORDEN_CATEGORIAS = ['Principal', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
+export const ORDEN_CATEGORIAS = ['General', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
 export const ESTILO_CATEGORIA = {
-  Principal: { texto: '9A5B00', fila: 'FEF4E6', etiqueta: 'FDECD2' },
+  General: { texto: '9A5B00', fila: 'FEF4E6', etiqueta: 'FDECD2' },
   JUNAEB: { texto: 'D11B1B', fila: 'FDF5F5', etiqueta: 'FBE3E3' },
   Vegetariano: { texto: '3C7424', fila: 'F1F7ED', etiqueta: 'E1EFD8' },
   Hipocalórico: { texto: '318386', fila: 'EBF5F5', etiqueta: 'D7EAEB' },
@@ -134,7 +134,7 @@ export function totalesDelPeriodo(p) {
     .sort((a, b) => rango(a) - rango(b) || rangoCat(a.categoria) - rangoCat(b.categoria) || a.preparacion.localeCompare(b.preparacion, 'es'));
 }
 
-export const nombreTipo = (t) => (t === 'Plato Principal' ? 'Plato principal' : t);
+export const nombreTipo = (t) => (t === 'Plato Principal' ? 'Plato Principal' : t);
 
 export function lineasIncluye(d) {
   return acompDe(d).map((c) => `${c.tipo}: ${c.preparacion}`);

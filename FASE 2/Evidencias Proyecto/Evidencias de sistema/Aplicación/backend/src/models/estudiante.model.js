@@ -196,7 +196,10 @@ async function fijarCategoriaPreferida(id_usuario, nombre) {
 async function opinionesDePreparacion(id_preparacion) {
   const { rows } = await pool.query(
     `SELECT c.id_calificacion, c.estrellas, c.comentario, c.actualizado_en,
-            u.nombre AS autor
+            CASE WHEN split_part(trim(u.nombre), ' ', 2) <> ''
+                 THEN split_part(trim(u.nombre), ' ', 1) || ' ' || left(split_part(trim(u.nombre), ' ', 2), 1) || '.'
+                 ELSE split_part(trim(u.nombre), ' ', 1)
+            END AS autor
      FROM calificacion c
      JOIN usuario u ON u.id_usuario = c.id_usuario
      WHERE c.id_preparacion = $1 AND (c.comentario IS NOT NULL AND c.comentario <> '')

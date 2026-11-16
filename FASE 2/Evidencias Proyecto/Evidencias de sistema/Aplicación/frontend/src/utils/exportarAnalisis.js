@@ -16,10 +16,10 @@ const CHIP = {
   rojo: { texto: 'FFD11B1B', fondo: 'FFFBE3E3' },
 };
 const ESTILO_CAT = {
-  Principal: { texto: 'FF9A5B00', fondo: 'FFFDECD2' }, JUNAEB: { texto: 'FFD11B1B', fondo: 'FFFBE3E3' },
+  General: { texto: 'FF9A5B00', fondo: 'FFFDECD2' }, JUNAEB: { texto: 'FFD11B1B', fondo: 'FFFBE3E3' },
   Vegetariano: { texto: 'FF3C7424', fondo: 'FFE1EFD8' }, Hipocalórico: { texto: 'FF318386', fondo: 'FFD7EAEB' },
 };
-const COLORES = { Principal: '#F5A623', JUNAEB: '#D11B1B', Vegetariano: '#3C7424', Hipocalórico: '#318386', Compartido: '#8a94a6' };
+const COLORES = { General: '#F5A623', JUNAEB: '#D11B1B', Vegetariano: '#3C7424', Hipocalórico: '#318386', Compartido: '#8a94a6' };
 const relleno = (argb) => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
 const lineaVerde = { style: 'thin', color: { argb: LINEA } };
 const cajaFina = { top: lineaVerde, left: lineaVerde, bottom: lineaVerde, right: lineaVerde };
@@ -122,15 +122,15 @@ function encabezado(ws, titulo, subtitulo, columnas, pie = 'Análisis de la ofer
   t.alignment = { vertical: 'bottom', horizontal: 'left', wrapText: true };
   ws.mergeCells(2, corte + 1, 2, ultima);
   const m = ws.getCell(2, corte + 1);
-  m.value = subtitulo.split(' · ')[0];
+  m.value = subtitulo.split(' | ')[0];
   m.font = { name: 'Segoe UI Black', size: 14, bold: true, color: { argb: NARANJA } };
   m.alignment = { vertical: 'bottom', horizontal: 'right', wrapText: true };
   let siguiente = 4;
-  if (subtitulo.includes(' · ')) {
+  if (subtitulo.includes(' | ')) {
     ws.getRow(3).height = 24;
     ws.mergeCells(3, 1, 3, ultima);
     const sub = ws.getCell(3, 1);
-    sub.value = subtitulo.split(' · ').slice(1).join('  ·  ');
+    sub.value = subtitulo.split(' | ').slice(1).join('  -  ');
     sub.font = { name: FUENTE, size: 12, bold: true, color: { argb: OSCURO } };
     sub.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
     for (let c = 1; c <= ultima; c++) { ws.getCell(3, c).fill = relleno(CLARO); ws.getCell(3, c).border = cajaFina; }
@@ -282,7 +282,7 @@ export async function excelVentas(d, { graficos = true } = {}) {
   encabezado(wp, 'Preparaciones', d.etiqueta, 8);
   tabla(wp, INICIO, [
     { t: 'Preparación', v: (x) => x.nombre, izq: true, w: 36 },
-    { t: 'Tipo', v: (x) => (x.componente === 'Plato Principal' ? 'Plato principal' : x.componente), izq: true, w: 18 },
+    { t: 'Tipo', v: (x) => (x.componente === 'Plato Principal' ? 'Plato Principal' : x.componente), izq: true, w: 18 },
     { t: 'Días en menú', v: (x) => x.dias, w: 14 },
     { t: 'Vendidas', v: (x) => x.vendidas, w: 12 },
     { t: 'Planificadas', v: (x) => x.planificadas, w: 14 },
@@ -306,13 +306,14 @@ export async function excelVentas(d, { graficos = true } = {}) {
 
   if (general?.platos?.length) {
     const wg = wb.addWorksheet('Informe general');
-    const ig = encabezado(wg, 'Informe general', `${d.etiqueta} · Qué se agota más rápido · ${general.resumen.jornadas_cerradas} jornada(s) cerrada(s)`, 7);
+    const ig = encabezado(wg, 'Informe general', `${d.etiqueta} | Qué se agota más rápido | ${general.resumen.jornadas_cerradas} jornada(s) cerrada(s)`, 8);
     tabla(wg, ig, [
       { t: 'Preparación', v: (x) => x.nombre, izq: true, w: 36 },
       { t: 'Jornadas', v: (x) => x.jornadas, w: 12 },
       { t: 'Días agotado', v: (x) => x.dias_agotado, w: 14 },
       { t: '% agotado', v: (x) => pct(x.porcentaje_agotado), fmt: FMT_PCT, w: 12 },
       { t: 'Minutos hasta agotarse', v: (x) => x.minutos_hasta_agotarse, w: 22 },
+      { t: 'Agotado sin hora (corrección)', v: (x) => x.agotado_sin_hora, w: 28 },
       { t: 'Vendidas por jornada', v: (x) => x.vendidas_por_jornada, w: 20 },
       { t: 'Sobrante promedio', v: (x) => x.sobrante_promedio, w: 18 },
     ], general.platos);
@@ -347,13 +348,14 @@ export async function excelGeneral(d) {
   const wb = await nuevoLibro();
   const g = d.general;
   const ws = wb.addWorksheet('Informe general');
-  const ini = encabezado(ws, 'Informe general', `${d.etiqueta} · Qué se agota más rápido · ${g.resumen.jornadas_cerradas} jornada(s) cerrada(s) · ${g.resumen.con_conteo_de_cocina} con conteo de cocina`, 7);
+  const ini = encabezado(ws, 'Informe general', `${d.etiqueta} | Qué se agota más rápido | ${g.resumen.jornadas_cerradas} jornada(s) cerrada(s) | ${g.resumen.con_conteo_de_cocina} con conteo de cocina | ${g.resumen.con_correccion || 0} con corrección`, 8);
   const f = tabla(ws, ini, [
     { t: 'Preparación', v: (x) => x.nombre, izq: true, w: 36 },
     { t: 'Jornadas', v: (x) => x.jornadas, w: 12 },
     { t: 'Días agotado', v: (x) => x.dias_agotado, w: 14 },
     { t: '% agotado', v: (x) => pct(x.porcentaje_agotado), fmt: FMT_PCT, w: 12 },
     { t: 'Minutos hasta agotarse', v: (x) => x.minutos_hasta_agotarse, w: 22 },
+      { t: 'Agotado sin hora (corrección)', v: (x) => x.agotado_sin_hora, w: 28 },
     { t: 'Vendidas por jornada', v: (x) => x.vendidas_por_jornada, w: 20 },
     { t: 'Sobrante promedio', v: (x) => x.sobrante_promedio, w: 18 },
   ], g.platos);
@@ -387,7 +389,7 @@ const marca = (m) => (m ? String(m).replace('T', ' ').slice(0, 16) : '');
 export async function excelOpiniones(d, { graficos = true } = {}) {
   const wb = await nuevoLibro();
   const ws = wb.addWorksheet('Opiniones');
-  const ini = encabezado(ws, 'Opiniones', `${d.etiqueta} · ${d.opiniones.length} opinión(es) de los estudiantes`, 10);
+  const ini = encabezado(ws, 'Opiniones', `${d.etiqueta} | ${d.opiniones.length} opinión(es) de los estudiantes`, 10);
   tabla(ws, ini, [
     { t: 'Fecha', v: (o) => marca(o.creado_en), w: 18 },
     { t: 'Estudiante', v: (o) => o.autor, izq: true, w: 26 },
@@ -434,7 +436,7 @@ export async function excelOpiniones(d, { graficos = true } = {}) {
   const fav = d.favoritos;
   if (fav) {
     const wf = wb.addWorksheet('Favoritos');
-    const inf = encabezado(wf, 'Favoritos', `${d.etiqueta} · ${fav.resumen.total} marca(s) de ${fav.resumen.estudiantes} estudiante(s)`, 5);
+    const inf = encabezado(wf, 'Favoritos', `${d.etiqueta} | ${fav.resumen.total} marca(s) de ${fav.resumen.estudiantes} estudiante(s)`, 5);
     const ff = tabla(wf, inf, [{ t: 'Preparación', v: (x) => x.nombre, izq: true, w: 36 }, { t: 'Favoritos', v: (x) => x.total, w: 12 }], fav.por_preparacion);
     tabla(wf, ff + 1, [
       { t: 'Preparación', v: (x) => x.preparacion, izq: true, w: 36 }, { t: 'Estudiante', v: (x) => x.autor, izq: true, w: 26 },

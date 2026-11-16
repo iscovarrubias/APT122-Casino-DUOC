@@ -13,8 +13,8 @@ export const PERMISOS = {
 export const NAVEGACION = [
   { ruta: '/panel/kiosco', etiqueta: 'Disponibilidad', corta: 'Disponibilidad' },
   { ruta: '/panel/menu', etiqueta: 'Planificación del menú', corta: 'Menú' },
-  { ruta: '/panel/ingredientes', etiqueta: 'Ingredientes', corta: 'Ingredientes' },
   { ruta: '/panel/preparaciones', etiqueta: 'Preparaciones', corta: 'Preparaciones' },
+  { ruta: '/panel/ingredientes', etiqueta: 'Ingredientes', corta: 'Ingredientes' },
   { ruta: '/panel/analisis', etiqueta: 'Análisis', corta: 'Análisis' },
   { ruta: '/panel/usuarios', etiqueta: 'Usuarios', corta: 'Usuarios' },
 ];

@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const { hoyChile } = require('../utils/fecha');
 const jornadaModel = require('./jornada.model');
+const menuModel = require('./menu.model');
 const p = require('../utils/prediccion');
 
 const PRINCIPAL = "(SELECT id_tipo_componente FROM tipo_componente WHERE nombre = 'Plato Principal')";
@@ -62,8 +63,15 @@ async function sugerencias(fecha, id_sede) {
     estimacion: p.estimarDemanda(h.categorias[categoria] || [], fecha),
     planificado: planificados[categoria] ?? null,
   }));
+  const composicion = await menuModel.composicionPorCategoria();
+  const tipos = new Set(Object.values(composicion).flatMap((reglas) => reglas.map((r) => r.tipo)));
+  const por_tipo = {};
+  for (const tipo of tipos) {
+    const usan = categorias.filter((c) => (composicion[c.categoria] || []).some((r) => r.tipo === tipo));
+    if (usan.length && usan.every((c) => c.estimacion)) por_tipo[tipo] = usan.reduce((s, c) => s + c.estimacion.sugerido, 0);
+  }
   const compartidos = categorias.every((c) => c.estimacion)
-    ? { sugerido: categorias.reduce((s, c) => s + c.estimacion.sugerido, 0) } : null;
+    ? { sugerido: categorias.reduce((s, c) => s + c.estimacion.sugerido, 0), por_tipo } : { sugerido: null, por_tipo };
   return { fecha, contiene_simulados: h.contiene_simulados, categorias, compartidos };
 }
 

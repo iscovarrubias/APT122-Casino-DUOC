@@ -5,6 +5,7 @@ import { useAuth } from '../context/auth-context';
 import Mensaje from '../components/Mensaje';
 import ModalFormulario from '../components/ModalFormulario';
 import Cargando from '../components/Cargando';
+import PaginaError from '../components/PaginaError';
 
 const ROLES = ['Personal Casino', 'Cajero', 'Nutricionista', 'Administrador', 'Estudiante'];
 const VACIO = { nombre: '', email: '', password: '', rol: 'Personal Casino' };
@@ -12,6 +13,8 @@ const VACIO = { nombre: '', email: '', password: '', rol: 'Personal Casino' };
 export default function UsuariosPage() {
   const { usuario: yo } = useAuth();
   const [lista, setLista] = useState(null);
+  const [q, setQ] = useState('');
+  const [rolFiltro, setRolFiltro] = useState('');
   const [nuevo, setNuevo] = useState(VACIO);
   const [creando, setCreando] = useState(false);
   const [claveDe, setClaveDe] = useState(null);
@@ -19,16 +22,31 @@ export default function UsuariosPage() {
   const [errorForm, setErrorForm] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [ocupado, setOcupado] = useState(false);
-
+  const [intento, setIntento] = useState(0);
   const cargar = useCallback(async () => {
     try {
-      setLista(await listarUsuarios());
+      setLista(await listarUsuarios(q, rolFiltro));
     } catch (err) {
-      setError(err.message);
+      setError(err);
     }
-  }, []);
+  }, [q, rolFiltro]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    const t = setTimeout(cargar, 250);
+    return () => clearTimeout(t);
+  }, [cargar, intento]);
+  if (error && typeof error === 'object' && !lista) {
+    return (
+      <div className="v2">
+        <PaginaError 
+          compacta 
+          codigo={error.estado ?? 0} 
+          detalle={error.message} 
+          onReintentar={() => setIntento(i => i + 1)} 
+        />
+      </div>
+    );
+  }
 
   async function ejecutar(accion, mensajeOk, alFallar = setError) {
     setOcupado(true);
@@ -64,17 +82,35 @@ export default function UsuariosPage() {
     if (ok) setClaveDe(null);
   }
 
-
   return (
     <div className="v2">
       <div className="v2-barra">
+        <div className="v2-filtros">
+          <input
+            type="search"
+            className="v2-buscar"
+            placeholder="Buscar por nombre o correo"
+            aria-label="Buscar usuario"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <select
+            className="v2-buscar"
+            aria-label="Filtrar por rol"
+            value={rolFiltro}
+            onChange={(e) => setRolFiltro(e.target.value)}
+          >
+            <option value="">Personal (sin estudiantes)</option>
+            {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
         <button type="button" className="boton boton-primario boton-con-icono" onClick={() => { setErrorForm(null); setCreando(true); }}>
           <Plus size={16} aria-hidden="true" /> Nuevo usuario
         </button>
       </div>
-
-      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+      {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
       {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
+      
       {!lista && !error && <Cargando>Cargando usuarios…</Cargando>}
 
       {lista && lista.length === 0 && (

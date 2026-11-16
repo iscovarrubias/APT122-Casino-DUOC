@@ -7,6 +7,7 @@ import { Beef, Fish, Carrot, Wheat, Milk, Droplet, Package, Plus, ChevronDown, C
 import Mensaje from '../components/Mensaje';
 import ModalFormulario from '../components/ModalFormulario';
 import Cargando from '../components/Cargando';
+import PaginaError from '../components/PaginaError';
 import { useConfirmar } from '../context/confirmacion-context';
 
 const NUTRIENTES = ['calorias_100g', 'proteinas_100g', 'carbohidratos_100g', 'grasas_100g'];
@@ -163,6 +164,7 @@ export default function IngredientesPage() {
   const [aviso, setAviso] = useState(null);
   const [colapsadas, setColapsadas] = useState(() => new Set());
   const [soloIncompletos, setSoloIncompletos] = useState(false);
+  const [intento, setIntento] = useState(0);
 
   const cargar = useCallback(async () => {
     try {
@@ -172,11 +174,23 @@ export default function IngredientesPage() {
       setCatalogoAlergenos(alerg);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err);
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { cargar(); }, [cargar, intento]);
+  if (error && typeof error === 'object' && !lista) {
+    return (
+      <div className="v2">
+        <PaginaError 
+          compacta 
+          codigo={error.estado ?? 0} 
+          detalle={error.message} 
+          onReintentar={() => setIntento(i => i + 1)} 
+        />
+      </div>
+    );
+  }
 
   const alternarCategoria = (nombre) => {
     setColapsadas((prev) => {
@@ -234,8 +248,9 @@ export default function IngredientesPage() {
         </button>
       </div>
 
-      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+      {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
       {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
+      
       {!lista && !error && <Cargando>Cargando ingredientes…</Cargando>}
       {lista && visibles.length === 0 && (
         <div className="estado-info">
@@ -278,7 +293,7 @@ export default function IngredientesPage() {
                     <tr key={i.id_ingrediente}>
                       <td className="col-nombre">
                         <div className="v2-persona">
-                          <strong>{i.nombre}{i.sin_cuantificar && <em className="ing-nota"> · sin cuantificar</em>}</strong>
+                          <strong>{i.nombre}{i.sin_cuantificar && <em className="ing-nota"> - sin cuantificar</em>}</strong>
                           <span>{i.usos === 0 ? 'Sin uso en preparaciones' : `Usado en ${i.usos} ${i.usos === 1 ? 'preparación' : 'preparaciones'}`}</span>
                         </div>
                       </td>

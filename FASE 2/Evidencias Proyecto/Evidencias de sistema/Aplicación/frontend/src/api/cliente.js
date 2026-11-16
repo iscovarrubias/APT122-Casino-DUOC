@@ -70,3 +70,10 @@ export async function pedirArchivo(ruta, archivo, campo = 'imagen') {
   }
   return datos;
 }
+
+export function resolverUrl(url) {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/')) return `${API_URL}${url}`;
+  return url;
+}

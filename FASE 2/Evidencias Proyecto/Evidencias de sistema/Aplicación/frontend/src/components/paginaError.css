@@ -1,0 +1,205 @@
+.pagina-error {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+  background-color: #F8F9FA;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+.pagina-error--compacta {
+  min-height: 0;
+  padding: 48px 20px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+.pe-fondo-decoracion {
+  position: absolute;
+  color: #E5E7EB;
+  pointer-events: none;
+  z-index: 0;
+}
+.pe-fondo-decoracion.top-left {
+  top: 10%;
+  left: 5%;
+  transform: rotate(-15deg);
+}
+.pe-fondo-decoracion.bottom-right {
+  bottom: 10%;
+  right: 5%;
+  transform: rotate(15deg);
+}
+.pe-fondo-decoracion.bottom-left {
+  bottom: 15%;
+  left: 10%;
+  transform: rotate(5deg);
+}
+.pe-fondo-decoracion.top-right {
+  top: 15%;
+  right: 10%;
+  transform: rotate(-5deg);
+}
+.pe-codigo-grande {
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #1F3864;
+  margin-bottom: 20px;
+  letter-spacing: -1px;
+}
+.pe-ilustracion {
+  width: 220px;
+  height: auto;
+  margin: 0 auto 20px auto;
+}
+.pe-titulo {
+  margin: 0 0 10px 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1B1F27;
+}
+.pe-mensaje {
+  margin: 0 0 24px 0;
+  font-size: 0.95rem;
+  color: #5B6472;
+  line-height: 1.5;
+  max-width: 45ch;
+}
+.pe-acciones {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.pe-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+}
+.pe-boton-primario {
+  background-color: #F5A623;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(245, 166, 35, 0.3);
+}
+.pe-boton-primario:hover {
+  background-color: #E0951A;
+  transform: translateY(-2px);
+}
+.pe-boton-secundario {
+  background-color: transparent;
+  color: #5B6472;
+  border: 1px solid #E6E8EC;
+}
+.pe-boton-secundario:hover {
+  background-color: #F4F5F7;
+  color: #1B1F27;
+}
+.pe-detalle {
+  margin-top: 30px;
+  font-size: 0.8rem;
+  color: #9CA3AF;
+}
+.pe-detalle summary {
+  cursor: pointer;
+}
+.pe-detalle code {
+  display: block;
+  margin-top: 8px;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #E6E8EC;
+  border-radius: 8px;
+  color: #EF4444;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .pe-codigo-grande { font-size: 6rem; }
+  .pe-ilustracion { width: 160px; }
+  .pe-acciones { flex-direction: column; width: 100%; max-width: 280px; }
+  .pe-boton { width: 100%; }
+}
+.pe-icono-superior {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0px;
+  margin-top: 10px;
+}
+.pe-exclamacion {
+  font-size: 5rem;
+  font-weight: 800;
+  color: #F5A623;
+  line-height: 0.8;
+  margin-bottom: 10px;
+}
+.pe-contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  gap: 0;
+}
+[data-theme='oscuro'] .pagina-error {
+  background-color: var(--bg);
+}
+[data-theme='oscuro'] .pe-exclamacion {
+  color: var(--amber);
+}
+[data-theme='oscuro'] .pe-codigo-grande {
+  color: var(--text);
+}
+[data-theme='oscuro'] .pe-titulo {
+  color: var(--text);
+}
+[data-theme='oscuro'] .pe-mensaje {
+  color: var(--text-muted);
+}
+[data-theme='oscuro'] .pe-boton-secundario {
+  color: var(--text);
+  border-color: var(--border);
+}
+[data-theme='oscuro'] .pe-boton-secundario:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme='oscuro'] .pe-detalle {
+  color: var(--text-muted);
+}
+[data-theme='oscuro'] .pe-detalle code {
+  background-color: #0D0D26;
+  border-color: var(--border);
+  color: #F87171;
+}
+[data-theme='oscuro'] .pe-fondo-decoracion {
+  color: rgba(255, 255, 255, 0.04);
+}
+.pagina-error--embebido {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+}
+[data-theme='oscuro'] .pagina-error--embebido {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}

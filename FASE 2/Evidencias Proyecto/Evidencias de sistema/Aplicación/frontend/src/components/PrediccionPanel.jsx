@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { consultarPrediccionHoy, consultarConfiabilidad } from '../api/gestion';
 import { suscribirCambios } from '../utils/eventos';
 import { colorDeCategoria } from '../utils/formato';
-import Mensaje from './Mensaje';
 import Ayuda from './Ayuda';
+import PaginaError from './PaginaError';
 
 const fmt = (v, sufijo = '') => (v === null || v === undefined ? '—' : `${v}${sufijo}`);
 
@@ -32,16 +32,31 @@ export default function PrediccionPanel() {
   const [hoy, setHoy] = useState(null);
   const [conf, setConf] = useState(null);
   const [error, setError] = useState(null);
+  const [intento, setIntento] = useState(0);
 
   useEffect(() => {
     let activo = true;
-    const cargarHoy = () => consultarPrediccionHoy().then((d) => { if (activo) setHoy(d); }).catch((e) => { if (activo) setError(e.message); });
+    setError(null);
+    const cargarHoy = () => consultarPrediccionHoy().then((d) => { if (activo) setHoy(d); }).catch((e) => { if (activo) setError(e); });
     cargarHoy();
-    consultarConfiabilidad().then((d) => { if (activo) setConf(d); }).catch((e) => { if (activo) setError(e.message); });
+    consultarConfiabilidad().then((d) => { if (activo) setConf(d); }).catch((e) => { if (activo) setError(e); });
     const intervalo = setInterval(cargarHoy, 30000);
     const cerrar = suscribirCambios(cargarHoy);
     return () => { activo = false; clearInterval(intervalo); cerrar(); };
-  }, []);
+  }, [intento]);
+
+  if (error) {
+    return (
+      <div className="prediccion">
+        <PaginaError 
+          compacta 
+          codigo={error.estado ?? 0} 
+          detalle={error.message} 
+          onReintentar={() => setIntento((i) => i + 1)} 
+        />
+      </div>
+    );
+  }
 
   const d = conf?.global.demanda;
   const a = conf?.global.agotamiento;
@@ -57,8 +72,6 @@ export default function PrediccionPanel() {
 
   return (
     <div className="prediccion">
-      {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
-
       <section className="tarjeta">
         <div className="seccion-titulo">
           <h2>Hoy: hora estimada de agotamiento</h2>
@@ -67,7 +80,7 @@ export default function PrediccionPanel() {
             (si hoy se vende el doble de rápido, se agota antes). Si lo que queda alcanza hasta el cierre, indica que no se agotaría.
           </Ayuda>
         </div>
-        {!hoy && !error && <p className="texto-suave">Calculando…</p>}
+        {!hoy && <p className="texto-suave">Calculando…</p>}
         {hoy && hoy.categorias.length === 0 && (
           <p className="estado-vacio">No hay una jornada abierta. La estimación aparece cuando la cocina inicia la jornada.</p>
         )}
@@ -78,7 +91,7 @@ export default function PrediccionPanel() {
               return (
                 <div key={c.categoria} className="hoy-tarjeta" style={{ '--acento': colorDeCategoria(c.categoria).color }}>
                   <strong>{c.categoria}</strong>
-                  <span className={`indicador-etiqueta indicador-etiqueta--${e.clase}`}>{e.texto}{e.detalle ? ` · ${e.detalle}` : ''}</span>
+                  <span className={`indicador-etiqueta indicador-etiqueta--${e.clase}`}>{e.texto}{e.detalle ? ` - ${e.detalle}` : ''}</span>
                   <div className="hoy-cifras">
                     <span><b>{Math.max(c.restante, 0)}</b> quedan</span>
                     <span><b>{c.vendidas}</b> vendidas</span>
@@ -98,7 +111,7 @@ export default function PrediccionPanel() {
             Ese error promedio es lo que indica cuánto confiar en la predicción.
           </Ayuda>
         </div>
-        {!conf && !error && <p className="texto-suave">Calculando…</p>}
+        {!conf && <p className="texto-suave">Calculando…</p>}
         {conf && d.dias === 0 && (
           <p className="estado-vacio">Todavía no hay historia suficiente para probar la predicción (se necesitan al menos 5 días con ventas por categoría).</p>
         )}

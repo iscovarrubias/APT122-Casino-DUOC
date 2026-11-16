@@ -4,7 +4,7 @@ const REINTENTO_MS = 15000;
 
 let fuente = null;
 let temporizador = null;
-const suscriptores = new Set();
+const suscriptores = new Map();
 
 function conectar() {
   if (fuente || typeof EventSource === 'undefined') return;
@@ -12,8 +12,11 @@ function conectar() {
   fuente = new EventSource(`${API_URL}/api/menu/eventos`);
 
   fuente.addEventListener('cambio', () => {
-    suscriptores.forEach((cb) => {
-      try { cb(); } catch { }
+    suscriptores.forEach((dispersionMs, cb) => {
+      const espera = dispersionMs > 0 ? Math.random() * dispersionMs : 0;
+      setTimeout(() => {
+        try { cb(); } catch { }
+      }, espera);
     });
   });
 
@@ -41,8 +44,8 @@ function desconectar() {
   }
 }
 
-export function suscribirCambios(callback) {
-  suscriptores.add(callback);
+export function suscribirCambios(callback, { dispersionMs = 0 } = {}) {
+  suscriptores.set(callback, dispersionMs);
   conectar();
 
   return () => {

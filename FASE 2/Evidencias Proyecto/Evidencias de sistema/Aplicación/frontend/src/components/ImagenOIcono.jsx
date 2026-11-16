@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Utensils, Salad, CakeSlice, CupSoda } from 'lucide-react';
+import { resolverUrl } from '../api/cliente';
 
 const ICONOS_COMPONENTE = {
   'Plato Principal': Utensils,
@@ -19,7 +20,7 @@ export default function ImagenOIcono({ url, tipo, tamano = 40, className = 'card
   if (url && !fallo) {
     return (
       <img
-        src={url}
+        src={resolverUrl(url)}
         alt=""
         className={className}
         loading="lazy"

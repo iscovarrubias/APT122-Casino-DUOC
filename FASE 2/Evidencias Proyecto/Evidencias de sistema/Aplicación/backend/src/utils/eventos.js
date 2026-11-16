@@ -1,8 +1,7 @@
 const { EventEmitter } = require('node:events');
-
-const MAX_TOTAL = Number(process.env.EVENTOS_MAX_CONEXIONES) || 1000;
-const MAX_POR_IP = Number(process.env.EVENTOS_MAX_POR_IP) || 40;
-
+const cache = require('./cache');
+const MAX_TOTAL = Number(process.env.EVENTOS_MAX_CONEXIONES) || 5000;
+const MAX_POR_IP = Number(process.env.EVENTOS_MAX_POR_IP) || 1500;
 const emisor = new EventEmitter();
 emisor.setMaxListeners(MAX_TOTAL + 10);
 
@@ -10,6 +9,7 @@ const conexionesPorIp = new Map();
 let total = 0;
 
 function emitir() {
+  cache.invalidar();
   emisor.emit('cambio');
 }
 

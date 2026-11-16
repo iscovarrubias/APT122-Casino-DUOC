@@ -20,7 +20,11 @@ async function validarRol(rol) {
 
 async function listar(req, res, next) {
   try {
-    res.json(await usuarioModel.listar());
+    res.json(await usuarioModel.listar({
+      q: req.query.q,
+      rol: req.query.rol,
+      limite: req.query.limite,
+    }));
   } catch (err) {
     next(err);
   }
