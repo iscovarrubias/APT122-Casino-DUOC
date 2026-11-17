@@ -1,5 +1,5 @@
 import {
-  categoriasDelPeriodo, estiloCategoria, principalesDe, acompDe, combosDe, diasDelPeriodo, totalesDelPeriodo,
+  categoriasDelPeriodo, estiloCategoria, principalesDe, acompDe, etiquetaAcomp, diasVisibles, combosDe, diasDelPeriodo, totalesDelPeriodo,
   nombreLargo, encabezadoDia, rangoSemana, nombreTipo,
 } from '../utils/exportarMenu';
 
@@ -31,8 +31,8 @@ export function HojaCalendario({ periodo }) {
         <table className="hx-cal" key={s.lunes}>
           <thead>
             <tr>
-              <th className="hx-cal-lateral">{periodo.modo === 'mes' ? <>Semana<br />{rangoSemana(s)}</> : ''}</th>
-              {s.dias.map((d) => <th key={d.fecha}>{d.fuera ? '' : encabezadoDia(d.fecha)}</th>)}
+              <th className="hx-cal-lateral">{periodo.modo === 'mes' ? <>Semana<br />{rangoSemana(s, periodo.conSabado)}</> : ''}</th>
+              {diasVisibles(periodo, s).map((d) => <th key={d.fecha}>{d.fuera ? '' : encabezadoDia(d.fecha)}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -41,7 +41,7 @@ export function HojaCalendario({ periodo }) {
               return (
                 <tr key={cat} style={{ background: hex(est.fila), borderBottom: `1.5px solid ${hex(est.texto)}` }}>
                   <th className="hx-cal-cat" style={{ color: hex(est.texto) }}>{cat}</th>
-                  {s.dias.map((d) => {
+                  {diasVisibles(periodo, s).map((d) => {
                     const plato = d.fuera ? null : principalesDe(d).find((c) => c.categoria === cat);
                     return <td key={d.fecha} className={plato ? '' : 'hx-vacio'}>{plato ? plato.preparacion : '—'}</td>;
                   })}
@@ -50,11 +50,11 @@ export function HojaCalendario({ periodo }) {
             })}
             <tr className="hx-cal-incluye">
               <th className="hx-cal-cat" style={{ color: '#EFA018' }}>Incluye</th>
-              {s.dias.map((d) => {
+              {diasVisibles(periodo, s).map((d) => {
                 const extra = d.fuera ? [] : acompDe(d);
                 return (
                   <td key={d.fecha} className={extra.length ? '' : 'hx-vacio'}>
-                    {extra.length ? extra.map((c) => <div key={c.tipo + c.preparacion}><b>{c.tipo}:</b> {c.preparacion}</div>) : '—'}
+                    {extra.length ? extra.map((c) => <div key={c.tipo + c.preparacion}><b>{c.tipo}:</b> {etiquetaAcomp(c)}</div>) : '—'}
                   </td>
                 );
               })}

@@ -2,7 +2,7 @@ import { consultarMes } from '../api/gestion';
 
 const sumar = (f, n) => new Date(new Date(`${f}T12:00:00Z`).getTime() + n * 86400000).toISOString().slice(0, 10);
 const lunesDe = (f) => { const d = new Date(`${f}T12:00:00Z`).getUTCDay(); return sumar(f, d === 0 ? -6 : 1 - d); };
-const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes'];
+const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const DIAS_CORTOS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const dia = (f) => Number(f.slice(8, 10));
@@ -72,8 +72,10 @@ export function construirPeriodo({ modo, fecha, mes, dias }) {
     semanas.push({ lunes: l, sabado: sumar(l, 5), dias: lista });
   }
 
+  const conSabado = semanas.some((sem) => sem.dias[5].tiene && !sem.dias[5].fuera);
   const primero = semanas[0].dias.find((d) => !d.fuera) || semanas[0].dias[0];
-  const ultimo = [...semanas[semanas.length - 1].dias].reverse().find((d) => !d.fuera) || semanas[semanas.length - 1].dias[5];
+  const diasUltima = semanas[semanas.length - 1].dias.slice(0, conSabado ? 6 : 5);
+  const ultimo = [...diasUltima].reverse().find((d) => !d.fuera) || diasUltima[diasUltima.length - 1];
   const anio = (modo === 'mes' ? mes : primero.fecha).slice(0, 4);
   let etiquetaMes;
   let subtitulo;
@@ -97,14 +99,24 @@ export function construirPeriodo({ modo, fecha, mes, dias }) {
     etiquetaMes,
     subtitulo,
     semanas,
+    conSabado,
     archivo: modo === 'mes' ? `mes_${mes}` : `semana_${lunes}`,
   };
 }
 
 export const principalesDe = (d) => d.comps.filter((c) => c.tipo === 'Plato Principal');
-export const acompDe = (d) => d.comps.filter((c) => c.tipo !== 'Plato Principal');
+export const acompDe = (d) => {
+  const mapa = new Map();
+  d.comps.filter((c) => c.tipo !== 'Plato Principal').forEach((c) => {
+    const clave = `${c.tipo}|${c.preparacion}`;
+    if (!mapa.has(clave)) mapa.set(clave, { ...c, categorias: [] });
+    if (c.categoria) mapa.get(clave).categorias.push(c.categoria);
+  });
+  return [...mapa.values()];
+};
+export const etiquetaAcomp = (c) => `${c.preparacion}${c.categorias.length ? ` (${c.categorias.join(', ')})` : ''}`;
 export const combosDe = (d) => principalesDe(d).reduce((s, c) => s + c.cantidad, 0);
-export const diasDelPeriodo = (p) => p.semanas.flatMap((s) => s.dias).filter((d) => !d.fuera);
+export const diasDelPeriodo = (p) => p.semanas.flatMap((s) => s.dias).filter((d) => !d.fuera && (p.conSabado || d.indice < 5));
 
 export function categoriasDelPeriodo(p) {
   const usadas = new Set(diasDelPeriodo(p).flatMap((d) => principalesDe(d).map((c) => c.categoria)));
@@ -115,7 +127,11 @@ export function categoriasDelPeriodo(p) {
 export const nombreLargo = (f) => `${cap(DIAS[(new Date(`${f}T12:00:00Z`).getUTCDay() + 6) % 7])} ${dia(f)} de ${mesNombre(f)} de ${f.slice(0, 4)}`;
 export const encabezadoDia = (f) => `${DIAS[(new Date(`${f}T12:00:00Z`).getUTCDay() + 6) % 7].toUpperCase()} ${dia(f)}`;
 const etiquetaCorta = (f) => `${DIAS_CORTOS[(new Date(`${f}T12:00:00Z`).getUTCDay() + 6) % 7]} ${dia(f)}`;
-export const rangoSemana = (s) => `${dia(s.lunes)} ${mesNombre(s.lunes).slice(0, 3)} – ${dia(s.sabado)} ${mesNombre(s.sabado).slice(0, 3)}`;
+export const diasVisibles = (p, s) => (p.conSabado ? s.dias : s.dias.slice(0, 5));
+export const rangoSemana = (s, conSabado = true) => {
+  const fin = conSabado ? s.sabado : sumar(s.lunes, 4);
+  return `${dia(s.lunes)} ${mesNombre(s.lunes).slice(0, 3)} – ${dia(fin)} ${mesNombre(fin).slice(0, 3)}`;
+};
 
 export function totalesDelPeriodo(p) {
   const mapa = new Map();
@@ -137,7 +153,7 @@ export function totalesDelPeriodo(p) {
 export const nombreTipo = (t) => (t === 'Plato Principal' ? 'Plato Principal' : t);
 
 export function lineasIncluye(d) {
-  return acompDe(d).map((c) => `${c.tipo}: ${c.preparacion}`);
+  return acompDe(d).map((c) => `${c.tipo}: ${etiquetaAcomp(c)}`);
 }
 
 export function nombreArchivo(p, parte, extension) {

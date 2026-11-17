@@ -1,6 +1,6 @@
 import {
   categoriasDelPeriodo, estiloCategoria, principalesDe, combosDe, diasDelPeriodo, totalesDelPeriodo,
-  nombreLargo, encabezadoDia, rangoSemana, nombreTipo, lineasIncluye, nombreArchivo,
+  nombreLargo, encabezadoDia, rangoSemana, diasVisibles, nombreTipo, lineasIncluye, nombreArchivo,
 } from './exportarMenu';
 
 const NARANJA = 'FFEA7A12';
@@ -57,6 +57,7 @@ function configurarPagina(ws, pie) {
 function hojaCalendario(wb, p, logo) {
   const ws = wb.addWorksheet('Calendario');
   const anchos = [3, 19.6, 35.9, 35.7, 33.9, 32.4, 32.4, 33, 3];
+  if (!p.conSabado) anchos[7] = 3;
   anchos.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
   const fondoBanner = relleno(GRIS_FONDO);
 
@@ -70,10 +71,10 @@ function hojaCalendario(wb, p, logo) {
   p.semanas.forEach((s, idx) => {
     ws.getRow(fila).height = 38;
     const cab = ws.getCell(fila, 2);
-    cab.value = p.modo === 'mes' ? `Semana\n${rangoSemana(s)}` : '';
+    cab.value = p.modo === 'mes' ? `Semana\n${rangoSemana(s, p.conSabado)}` : '';
     cab.font = { name: FUENTE, size: 10, bold: true, color: { argb: GRIS_TEXTO } };
     cab.alignment = { vertical: 'middle', wrapText: true };
-    s.dias.forEach((d, i) => {
+    diasVisibles(p, s).forEach((d, i) => {
       const c = ws.getCell(fila, 3 + i);
       c.value = d.fuera ? '' : encabezadoDia(d.fecha);
       c.font = { name: FUENTE, size: 11, bold: true, color: { argb: OSCURO } };
@@ -89,7 +90,7 @@ function hojaCalendario(wb, p, logo) {
       et.value = cat;
       et.font = { name: FUENTE, size: 14, bold: true, color: { argb: rgb(est.texto) } };
       et.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-      s.dias.forEach((d, i) => {
+      diasVisibles(p, s).forEach((d, i) => {
         const c = ws.getCell(fila, 3 + i);
         const plato = d.fuera ? null : principalesDe(d).find((x) => x.categoria === cat);
         c.value = plato ? plato.preparacion : '—';
@@ -104,13 +105,13 @@ function hojaCalendario(wb, p, logo) {
       fila += 1;
     });
 
-    const maxLineas = Math.max(3, ...s.dias.map((d) => (d.fuera ? 0 : lineasIncluye(d).length)));
+    const maxLineas = Math.max(3, ...diasVisibles(p, s).map((d) => (d.fuera ? 0 : lineasIncluye(d).length)));
     ws.getRow(fila).height = Math.max(78.75, maxLineas * 22);
     const inc = ws.getCell(fila, 2);
     inc.value = 'Incluye';
     inc.font = { name: FUENTE, size: 14, bold: true, color: { argb: 'FFEFA018' } };
     inc.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-    s.dias.forEach((d, i) => {
+    diasVisibles(p, s).forEach((d, i) => {
       const c = ws.getCell(fila, 3 + i);
       const lineas = d.fuera ? [] : lineasIncluye(d);
       if (!lineas.length) {

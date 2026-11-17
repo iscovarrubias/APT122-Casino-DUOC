@@ -110,7 +110,7 @@ export default function ExportarMenu({ fecha: fechaInicial, mes, vistaMes, onCer
         modo={modo}
         onModo={setModo}
         selector={selector}
-        resumen={modo === 'semana' ? `${etiquetaDia(lunes)} al ${etiquetaDia(sumar(lunes, 5))}` : nombreMes}
+        resumen={modo === 'semana' ? `${etiquetaDia(lunes)} al ${etiquetaDia(sumar(lunes, 4))}` : nombreMes}
         excelNota="Un archivo con 3 hojas: calendario, detalle por día y total a preparar."
         imagenes={HOJAS}
         imagenElegida={hoja}

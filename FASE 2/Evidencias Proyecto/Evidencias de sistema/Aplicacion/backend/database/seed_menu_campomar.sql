@@ -119,7 +119,7 @@ ON CONFLICT DO NOTHING;
 CREATE TEMP TABLE _campomar_prep (nombre VARCHAR(150), descripcion TEXT, precio INT, tipo VARCHAR(50)) ON COMMIT DROP;
 INSERT INTO _campomar_prep VALUES
   ('Budín de Zapallitos Italianos con Arroz Piamontesa', 'Budín de zapallito italiano gratinado con queso, acompañado de arroz piamontesa cremoso.', 4800, 'Plato Principal'),
-  ('Lentejas a la Parmesana', 'Lentejas guisadas con verduras y salsa de tomate, gratinadas con queso parmesano, con arroz.', 4800, 'Plato Principal'),
+  ('Lentejas a la Parmesana', 'Lentejas guisadas con arroz, zanahoria y salsa de tomate, gratinadas con queso parmesano.', 4800, 'Plato Principal'),
   ('Budín de Zapallitos Italianos con Ensaladas', 'Budín de zapallito italiano horneado, acompañado de ensalada fresca de lechuga, tomate y zanahoria.', 4800, 'Plato Principal'),
   ('Budín de Acelga con Arroz Árabe', 'Budín de acelga y huevo horneado, con arroz árabe.', 4800, 'Plato Principal'),
   ('Omelette pimentón con ensaladas', 'Omelette de huevo con pimentón y cebolla, acompañado de ensalada fresca.', 4800, 'Plato Principal'),
