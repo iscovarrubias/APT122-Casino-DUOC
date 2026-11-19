@@ -90,6 +90,8 @@ Desde la raíz del repositorio: `docker compose up --build`. Ver el README raíz
 | `JWT_EXPIRES_IN` / `JWT_EXPIRES_IN_KIOSCO` | No | Por defecto `8h` / `7d` |
 | `SSO_SIMULADO` | No | `true` permite el acceso de estudiantes sin contraseña (solo demostración; **prohibido en producción**) |
 | `HORA_CIERRE_AUTOMATICO` | No | Hora en que se cierran jornadas olvidadas. Por defecto `15:00` |
+| `HORA_INICIO_AUTOMATICO` | No | Hora (`HH:MM`) desde la que la jornada de hoy se inicia sola con las cantidades planificadas. Vacía = desactivado (la inicia el personal desde Caja) |
+| `DEMO_VENTAS_SIMULADAS` / `DEMO_VENTAS_POR_MINUTO` | No | **Solo demostración.** `true` registra combos simulados mientras la jornada está abierta, al ritmo indicado (por defecto `0.7` por minuto). Se guardan sin usuario (`venta_combo.id_usuario IS NULL`) |
 | `TRUST_PROXY` | No | Número de proxies de confianza (para la IP real tras un proxy) |
 | `LIMITE_LOGIN_POR_CUENTA` / `LIMITE_LOGIN_POR_IP` / `LIMITE_IDENTIFICAR_POR_IP` | No | Límites del limitador (8 / 40 / 600 por 15 min) |
 | `EVENTOS_MAX_CONEXIONES` / `EVENTOS_MAX_POR_IP` | No | Límites de conexiones SSE (1000 / 40) |
@@ -98,6 +100,21 @@ Desde la raíz del repositorio: `docker compose up --build`. Ver el README raíz
 | `FRONTEND_URL` | Para Microsoft | A dónde vuelve el usuario tras iniciar sesión |
 | `TEST_DATABASE_URL` | Para pruebas de integración | Base **exclusiva** de pruebas (su nombre debe contener `test` o `prueba`) |
 | `RESPALDO_DIR` / `RESPALDO_CONSERVAR` | No | Carpeta y número de respaldos a conservar (14) |
+
+### Automatizaciones de la demostración
+
+El inicio automático y las ventas simuladas (`src/utils/demo.js`) no dependen de un reloj externo: se ejecutan cuando el servidor recibe visitas y cada minuto mientras está encendido. Así funcionan aunque el hosting gratuito haya dormido el servidor a la hora de inicio: la primera visita después de esa hora inicia la jornada y pone al día las ventas desde el inicio. Antes de iniciar la jornada, el menú público muestra *"Aún no inicia la jornada"* en lugar de *"Disponible"*.
+
+Para borrar las jornadas iniciadas automáticamente y sus ventas simuladas:
+
+```sql
+BEGIN;
+DELETE FROM movimiento_stock WHERE id_menu_preparacion IN (
+  SELECT mp.id_menu_preparacion FROM menu_preparacion mp JOIN jornada j ON j.id_menu = mp.id_menu WHERE j.iniciada_por IS NULL);
+DELETE FROM venta_combo WHERE id_jornada IN (SELECT id_jornada FROM jornada WHERE iniciada_por IS NULL);
+DELETE FROM jornada WHERE iniciada_por IS NULL;
+COMMIT;
+```
 
 ## Scripts
 

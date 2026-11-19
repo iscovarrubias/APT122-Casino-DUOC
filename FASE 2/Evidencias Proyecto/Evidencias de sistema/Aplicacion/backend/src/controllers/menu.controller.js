@@ -1,6 +1,7 @@
 const menuModel = require('../models/menu.model');
 const eventos = require('../utils/eventos');
 const cache = require('../utils/cache');
+const demo = require('../utils/demo');
 const { ApiError } = require('../middleware/errorHandler');
 const { hoyChile, haceDiasChile, esFechaISO } = require('../utils/fecha');
 
@@ -18,6 +19,7 @@ async function hoy(req, res, next) {
   try {
     const fecha = fechaDe(req.query.fecha, hoyChile());
     const categoria = req.query.categoria || null;
+    if (fecha === hoyChile()) demo.ponerAlDia();
     const resultado = await cache.con(
       `${fecha}|${categoria || ''}`,
       2000,

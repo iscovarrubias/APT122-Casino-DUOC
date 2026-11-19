@@ -1,12 +1,10 @@
 const pool = require('../config/db');
 const { ApiError } = require('../middleware/errorHandler');
 const { estadoPorStock } = require('../utils/stock');
-const { hoyChile } = require('../utils/fecha');
+const { hoyChile, horaChile } = require('../utils/fecha');
 const eventos = require('../utils/eventos');
 const menuModel = require('./menu.model');
 const HORA_CIERRE = process.env.HORA_CIERRE_AUTOMATICO || '15:00';
-const horaChile = () =>
-  new Date().toLocaleTimeString('en-GB', { timeZone: 'America/Santiago', hour12: false, hour: '2-digit', minute: '2-digit' });
 
 async function transaccion(fn) {
   const client = await pool.connect();

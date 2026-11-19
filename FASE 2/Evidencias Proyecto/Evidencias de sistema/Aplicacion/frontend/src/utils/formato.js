@@ -10,6 +10,7 @@ export const ESTADO_TEXTO = {
   baja_disponibilidad: 'Quedan pocas unidades',
   agotado: 'Agotado',
   cerrada: 'Jornada cerrada',
+  sin_iniciar: 'Aún no inicia la jornada',
 };
 
 export function calcularCaloriasTotales(componentes) {
@@ -109,6 +110,7 @@ export function colorTextoSobre(hex) {
 export function estadoEfectivo(item) {
   if (item.jornada_estado === 'cerrada') return 'cerrada';
   if (item.disponibilidad === 'agotado') return 'agotado';
+  if (item.jornada_estado === null) return 'sin_iniciar';
   if (item.jornada_estado === 'abierta' && item.cantidad_restante === 0) return 'agotado';
   return item.disponibilidad;
 }

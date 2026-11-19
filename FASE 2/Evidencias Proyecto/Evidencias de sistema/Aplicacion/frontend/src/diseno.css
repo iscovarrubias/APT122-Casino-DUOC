@@ -958,7 +958,8 @@
 .v2-pub .estado-pill.agotado::before {
   background: var(--agotado);
 }
-.v2-pub .estado-pill.cerrada::before {
+.v2-pub .estado-pill.cerrada::before,
+.v2-pub .estado-pill.sin_iniciar::before {
   background: var(--text-muted);
 }
 .v2-pub .no-disponible .card-imagen {

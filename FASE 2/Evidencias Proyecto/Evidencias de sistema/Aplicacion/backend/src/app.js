@@ -98,6 +98,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 if (require.main === module) {
   app.listen(PORT, HOST, () => {
     console.log(`Servidor del Casino DUOC UC escuchando en el puerto ${PORT}.`);
+    require('./utils/demo').iniciarReloj();
   });
 }
 

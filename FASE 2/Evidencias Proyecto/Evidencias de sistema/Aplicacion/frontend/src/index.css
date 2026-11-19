@@ -349,6 +349,9 @@ body {
 .estado-pill.agotado {
   background: var(--agotado);
 }
+.estado-pill.sin_iniciar {
+  background: var(--text-muted);
+}
 .panel-detalle h3 {
   color: var(--navy);
   font-size: 1rem;

@@ -21,6 +21,14 @@ describe('estadoEfectivo', () => {
     expect(estadoEfectivo({ jornada_estado: 'abierta', disponibilidad: 'baja_disponibilidad', cantidad_restante: 4 })).toBe('baja_disponibilidad');
   });
 
+  it('sin jornada iniciada avisa que aún no comienza, sin marcarlo como disponible', () => {
+    expect(estadoEfectivo({ jornada_estado: null, disponibilidad: 'disponible', cantidad_restante: null })).toBe('sin_iniciar');
+  });
+
+  it('sin jornada iniciada, un plato marcado agotado sigue agotado', () => {
+    expect(estadoEfectivo({ jornada_estado: null, disponibilidad: 'agotado', cantidad_restante: null })).toBe('agotado');
+  });
+
   it('solo agotado y cerrada se muestran como no disponibles', () => {
     expect(NO_DISPONIBLE).toEqual(['agotado', 'cerrada']);
   });

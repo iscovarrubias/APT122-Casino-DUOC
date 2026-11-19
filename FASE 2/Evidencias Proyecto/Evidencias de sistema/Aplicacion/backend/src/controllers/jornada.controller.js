@@ -1,8 +1,10 @@
 const jornadaModel = require('../models/jornada.model');
 const { ApiError } = require('../middleware/errorHandler');
+const demo = require('../utils/demo');
 
 async function hoy(req, res, next) {
   try {
+    demo.ponerAlDia();
     res.json(await jornadaModel.estadoHoy({ id_sede: req.user.id_sede }));
   } catch (err) {
     next(err);
