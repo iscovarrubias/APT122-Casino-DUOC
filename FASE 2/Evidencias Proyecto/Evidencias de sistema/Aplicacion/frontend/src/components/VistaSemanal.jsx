@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { obtenerHistorialMenu } from '../api/menu';
 import { aISOChile, hoyChile, CATEGORIAS_COLOR } from '../utils/formato';
 import PaginaError from './PaginaError';
-import Cargando from './Cargando';
+import PantallaCarga from './PantallaCarga';
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 const CATEGORIAS_ORDEN = ['General', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
@@ -25,7 +25,7 @@ const COMPOSICION_POR_DEFECTO = {
 
 function rangoSemana(fecha) {
   const dia = fecha.getDay();
-  const offsetLunes = dia === 0 ? -6 : 1 - dia;
+  const offsetLunes = dia === 0 ? 1 : dia === 6 ? 2 : 1 - dia;
   const lunes = new Date(fecha);
   lunes.setDate(fecha.getDate() + offsetLunes);
   const sabado = new Date(lunes);
@@ -178,7 +178,8 @@ export default function VistaSemanal() {
   useEffect(() => {
     if (!inicializado.current && menus && menus.length > 0) {
       inicializado.current = true;
-      setAbierto(hoy);
+      const fechas = menus.map((m) => m.fecha).sort();
+      setAbierto(fechas.includes(hoy) ? hoy : fechas[0]);
     }
   }, [menus, hoy]);
 
@@ -195,7 +196,7 @@ export default function VistaSemanal() {
     setAbierto((actual) => (actual === fechaISO ? null : fechaISO));
   }
 
-  if (cargando) return <Cargando>Cargando menú semanal…</Cargando>;
+  if (cargando) return <PantallaCarga compacta mensaje="Cargando menú semanal…" />;
 
   if (error) return (
     <PaginaError

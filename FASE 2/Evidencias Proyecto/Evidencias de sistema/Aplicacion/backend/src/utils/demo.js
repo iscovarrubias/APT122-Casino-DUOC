@@ -1,18 +1,3 @@
-// Automatizaciones de la jornada, pensadas para la demostración pública.
-//
-// Ambas se activan con variables de entorno y quedan apagadas si no se definen:
-//   HORA_INICIO_AUTOMATICO=12:00   inicia sola la jornada de hoy desde esa hora.
-//   DEMO_VENTAS_SIMULADAS=true     registra ventas de combos para que el stock baje solo.
-//   DEMO_VENTAS_POR_MINUTO=0.7     ritmo de las ventas simuladas (opcional).
-//
-// No dependen de un reloj externo: corren cuando el servidor recibe tráfico (y cada
-// minuto mientras está despierto). Así funcionan aunque el hosting gratuito haya
-// dormido el servidor a la hora de inicio: la primera visita después de esa hora
-// inicia la jornada y pone al día las ventas que "faltan" desde el inicio.
-//
-// Las ventas simuladas se registran sin usuario (venta_combo.id_usuario IS NULL),
-// lo que permite distinguirlas y borrarlas después.
-
 const pool = require('../config/db');
 const { hoyChile, horaChile } = require('./fecha');
 const jornadaModel = require('../models/jornada.model');

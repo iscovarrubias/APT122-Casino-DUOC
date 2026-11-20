@@ -4,7 +4,7 @@ import { listarUsuarios, crearUsuario, actualizarUsuario, cambiarClave } from '.
 import { useAuth } from '../context/auth-context';
 import Mensaje from '../components/Mensaje';
 import ModalFormulario from '../components/ModalFormulario';
-import Cargando from '../components/Cargando';
+import PantallaCarga from '../components/PantallaCarga';
 import PaginaError from '../components/PaginaError';
 
 const ROLES = ['Personal Casino', 'Cajero', 'Nutricionista', 'Administrador', 'Estudiante'];
@@ -111,7 +111,7 @@ export default function UsuariosPage() {
       {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
       {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
       
-      {!lista && !error && <Cargando>Cargando usuarios…</Cargando>}
+      {!lista && !error && <PantallaCarga compacta mensaje="Cargando usuarios…" />}
 
       {lista && lista.length === 0 && (
         <div className="v2-vacio"><strong>Aún no hay usuarios</strong>Crea la primera cuenta con “Nuevo usuario”.</div>

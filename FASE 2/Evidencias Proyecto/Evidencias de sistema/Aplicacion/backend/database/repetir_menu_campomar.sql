@@ -1,18 +1,9 @@
--- repetir_menu_campomar.sql
--- Copia el menú Campomar ya cargado (lunes a viernes de la semana v_origen)
--- a las próximas v_semanas semanas, publicado y con disponibilidad "disponible".
---
--- Seguro de volver a correr:
---   * Si un día destino ya tiene una jornada iniciada (alguien probó la caja), se omite.
---   * Si un día destino ya tiene menú sin jornada, se reemplaza por el de Campomar.
---   * Todo va en una transacción: si algo falla, no queda nada a medias.
-
 BEGIN;
 
 DO $$
 DECLARE
-    v_origen  DATE := DATE '2026-11-16';  -- lunes de la semana Campomar que ya está cargada
-    v_semanas INT  := 4;                  -- cuántas semanas hacia adelante (4 = hasta el 18/12)
+    v_origen  DATE := DATE '2026-11-16';
+    v_semanas INT  := 4;
     v_sede    INT;
     v_src     INT;
     v_dst     INT;
@@ -36,7 +27,7 @@ BEGIN
                     RAISE NOTICE 'Se omite el % (ya tiene una jornada iniciada).', v_fecha;
                     CONTINUE;
                 END IF;
-                DELETE FROM menu_preparacion WHERE id_menu = v_dst;  -- disponibilidad se borra en cascada
+                DELETE FROM menu_preparacion WHERE id_menu = v_dst;
                 UPDATE menu SET publicado = TRUE WHERE id_menu = v_dst;
             ELSE
                 INSERT INTO menu (id_sede, fecha, publicado)
@@ -62,7 +53,6 @@ END $$;
 
 COMMIT;
 
--- Verificación: debería mostrar del 16/11 al 18/12, días hábiles, publicados y con componentes.
 SELECT m.fecha,
        to_char(m.fecha, 'TMDay') AS dia,
        m.publicado,

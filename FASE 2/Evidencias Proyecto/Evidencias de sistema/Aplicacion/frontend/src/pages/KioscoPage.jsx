@@ -5,7 +5,7 @@ import { formatearHora, ESTADO_TEXTO } from '../utils/formato';
 import { useVentas } from '../utils/useVentas';
 import { BotonesVenta, CompartidosDelDia, ComposicionDelDia, UltimasVentas } from '../components/PanelVentas';
 import Mensaje from '../components/Mensaje';
-import Cargando from '../components/Cargando';
+import PantallaCarga from '../components/PantallaCarga';
 import PaginaError from '../components/PaginaError';
 import ResumenCierre from '../components/ResumenCierre';
 import CorreccionCierre from '../components/CorreccionCierre';
@@ -86,7 +86,7 @@ export default function KioscoPage() {
     }
   }
 
-  if (!estado && !error) return <Cargando>Cargando el menú de hoy…</Cargando>;
+  if (!estado && !error) return <PantallaCarga compacta mensaje="Cargando el menú de hoy…" />;
   if (!estado && error) return <PaginaError compacta codigo={error.estado ?? 0} detalle={error.message} onReintentar={cargar} />;
 
   const { menu, jornada, componentes = [], ventas_recientes = [] } = estado || {};

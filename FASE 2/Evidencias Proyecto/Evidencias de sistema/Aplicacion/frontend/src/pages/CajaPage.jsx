@@ -8,7 +8,7 @@ import { formatearHora } from '../utils/formato';
 import { useVentas } from '../utils/useVentas';
 import { BotonesVenta, CompartidosDelDia, ComposicionDelDia, UltimasVentas, MenuDelDia } from '../components/PanelVentas';
 import Mensaje from '../components/Mensaje';
-import Cargando from '../components/Cargando';
+import PantallaCarga from '../components/PantallaCarga';
 import PaginaError from '../components/PaginaError';
 import ModalCierre from '../components/ModalCierre';
 import ResumenCierre from '../components/ResumenCierre';
@@ -105,7 +105,7 @@ export default function CajaPage() {
     if (ok) ejecutar(() => reabrirJornada(), 'Jornada reabierta.');
   }
 
-  if (!estado && !error) return <Cargando>Cargando…</Cargando>;
+  if (!estado && !error) return <PantallaCarga compacta mensaje="Cargando caja…" />;
   if (!estado && error) return <PaginaError compacta codigo={error.estado ?? 0} detalle={error.message} onReintentar={cargar} />;
 
   const { menu, jornada, componentes = [], ventas_recientes = [], ventas_por_categoria = [] } = estado || {};

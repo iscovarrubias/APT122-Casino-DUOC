@@ -173,3 +173,7 @@
     transform: translateX(80%);
   }
 }
+
+.pantalla-carga-espera {
+  min-height: 120px;
+}

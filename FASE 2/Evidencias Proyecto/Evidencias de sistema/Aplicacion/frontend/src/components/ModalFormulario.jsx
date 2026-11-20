@@ -9,6 +9,8 @@ export default function ModalFormulario({
   onCancelar,
   guardando = false,
   textoGuardar = 'Guardar',
+  textoCancelar = 'Cancelar',
+  mostrarGuardar = true,
   error = null,
   onCerrarError,
   children,
@@ -36,11 +38,13 @@ export default function ModalFormulario({
           {error && <Mensaje tipo="error" onCerrar={onCerrarError}>{error}</Mensaje>}
           <div className="modal-acciones">
             <button type="button" className="boton boton-secundario" onClick={onCancelar} disabled={guardando}>
-              Cancelar
+              {textoCancelar}
             </button>
-            <button type="submit" className="boton boton-primario" disabled={guardando}>
-              {guardando ? 'Guardando…' : textoGuardar}
-            </button>
+            {mostrarGuardar && (
+              <button type="submit" className="boton boton-primario" disabled={guardando}>
+                {guardando ? 'Guardando…' : textoGuardar}
+              </button>
+            )}
           </div>
         </div>
       </form>

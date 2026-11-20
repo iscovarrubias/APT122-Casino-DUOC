@@ -194,7 +194,7 @@ async function microsoftCallback(req, res) {
         nombre: usuario.nombre, 
         email: usuario.email, 
         rol: usuario.rol,
-        tema_preferido: usuario.tema_preferido // <-- AGREGADO AQUÍ
+        tema_preferido: usuario.tema_preferido
       },
     });
     res.redirect(`${frontend}/#/acceso?ticket=${ticket}`);

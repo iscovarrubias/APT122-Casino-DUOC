@@ -80,6 +80,7 @@ async function listarActivas() {
 async function listarGestion() {
   const { rows } = await pool.query(
      `SELECT p.id_preparacion, p.nombre, p.descripcion, p.precio, p.imagen_url, p.activa, p.porciones_receta,
+            p.id_preparacion_base, b.nombre AS base_nombre,
             t.nombre AS tipo,
             COALESCE(ing.lista, '[]') AS ingredientes,
             COALESCE(det.lista, '[]') AS ingredientes_detalle,
@@ -94,6 +95,7 @@ async function listarGestion() {
               )
             END AS nutricion
      FROM preparacion p
+     LEFT JOIN preparacion b ON b.id_preparacion = p.id_preparacion_base
      LEFT JOIN tipo_componente t ON t.id_tipo_componente = p.id_tipo_componente
      LEFT JOIN LATERAL (
         SELECT json_agg(i.nombre ORDER BY i.nombre) AS lista
@@ -117,15 +119,19 @@ async function listarGestion() {
   return rows;
 }
 
-async function crear({ nombre, descripcion, precio, imagen_url, tipo, ingredientes = [], porciones_receta }) {
+async function crear({ nombre, descripcion, precio, imagen_url, tipo, ingredientes = [], porciones_receta, id_preparacion_base }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    if (id_preparacion_base) {
+      const base = await client.query('SELECT 1 FROM preparacion WHERE id_preparacion = $1', [id_preparacion_base]);
+      if (!base.rows[0]) throw error(400, 'La preparación original de la variación no existe.');
+    }
     const { rows } = await client.query(
-      `INSERT INTO preparacion (nombre, descripcion, precio, imagen_url, activa, id_tipo_componente, porciones_receta)
-       VALUES ($1, $2, $3, $4, TRUE, (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = $5), $6)
-       RETURNING id_preparacion, nombre, descripcion, precio, imagen_url, activa, porciones_receta`,
-      [nombre, descripcion || null, precio === undefined || precio === null || precio === '' ? 0 : precio, imagen_url || null, tipo || null, porciones_receta || null]
+      `INSERT INTO preparacion (nombre, descripcion, precio, imagen_url, activa, id_tipo_componente, porciones_receta, id_preparacion_base)
+       VALUES ($1, $2, $3, $4, TRUE, (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = $5), $6, $7)
+       RETURNING id_preparacion, nombre, descripcion, precio, imagen_url, activa, porciones_receta, id_preparacion_base`,
+      [nombre, descripcion || null, precio === undefined || precio === null || precio === '' ? 0 : precio, imagen_url || null, tipo || null, porciones_receta || null, id_preparacion_base || null]
     );
     await reemplazarIngredientes(client, rows[0].id_preparacion, ingredientes);
     await client.query('COMMIT');

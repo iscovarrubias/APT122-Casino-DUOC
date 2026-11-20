@@ -45,9 +45,11 @@ async function listarGestion(req, res, next) {
   }
 }
 
+const TIPOS_VALIDOS = ['Plato Principal', 'Entrada', 'Ensalada', 'Sopa', 'Pan', 'Postre', 'Fruta', 'Bebida'];
+
 async function crear(req, res, next) {
   try {
-    const { nombre, descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta } = req.body;
+    const { nombre, descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta, id_preparacion_base } = req.body;
 
     if (typeof nombre !== 'string' || nombre.trim() === '') {
       throw new ApiError(400, 'El nombre de la preparación es obligatorio.');
@@ -59,11 +61,18 @@ async function crear(req, res, next) {
     validarImagen(imagen_url);
     validarPorciones(porciones_receta);
 
-        if (tipo !== undefined && tipo !== null && tipo !== '' && tipo !== 'Entrada' && tipo !== 'Postre' && tipo !== 'Bebida' && tipo !== 'Plato Principal') {
-      throw new ApiError(400, 'tipo inválido. Debe ser Entrada, Postre, Bebida o Plato Principal.');
+        if (tipo !== undefined && tipo !== null && tipo !== '' && !TIPOS_VALIDOS.includes(tipo)) {
+      throw new ApiError(400, `tipo inválido. Debe ser uno de: ${TIPOS_VALIDOS.join(', ')}.`);
     }
 
-    const preparacion = await preparacionModel.crear({ nombre: nombre.trim(), descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta });
+    if (id_preparacion_base !== undefined && id_preparacion_base !== null && !(Number.isInteger(Number(id_preparacion_base)) && Number(id_preparacion_base) > 0)) {
+      throw new ApiError(400, 'id_preparacion_base debe ser un id de preparación válido.');
+    }
+
+    const preparacion = await preparacionModel.crear({
+      nombre: nombre.trim(), descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta,
+      id_preparacion_base: id_preparacion_base ? Number(id_preparacion_base) : null,
+    });
     res.status(201).json(preparacion);
   } catch (err) {
     next(err);
@@ -83,8 +92,8 @@ async function actualizar(req, res, next) {
     validarIngredientes(ingredientes);
     validarImagen(imagen_url);
     validarPorciones(porciones_receta);
-    if (tipo !== undefined && tipo !== null && tipo !== '' && tipo !== 'Entrada' && tipo !== 'Postre' && tipo !== 'Bebida' && tipo !== 'Plato Principal') {
-      throw new ApiError(400, 'tipo inválido. Debe ser Entrada, Postre, Bebida o Plato Principal.');
+    if (tipo !== undefined && tipo !== null && tipo !== '' && !TIPOS_VALIDOS.includes(tipo)) {
+      throw new ApiError(400, `tipo inválido. Debe ser uno de: ${TIPOS_VALIDOS.join(', ')}.`);
     }
 
     const preparacion = await preparacionModel.actualizar(req.params.id, {

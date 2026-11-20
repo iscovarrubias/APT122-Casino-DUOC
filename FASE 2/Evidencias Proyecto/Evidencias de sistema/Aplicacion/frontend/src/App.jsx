@@ -21,7 +21,6 @@ const IngredientesPage = lazy(() => import('./pages/IngredientesPage'));
 const PreparacionesPage = lazy(() => import('./pages/PreparacionesPage'));
 const UsuariosPage = lazy(() => import('./pages/UsuariosPage'));
 const AnalisisPage = lazy(() => import('./pages/AnalisisPage'));
-import Cargando from './components/Cargando';
 import NoEncontrada from './components/NoEncontrada';
 import PaginaError from './components/PaginaError';
 
@@ -100,7 +99,7 @@ function Enrutador() {
     return (
       <PanelLayout ruta={ruta} titulo={titulo} descripcion={descripcion} ayuda={ayuda}>
         <div className="pagina" key={ruta}>
-          <Suspense fallback={<Cargando>Cargando…</Cargando>}>
+          <Suspense fallback={<PantallaCarga compacta mensaje="Cargando…" />}>
             <Pagina
               soloActivas={esPreparaciones ? ocultarDesactivadas : undefined}
               setSoloActivas={esPreparaciones ? setOcultarDesactivadas : undefined}

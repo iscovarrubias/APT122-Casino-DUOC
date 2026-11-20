@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '../context/auth-context';
 import { navegar } from '../ruteo/useRuta';
 import { rutaInicial } from '../ruteo/rutas';
-import Cargando from '../components/Cargando';
+import PantallaCarga from '../components/PantallaCarga';
 
 const MENSAJES = {
   cancelado: 'Cancelaste el inicio de sesión con Microsoft.',
@@ -33,5 +33,5 @@ export default function AccesoPage() {
       .catch((e) => fallar(e.message));
   }, [iniciarConTicket]);
 
-  return <Cargando>Verificando tu cuenta…</Cargando>;
+  return <PantallaCarga mensaje="Verificando tu cuenta…" />;
 }

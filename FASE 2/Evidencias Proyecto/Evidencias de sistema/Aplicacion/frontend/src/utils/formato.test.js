@@ -3,6 +3,7 @@ import {
   estadoEfectivo, NO_DISPONIBLE, calcularCaloriasTotales, calcularPrecioTotal, CATEGORIAS_MENU, colorTextoSobre,
   conGrupoOpcion, agruparComponentes, calcularCaloriasConOpcion,
 } from './formato';
+import { ordenarConVariaciones } from './formato';
 
 describe('estadoEfectivo', () => {
   it('una jornada cerrada deja todo cerrado', () => {
@@ -169,3 +170,25 @@ describe('calcularCaloriasConOpcion', () => {
     expect(calcularCaloriasConOpcion(hipo, {})).toBe(630);
   });
 });
+
+describe('ordenarConVariaciones', () => {
+  const p = (id, nombre, base = null) => ({ id_preparacion: id, nombre, id_preparacion_base: base });
+
+  it('pone cada variación justo después de su plato original', () => {
+    const r = ordenarConVariaciones([p(1, 'Budín'), p(2, 'Charquicán'), p(3, 'Budín sin queso', 1)]);
+    expect(r.map((x) => x.nombre)).toEqual(['Budín', 'Budín sin queso', 'Charquicán']);
+    expect(r.map((x) => x.esVariacion)).toEqual([false, true, false]);
+  });
+
+  it('agrupa una variación de otra variación bajo el plato original', () => {
+    const r = ordenarConVariaciones([p(1, 'Budín'), p(3, 'Budín sin queso', 1), p(4, 'Budín sin queso ni huevo', 3), p(2, 'Charquicán')]);
+    expect(r.map((x) => x.nombre)).toEqual(['Budín', 'Budín sin queso', 'Budín sin queso ni huevo', 'Charquicán']);
+  });
+
+  it('si el original no está en la lista, la variación se muestra sola', () => {
+    const r = ordenarConVariaciones([p(3, 'Budín sin queso', 1), p(2, 'Charquicán')]);
+    expect(r.map((x) => x.nombre)).toEqual(['Budín sin queso', 'Charquicán']);
+    expect(r[0].esVariacion).toBe(false);
+  });
+});
+

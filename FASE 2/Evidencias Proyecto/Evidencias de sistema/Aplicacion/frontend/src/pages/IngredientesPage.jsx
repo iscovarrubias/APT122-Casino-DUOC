@@ -6,7 +6,7 @@ import {
 import { Beef, Fish, Carrot, Wheat, Milk, Droplet, Package, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import Mensaje from '../components/Mensaje';
 import ModalFormulario from '../components/ModalFormulario';
-import Cargando from '../components/Cargando';
+import PantallaCarga from '../components/PantallaCarga';
 import PaginaError from '../components/PaginaError';
 import { useConfirmar } from '../context/confirmacion-context';
 
@@ -251,7 +251,7 @@ export default function IngredientesPage() {
       {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
       {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
       
-      {!lista && !error && <Cargando>Cargando ingredientes…</Cargando>}
+      {!lista && !error && <PantallaCarga compacta mensaje="Cargando ingredientes…" />}
       {lista && visibles.length === 0 && (
         <div className="estado-info">
           {soloIncompletos && !busqueda.trim()

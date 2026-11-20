@@ -29,7 +29,6 @@ export function conGrupoOpcion(componentes, composicionDeCategoria) {
   return componentes.map((c) => ({ ...c, grupo_opcion: mapa.get(c.componente) ?? null }));
 }
 
-
 export function agruparComponentes(componentes) {
   const base = [];
   const grupos = {};
@@ -40,16 +39,6 @@ export function agruparComponentes(componentes) {
   return { base, grupos };
 }
 
-/**
- * Calorías totales del combo según las opciones elegidas por grupo.
- *   - Cada grupo se resuelve con la opción elegida (`opciones[grupo]`).
- *   - Si un grupo no tiene opción elegida, se usa el primero disponible (orden natural de la respuesta).
- *   - Si algún componente no tiene información nutricional, devuelve null (regla "todo o nada",
- *     igual que `calcularCaloriasTotales`).
- *
- * @param {Array} componentes  
- * @param {Object} opciones    
- */
 export function calcularCaloriasConOpcion(componentes, opciones = {}) {
   const { base, grupos } = agruparComponentes(componentes);
   const elegidos = [];
@@ -115,3 +104,31 @@ export function estadoEfectivo(item) {
   return item.disponibilidad;
 }
 export const NO_DISPONIBLE = ['agotado', 'cerrada'];
+
+export function ordenarConVariaciones(lista) {
+  const porId = new Map(lista.map((p) => [p.id_preparacion, p]));
+  const raizDe = (p) => {
+    let actual = p;
+    const vistos = new Set();
+    while (actual.id_preparacion_base && porId.has(actual.id_preparacion_base) && !vistos.has(actual.id_preparacion)) {
+      vistos.add(actual.id_preparacion);
+      actual = porId.get(actual.id_preparacion_base);
+    }
+    return actual;
+  };
+  const hijas = new Map();
+  const raices = [];
+  for (const p of lista) {
+    const raiz = raizDe(p);
+    if (raiz === p) {
+      raices.push(p);
+    } else {
+      if (!hijas.has(raiz.id_preparacion)) hijas.set(raiz.id_preparacion, []);
+      hijas.get(raiz.id_preparacion).push(p);
+    }
+  }
+  return raices.flatMap((p) => [
+    { ...p, esVariacion: false },
+    ...(hijas.get(p.id_preparacion) || []).map((h) => ({ ...h, esVariacion: true })),
+  ]);
+}

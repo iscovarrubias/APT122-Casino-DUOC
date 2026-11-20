@@ -2,14 +2,18 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   consultarPlanificacion, listarPreparaciones, agregarComponente, actualizarComponente,
   quitarComponente, publicarMenu, despublicarMenu, consultarMes, copiarMenus, consultarSugerencias,
+  listarCatalogoAlergenos, listarIngredientes,
 } from '../api/gestion';
-import { hoyChile, colorDeCategoria } from '../utils/formato';
+import { hoyChile, colorDeCategoria, ordenarConVariaciones } from '../utils/formato';
+import RecetaModal from '../components/RecetaModal';
+import { Formulario as FormularioPreparacion } from './PreparacionesPage';
+import { useAuth } from '../context/auth-context';
 import Mensaje from '../components/Mensaje';
 import CampoFecha from '../components/CampoFecha';
 import Ayuda from '../components/Ayuda';
 import ExportarMenu from '../components/ExportarMenu';
-import { Utensils, Ticket, Leaf, Salad, CakeSlice, CupSoda, Soup, Wheat, Apple, Copy, Download, X, BarChart3, Trash2, Plus } from 'lucide-react';
-import Cargando from '../components/Cargando';
+import { Utensils, Ticket, Leaf, Salad, CakeSlice, CupSoda, Soup, Wheat, Apple, Copy, Download, X, BarChart3, Trash2, Plus, BookOpen } from 'lucide-react';
+import PantallaCarga from '../components/PantallaCarga';
 import PaginaError from '../components/PaginaError';
 import ModalAcompanamientoEspecial from '../components/ModalAcompanamientoEspecial';
 import { useConfirmar } from '../context/confirmacion-context';
@@ -47,9 +51,16 @@ function etiquetaRelativa(f) {
 }
 const corta = (f) => `${f.slice(8, 10)}/${f.slice(5, 7)}`;
 
-function TarjetaRanura({ titulo, subtitulo, Icono, color, esPlato, tipo, categoria, componente, preparaciones, precioSugerido, sugerencia, dia, ocupado, onGuardar, onQuitar, onCambio }) {
+const claveRanura = (tipo, categoria) => `${tipo}-${categoria || 'sin'}`;
+
+function TarjetaRanura({ titulo, subtitulo, Icono, color, esPlato, tipo, categoria, componente, preparaciones, precioSugerido, sugerencia, dia, ocupado, onGuardar, onQuitar, onCambio, onVerReceta, preseleccion }) {
   const precioActual = aTexto(componente?.precio);
   const [idPreparacion, setIdPreparacion] = useState(componente ? String(componente.id_preparacion) : '');
+  const clave = claveRanura(esPlato ? 'Plato Principal' : tipo, categoria);
+
+  useEffect(() => {
+    if (preseleccion && preseleccion.clave === clave) setIdPreparacion(String(preseleccion.id));
+  }, [preseleccion, clave]);
   const [cantidad, setCantidad] = useState(componente ? String(componente.cantidad_planificada) : '');
   const [precio, setPrecio] = useState(componente ? precioActual : aTexto(precioSugerido));
 
@@ -57,7 +68,10 @@ function TarjetaRanura({ titulo, subtitulo, Icono, color, esPlato, tipo, categor
     if (onCambio) onCambio({ tipo: esPlato ? 'Plato Principal' : tipo, categoria, idPreparacion, cantidad, precio: esPlato ? precio : undefined });
   }, [idPreparacion, cantidad, precio, tipo, categoria, esPlato, onCambio]);
 
-  const activas = preparaciones.filter((p) => p.activa && (esPlato ? (!p.tipo || p.tipo === 'Plato Principal') : p.tipo === tipo));
+  const activas = ordenarConVariaciones(
+    preparaciones.filter((p) => p.activa && (esPlato ? (!p.tipo || p.tipo === 'Plato Principal') : p.tipo === tipo))
+  );
+  const elegida = preparaciones.find((p) => String(p.id_preparacion) === idPreparacion) || null;
   const actual = componente && !activas.some((p) => p.id_preparacion === componente.id_preparacion)
     ? { id_preparacion: componente.id_preparacion, nombre: `${componente.preparacion} (desactivada)` }
     : null;
@@ -80,14 +94,24 @@ function TarjetaRanura({ titulo, subtitulo, Icono, color, esPlato, tipo, categor
         {componente && <span className="plan-card-estado">Cargado</span>}
       </header>
       <div className="plan-card-cuerpo">
-        <label className="campo">
-          <span>{esPlato ? 'Plato' : tipo}</span>
+        <div className="campo">
+          <div className="plan-campo-cabeza">
+            <span>{esPlato ? 'Plato' : tipo}</span>
+            {onVerReceta && (
+              <button type="button" className="plan-ver-receta" disabled={!elegida}
+                onClick={() => onVerReceta(elegida, clave)} aria-label={`Ver receta de ${titulo}`}>
+                <BookOpen size={13} aria-hidden="true" /> Ver receta
+              </button>
+            )}
+          </div>
           <select value={idPreparacion} onChange={(e) => setIdPreparacion(e.target.value)} aria-label={`Preparación para ${titulo}`}>
             <option value="">Elegir preparación</option>
             {actual && <option value={actual.id_preparacion}>{actual.nombre}</option>}
-            {activas.map((p) => <option key={p.id_preparacion} value={p.id_preparacion}>{p.nombre}</option>)}
+            {activas.map((p) => (
+              <option key={p.id_preparacion} value={p.id_preparacion}>{p.esVariacion ? `↳ ${p.nombre}` : p.nombre}</option>
+            ))}
           </select>
-        </label>
+        </div>
         <div className="plan-campos">
           <label className="campo">
             <span>{esPlato ? 'Cantidad planificada' : 'Cantidad'}</span>
@@ -104,12 +128,12 @@ function TarjetaRanura({ titulo, subtitulo, Icono, color, esPlato, tipo, categor
           <p className="plan-sugerencia" title={sugerencia.n != null ? `Rango probable: ${sugerencia.minimo}–${sugerencia.maximo}` : undefined}>
             <BarChart3 size={14} aria-hidden="true" />
             <span>
-              Sugerido: <strong>{sugerencia.sugerido}</strong>
+              <span>Sugerido: <strong>{sugerencia.sugerido}</strong></span>
               {sugerencia.n != null && (
                 <span className="texto-suave">{sugerencia.base === 'mismo_dia' ? `últimos ${sugerencia.n} ${/s$/.test(dia) ? dia : `${dia}s`}` : `últimos ${sugerencia.n} días`}</span>
               )}
             </span>
-            <button type="button" className="boton-texto" onClick={() => setCantidad(String(sugerencia.sugerido))}>Usar</button>
+            <button type="button" className="boton-texto plan-sugerencia-usar" onClick={() => setCantidad(String(sugerencia.sugerido))}>Usar</button>
           </p>
         )}
         <div className="plan-acciones">
@@ -290,6 +314,12 @@ function VistaMes({ mes, onCambiarMes, onElegir, version, copia, onError }) {
 
 export default function PlanificacionPage() {
   const confirmar = useConfirmar();
+  const { usuario } = useAuth() || {};
+  const puedeCrearVariacion = ['Administrador', 'Nutricionista'].includes(usuario?.rol);
+  const [receta, setReceta] = useState(null);
+  const [variacion, setVariacion] = useState(null);
+  const [catalogos, setCatalogos] = useState(null);
+  const [preseleccion, setPreseleccion] = useState(null);
   const [fechaBase, setFecha] = useState(hoyChile());
   const [fechaModal, setFechaModal] = useState(null);
   const fecha = fechaModal || fechaBase;
@@ -359,6 +389,29 @@ export default function PlanificacionPage() {
         />
       </div>
     );
+  }
+
+  const verReceta = (preparacion, clave) => setReceta({ preparacion, clave });
+
+  async function abrirVariacion(base) {
+    try {
+      if (!catalogos) {
+        const [catalogo, ingredientesCat] = await Promise.all([listarCatalogoAlergenos(), listarIngredientes()]);
+        setCatalogos({ catalogo, ingredientesCat });
+      }
+      setVariacion({ base, clave: receta?.clave });
+      setReceta(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function variacionCreada(mensaje, creada) {
+    const clave = variacion?.clave;
+    setVariacion(null);
+    await cargar();
+    if (clave && creada?.id_preparacion) setPreseleccion({ clave, id: creada.id_preparacion, marca: Date.now() });
+    setAviso(`${mensaje} Ya está seleccionada en la tarjeta: revisa la cantidad y presiona Guardar.`);
   }
 
   async function ejecutar(accion, mensajeOk) {
@@ -555,7 +608,7 @@ export default function PlanificacionPage() {
             {faltantes === 0 ? 'Día completo: los 9 componentes requeridos están cargados.' : `Faltan ${faltantes} de 9 componentes requeridos para completar el día.`}
             </p>
           )}
-          {!plan && !error && <Cargando>Cargando planificación…</Cargando>}
+          {!plan && !error && <PantallaCarga compacta mensaje="Cargando planificación…" />}
 
           {plan && (
             <>
@@ -584,6 +637,7 @@ export default function PlanificacionPage() {
                         sugerencia={sugeridaDe(categoria)} dia={dia}
                         ocupado={ocupado} onGuardar={guardar} onQuitar={quitar}
                         onCambio={registrarCambioTarjeta}
+                        onVerReceta={verReceta} preseleccion={preseleccion}
                       />
                     );
                   })}
@@ -619,6 +673,7 @@ export default function PlanificacionPage() {
                         dia={dia}
                         ocupado={ocupado} onGuardar={guardar} onQuitar={quitar}
                         onCambio={registrarCambioTarjeta}
+                        onVerReceta={verReceta} preseleccion={preseleccion}
                       />
                     );
                   })}
@@ -643,6 +698,7 @@ export default function PlanificacionPage() {
                             dia={dia}
                             ocupado={ocupado} onGuardar={guardar} onQuitar={quitar}
                             onCambio={registrarCambioTarjeta}
+                            onVerReceta={verReceta} preseleccion={preseleccion}
                           />
                         );
                       })}
@@ -735,6 +791,25 @@ export default function PlanificacionPage() {
             </div>
           </div>
         </div>
+      )}
+      {receta && (
+        <RecetaModal
+          preparacion={receta.preparacion}
+          puedeCrearVariacion={puedeCrearVariacion}
+          onCrearVariacion={abrirVariacion}
+          onCerrar={() => setReceta(null)}
+        />
+      )}
+
+      {variacion && catalogos && (
+        <FormularioPreparacion
+          variacionDe={variacion.base}
+          esAcompanamiento={!!variacion.base.tipo && variacion.base.tipo !== 'Plato Principal'}
+          catalogo={catalogos.catalogo}
+          ingredientesCat={catalogos.ingredientesCat}
+          onCancelar={() => setVariacion(null)}
+          onGuardado={variacionCreada}
+        />
       )}
     </div>
   );

@@ -2332,3 +2332,108 @@
   opacity: .45;
   cursor: not-allowed;
 }
+
+.v2-pub .aviso-jornada {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--v2-borde, var(--border));
+  border-left: 4px solid var(--text-muted);
+  border-radius: 12px;
+  background: var(--card-bg);
+}
+.v2-pub .aviso-jornada strong {
+  font-size: 1rem;
+}
+.v2-pub .aviso-jornada p {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+}
+
+.v2 .plan-campo-cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+}
+.v2 .plan-campo-cabeza > span {
+  font-size: .76rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.v2 .plan-ver-receta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 2px 6px;
+  margin-right: -6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--navy);
+  font: inherit;
+  font-size: .74rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.v2 .plan-ver-receta:hover:not(:disabled) {
+  background: var(--bg);
+}
+.v2 .plan-ver-receta:disabled {
+  color: var(--text-muted);
+  opacity: .6;
+  cursor: not-allowed;
+}
+.v2 .plan-sugerencia {
+  padding: 8px 6px 8px 12px;
+  line-height: 1.35;
+}
+.v2 .plan-sugerencia > span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.v2 .plan-sugerencia .texto-suave {
+  margin: 0;
+  font-size: .74rem;
+}
+.v2 .plan-sugerencia-usar {
+  min-height: 28px;
+  padding: 0 10px;
+}
+.receta-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.receta-modal p {
+  margin: 0;
+}
+.receta-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.receta-etiquetas span {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.receta-tabla {
+  width: 100%;
+}
+.form-aviso-variacion {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}

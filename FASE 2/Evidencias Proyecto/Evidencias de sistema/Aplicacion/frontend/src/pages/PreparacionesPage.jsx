@@ -10,7 +10,7 @@ import {
 } from '../api/gestion';
 import Mensaje from '../components/Mensaje';
 import Ayuda from '../components/Ayuda';
-import Cargando from '../components/Cargando';
+import PantallaCarga from '../components/PantallaCarga';
 import PaginaError from '../components/PaginaError';
 import { useConfirmar } from '../context/confirmacion-context';
 import { resolverUrl } from '../api/cliente';
@@ -59,8 +59,14 @@ const PROBLEMAS = {
   sin_ingredientes_cuantificables: 'Agrega al menos un ingrediente con cantidad (los condimentos no cuentan).',
 };
 
-function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onCancelar, onGuardado }) {
-  const [datos, setDatos] = useState(editando ? desdePreparacion(editando) : FORMULARIO_VACIO);
+function desdeVariacion(base) {
+  return { ...desdePreparacion(base), nombre: `${base.nombre} (variación)` };
+}
+
+export function Formulario({ editando, variacionDe, esAcompanamiento, catalogo, ingredientesCat, onCancelar, onGuardado }) {
+  const [datos, setDatos] = useState(
+    editando ? desdePreparacion(editando) : variacionDe ? desdeVariacion(variacionDe) : FORMULARIO_VACIO
+  );
   const [error, setError] = useState(null);
   const [guardando, setGuardando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
@@ -162,7 +168,8 @@ function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onC
         imagen_url: datos.imagen_url.trim(),
         ingredientes: filasValidas(),
         porciones_receta: datos.porciones_receta.trim() === '' ? '' : Number(datos.porciones_receta),
-        tipo: (esAcompanamiento || editando) ? (datos.tipo || null) : undefined,
+        tipo: (esAcompanamiento || editando || variacionDe) ? (datos.tipo || null) : undefined,
+        ...(variacionDe && !editando ? { id_preparacion_base: variacionDe.id_preparacion } : {}),
       };
       const guardada = editando
         ? await actualizarPreparacion(editando.id_preparacion, base)
@@ -181,8 +188,8 @@ function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onC
         });
         avisoNutricion = nut.aviso || null;
       }
-      const mensaje = editando ? 'Preparación actualizada.' : 'Preparación creada.';
-      onGuardado(avisoNutricion ? `${mensaje} ${avisoNutricion}` : mensaje);
+      const mensaje = editando ? 'Preparación actualizada.' : variacionDe ? 'Variación creada.' : 'Preparación creada.';
+      onGuardado(avisoNutricion ? `${mensaje} ${avisoNutricion}` : mensaje, guardada);
     } catch (err) {
       setError(err.message);
       setGuardando(false);
@@ -249,8 +256,8 @@ function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onC
   }
 
   const ocupado = subiendo || guardando;
-  const titulo = editando ? 'Editar preparación' : esAcompanamiento ? 'Nuevo acompañamiento' : 'Nuevo plato';
-  const textoGuardar = editando ? 'Guardar cambios' : esAcompanamiento ? 'Guardar acompañamiento' : 'Guardar plato';
+  const titulo = editando ? 'Editar preparación' : variacionDe ? `Nueva variación de "${variacionDe.nombre}"` : esAcompanamiento ? 'Nuevo acompañamiento' : 'Nuevo plato';
+  const textoGuardar = editando ? 'Guardar cambios' : variacionDe ? 'Guardar variación' : esAcompanamiento ? 'Guardar acompañamiento' : 'Guardar plato';
   const TIPOS_IMAGEN = 'image/jpeg,image/png,image/webp,image/gif';
 
   return (
@@ -265,6 +272,11 @@ function Formulario({ editando, esAcompanamiento, catalogo, ingredientesCat, onC
         error={error}
         onCerrarError={() => setError(null)}
       >
+        {variacionDe && (
+          <p className="texto-suave form-aviso-variacion">
+            Se crea una preparación nueva a partir de la receta original. Cambia los ingredientes que correspondan y revisa los alérgenos antes de guardar. La receta original no se modifica.
+          </p>
+        )}
         <div className="form-cols">
           <div className="form-col">
             <div className={esAcompanamiento || editando ? 'rejilla-2' : undefined}>
@@ -519,6 +531,7 @@ function TarjetaPreparacion({ p, onEditar, onEstado, onBorrar, onSinBorrar }) {
           <div className="prep-cabeza-info">
             <strong>{p.nombre}</strong>
             <div className="prep-cabeza-tags">
+              {p.base_nombre && <span title={`Variación de ${p.base_nombre}`}>Variación de {p.base_nombre}</span>}
               {!esPlato(p) && <span>{p.tipo}</span>}
               {!p.activa && <span>Desactivada</span>}
               {nut.faltante
@@ -691,7 +704,7 @@ export default function PreparacionesPage({ soloActivas: soloActivasProp, setSol
       {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
       {guia && <Mensaje tipo="aviso" titulo="Primero desactívala" onCerrar={() => setGuia(null)}>{guia}</Mensaje>}
       
-      {!lista && !error && <Cargando>Cargando preparaciones…</Cargando>}
+      {!lista && !error && <PantallaCarga compacta mensaje="Cargando preparaciones…" />}
 
       {lista && (
         <div className="prep-columnas">

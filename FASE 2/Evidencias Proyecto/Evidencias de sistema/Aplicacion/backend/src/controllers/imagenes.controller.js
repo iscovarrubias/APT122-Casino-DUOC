@@ -12,7 +12,6 @@ async function ver(req, res, next) {
     res.set({
       'Content-Type': img.tipo_mime,
       'Content-Length': String(img.datos.length),
-      // El contenido de un id nunca cambia: se puede cachear un año.
       'Cache-Control': 'public, max-age=31536000, immutable',
       'Content-Security-Policy': "default-src 'none'; img-src 'self'; sandbox",
       'Cross-Origin-Resource-Policy': 'cross-origin',

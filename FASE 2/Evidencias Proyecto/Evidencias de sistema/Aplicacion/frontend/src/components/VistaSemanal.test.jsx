@@ -103,4 +103,13 @@ describe('VistaSemanal', () => {
     render(<VistaSemanal />);
     expect(await screen.findByText(/No pudimos conectar con el servidor/)).toBeInTheDocument();
   });
+
+  it('el fin de semana muestra la semana siguiente y abre el primer día con menú', async () => {
+    vi.setSystemTime(new Date('2026-10-31T15:00:00-03:00'));
+    obtenerHistorialMenu.mockResolvedValue({ menus: [{ fecha: '2026-11-02', componentes: COMPONENTES }], composicion: COMPOSICION });
+    render(<VistaSemanal />);
+    expect(await screen.findByText('Arroz con pollo')).toBeInTheDocument();
+    expect(obtenerHistorialMenu).toHaveBeenCalledWith('2026-11-02', '2026-11-07');
+  });
 });
+

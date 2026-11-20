@@ -32,7 +32,26 @@ function formatearFechaLarga(fechaISO) {
   return `${f.getDate()} de ${MESES[f.getMonth()]} de ${f.getFullYear()}`;
 }
 
-function VistaDiario() {
+function esFinDeSemana(fechaISO) {
+  const dia = parseFechaISO(fechaISO).getDay();
+  return dia === 0 || dia === 6;
+}
+
+function AvisoJornada({ titulo, children, onVerSemanal }) {
+  return (
+    <div className="aviso-jornada" role="status">
+      <strong>{titulo}</strong>
+      <p>{children}</p>
+      {onVerSemanal && (
+        <button type="button" className="boton boton-primario" onClick={onVerSemanal}>
+          Ver menú semanal
+        </button>
+      )}
+    </div>
+  );
+}
+
+function VistaDiario({ onVerSemanal }) {
   const { categoriaPreferida } = useEstudiante();
   const [categoria, setCategoria] = useState(categoriaPreferida || 'General');
 
@@ -72,6 +91,9 @@ function VistaDiario() {
 
   const visibles = [...especificos, ...compartidos];
   const estados = estadosPorCategoria(delDia);
+  const fechaMenu = datos?.fecha || hoyChile();
+  const jornadaCerrada = delDia.some((p) => p.jornada_estado === 'cerrada');
+  const sinMenuHoy = delDia.length === 0;
 
   return (
     <>
@@ -93,8 +115,20 @@ function VistaDiario() {
         />
       )}
 
-      {!cargando && !error && datos && visibles.length === 0 && (
+      {!cargando && !error && datos && sinMenuHoy && esFinDeSemana(fechaMenu) && (
+        <AvisoJornada titulo="Los fines de semana no hay menú disponible" onVerSemanal={onVerSemanal}>
+          El casino atiende de lunes a viernes. Puedes revisar el menú de la próxima semana en el menú semanal, si ya está publicado.
+        </AvisoJornada>
+      )}
+
+      {!cargando && !error && datos && visibles.length === 0 && !(sinMenuHoy && esFinDeSemana(fechaMenu)) && (
         <div className="estado-info">Todavía no hay un menú publicado para hoy en la categoría "{categoria}".</div>
+      )}
+
+      {!cargando && !error && datos && visibles.length > 0 && jornadaCerrada && (
+        <AvisoJornada titulo="La jornada de almuerzos de hoy ya cerró" onVerSemanal={onVerSemanal}>
+          Este fue el menú de hoy. Puedes revisar el de los próximos días en el menú semanal.
+        </AvisoJornada>
       )}
 
       {!cargando && !error && datos && visibles.length > 0 && (
@@ -143,7 +177,7 @@ export default function VistaPublica() {
             </div>
           )}
 
-          {vista === 'diario' && <VistaDiario />}
+          {vista === 'diario' && <VistaDiario onVerSemanal={() => setVista('semanal')} />}
           {vista === 'semanal' && <VistaSemanal />}
           {vista === 'preguntas' && <VistaPreguntas />}
         </div>
