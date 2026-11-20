@@ -4,12 +4,18 @@ import userEvent from '@testing-library/user-event';
 
 vi.mock('../api/menu', () => ({ obtenerMenuHoy: vi.fn(), obtenerHistorialMenu: vi.fn() }));
 vi.mock('../utils/eventos', () => ({ suscribirCambios: () => () => {} }));
-vi.mock('../components/Sidebar', () => ({ default: () => null }));
+vi.mock('../components/Sidebar', () => ({ default: ({ vistaActiva, onCambiarVista }) => (
+  <nav aria-label="lateral" data-activa={String(vistaActiva)}>
+    <button type="button" onClick={() => onCambiarVista('preguntas')}>Ir a preguntas</button>
+  </nav>
+) }));
+vi.mock('../ruteo/useRuta', () => ({ navegar: vi.fn() }));
 vi.mock('../components/PerfilEstudianteModal', () => ({ default: () => null }));
 
 import { obtenerMenuHoy, obtenerHistorialMenu } from '../api/menu';
 import ConfirmacionProvider from '../context/ConfirmacionProvider';
 import VistaPublica from './VistaPublica';
+import { navegar } from '../ruteo/useRuta';
 
 const montar = () => render(<ConfirmacionProvider><VistaPublica /></ConfirmacionProvider>);
 
@@ -67,5 +73,27 @@ describe('VistaPublica - avisos de la jornada', () => {
     montar();
     expect(await screen.findAllByText('Aún no inicia la jornada')).not.toHaveLength(0);
     expect(screen.queryByText('La jornada de almuerzos de hoy ya cerró')).not.toBeInTheDocument();
+  });
+});
+
+describe('VistaPublica - documentos legales', () => {
+  beforeEach(() => {
+    window.scrollTo = vi.fn();
+    obtenerMenuHoy.mockResolvedValue({ fecha: '2026-11-20', preparaciones: [], composicion: {} });
+  });
+  afterEach(() => vi.clearAllMocks());
+
+  it('muestra el documento con su título y sin marcar ninguna sección del menú', () => {
+    render(<ConfirmacionProvider><VistaPublica legal="privacidad" /></ConfirmacionProvider>);
+    expect(screen.getByRole('heading', { level: 1, name: 'Política de Privacidad' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'lateral' })).toHaveAttribute('data-activa', 'null');
+    expect(document.title).toBe('Política de Privacidad - Casinos DUOC UC');
+    expect(obtenerMenuHoy).not.toHaveBeenCalled();
+  });
+
+  it('elegir una sección del menú lateral sale del documento y vuelve al inicio', async () => {
+    render(<ConfirmacionProvider><VistaPublica legal="terminos" /></ConfirmacionProvider>);
+    await userEvent.click(screen.getByRole('button', { name: 'Ir a preguntas' }));
+    expect(navegar).toHaveBeenCalledWith('/');
   });
 });

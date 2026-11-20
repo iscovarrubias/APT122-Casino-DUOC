@@ -107,6 +107,40 @@ describe('OpinionesPanel', () => {
     await waitFor(() => expect(api.consultarOpinionesDetalle).toHaveBeenLastCalledWith(expect.objectContaining({ estrellas: '', estado: '', con_comentario: false })));
   });
 
+  it('al cambiar un filtro mantiene la página montada y marca que se está actualizando', async () => {
+    const usuario = userEvent.setup();
+    render(<OpinionesPanel />);
+    const combo = (await screen.findAllByRole('combobox'))[2];
+    let resolver;
+    api.consultarOpinionesDetalle.mockImplementationOnce(() => new Promise((r) => { resolver = r; }));
+    await usuario.selectOptions(combo, '5');
+    expect(combo).toBeInTheDocument();
+    expect(combo).toHaveValue('5');
+    expect(screen.queryByText('Cargando opiniones…')).not.toBeInTheDocument();
+    const resultados = document.querySelector('.opiniones-resultados');
+    expect(resultados).toHaveClass('actualizando');
+    expect(resultados).toHaveAttribute('aria-busy', 'true');
+    resolver(DETALLE);
+    await waitFor(() => expect(resultados).not.toHaveClass('actualizando'));
+    expect(resultados).toHaveAttribute('aria-busy', 'false');
+    expect((await screen.findAllByRole('combobox'))[2]).toBe(combo);
+  });
+
+  it('en favoritos, cambiar el filtro tampoco desmonta la página', async () => {
+    const usuario = userEvent.setup();
+    render(<OpinionesPanel />);
+    await usuario.click(await screen.findByRole('button', { name: /Favoritos/ }));
+    const combo = (await screen.findAllByRole('combobox'))[0];
+    let resolver;
+    api.consultarFavoritosDetalle.mockImplementationOnce(() => new Promise((r) => { resolver = r; }));
+    await usuario.selectOptions(combo, '2');
+    expect(screen.queryByText('Cargando favoritos…')).not.toBeInTheDocument();
+    expect(document.querySelector('.opiniones-resultados')).toHaveClass('actualizando');
+    resolver({ resumen: { total: 5, estudiantes: 3, preparaciones: 1 }, por_preparacion: [{ id_preparacion: 2, nombre: 'Flan', total: 5 }], favoritos: [] });
+    await waitFor(() => expect(document.querySelector('.opiniones-resultados')).not.toHaveClass('actualizando'));
+    expect(screen.getAllByRole('combobox')[0]).toBe(combo);
+  });
+
   it('tocar el nombre de un plato filtra por ese plato', async () => {
     const usuario = userEvent.setup();
     render(<OpinionesPanel />);

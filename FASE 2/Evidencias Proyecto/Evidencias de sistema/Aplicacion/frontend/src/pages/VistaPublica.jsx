@@ -6,6 +6,9 @@ import CategoriaTabs from '../components/CategoriaTabs';
 import MenuPrincipal from '../components/MenuPrincipal';
 import VistaSemanal from '../components/VistaSemanal';
 import VistaPreguntas from '../components/VistaPreguntas';
+import DocumentoLegal from '../components/DocumentoLegal';
+import { TITULOS_LEGALES } from '../utils/legal';
+import { navegar } from '../ruteo/useRuta';
 import PantallaCarga from '../components/PantallaCarga';
 import { obtenerMenuHoy } from '../api/menu';
 import { hoyChile, parseFechaISO, estadoEfectivo, NO_DISPONIBLE, CATEGORIAS_MENU } from '../utils/formato';
@@ -153,34 +156,53 @@ const TITULOS_PESTANA = {
   preguntas: 'Preguntas frecuentes',
 };
 
-export default function VistaPublica() {
+export default function VistaPublica({ legal = null }) {
   const [vista, setVista] = useState('diario');
   const [perfilAbierto, setPerfilAbierto] = useState(false);
+  const titulo = legal ? TITULOS_LEGALES[legal] : TITULOS_PESTANA[vista];
 
   useEffect(() => {
-    document.title = `${TITULOS_PESTANA[vista] || 'Casinos DUOC UC'} - Casinos DUOC UC`;
-  }, [vista]);
+    document.title = `${titulo || 'Casinos DUOC UC'} - Casinos DUOC UC`;
+  }, [titulo]);
+
+  useEffect(() => {
+    if (legal) window.scrollTo?.(0, 0);
+  }, [legal]);
+
+  const cambiarVista = (v) => {
+    if (legal) navegar('/');
+    setVista(v);
+  };
 
   return (
     <div className="app-layout">
       <Sidebar
-        vistaActiva={vista}
-        onCambiarVista={setVista}
+        vistaActiva={legal ? null : vista}
+        onCambiarVista={cambiarVista}
         onAbrirPerfil={() => setPerfilAbierto(true)}
       />
 
       <main className="main v2 v2-pub">
-        <div className="pagina" key={vista}>
-          {vista !== 'diario' && (
+        {legal ? (
+          <div className="pagina" key={legal}>
             <div className="main-header">
-              <h1>{TITULOS_VISTA[vista]}</h1>
+              <h1>{TITULOS_LEGALES[legal]}</h1>
             </div>
-          )}
+            <DocumentoLegal tipo={legal} />
+          </div>
+        ) : (
+          <div className="pagina" key={vista}>
+            {vista !== 'diario' && (
+              <div className="main-header">
+                <h1>{TITULOS_VISTA[vista]}</h1>
+              </div>
+            )}
 
-          {vista === 'diario' && <VistaDiario onVerSemanal={() => setVista('semanal')} />}
-          {vista === 'semanal' && <VistaSemanal />}
-          {vista === 'preguntas' && <VistaPreguntas />}
-        </div>
+            {vista === 'diario' && <VistaDiario onVerSemanal={() => setVista('semanal')} />}
+            {vista === 'semanal' && <VistaSemanal />}
+            {vista === 'preguntas' && <VistaPreguntas />}
+          </div>
+        )}
       </main>
 
       {perfilAbierto && (

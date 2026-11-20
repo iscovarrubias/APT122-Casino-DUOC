@@ -6,7 +6,7 @@ vi.mock('./context/AuthProvider', () => ({ default: ({ children }) => children }
 vi.mock('./utils/estudiante', () => ({ EstudianteProvider: ({ children }) => children }));
 vi.mock('./utils/splash', () => ({ debeMostrarSplash: () => false, marcarSplashVisto: vi.fn(), SPLASH_DURACION_MS: 0, SPLASH_SALIDA_MS: 0 }));
 vi.mock('./components/PanelSidebar', () => ({ default: () => <nav>menú lateral</nav> }));
-vi.mock('./pages/VistaPublica', () => ({ default: () => <p>Página menú público</p> }));
+vi.mock('./pages/VistaPublica', () => ({ default: ({ legal }) => <p>{legal ? `Documento ${legal}` : 'Página menú público'}</p> }));
 vi.mock('./pages/LoginPage', () => ({ default: () => <p>Página login</p> }));
 vi.mock('./pages/AccesoPage', () => ({ default: () => <p>Página acceso</p> }));
 vi.mock('./pages/CajaPage', () => ({ default: () => <p>Página caja</p> }));
@@ -97,6 +97,17 @@ describe('App: guardias de ruta del panel', () => {
     ir('/no-existe');
     render(<App />);
     expect(document.title).toBe('Página no encontrada - Casinos DUOC UC');
+  });
+
+  it.each([
+    ['/terminos', 'terminos', 'Términos y Condiciones - Casinos DUOC UC'],
+    ['/privacidad', 'privacidad', 'Política de Privacidad - Casinos DUOC UC'],
+  ])('%s abre su documento legal sin pedir sesión, en vez de la página 404', (ruta, legal, titulo) => {
+    sesion(null);
+    ir(ruta);
+    render(<App />);
+    expect(screen.getByText(`Documento ${legal}`)).toBeInTheDocument();
+    expect(document.title).toBe(titulo);
   });
 
   it('la raíz muestra el menú público sin pedir sesión', () => {

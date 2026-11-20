@@ -10,7 +10,8 @@ export function useNavAnimada(actual, cambiar, cantidad) {
   useLayoutEffect(() => {
     const item = itemsRef.current[activa];
     const ind = indicadorRef.current;
-    if (!item || !ind) return;
+    if (!ind) return;
+    if (!item) { ind.style.opacity = '0'; return; }
     ind.style.transition = yaPosicionado.current ? '' : 'none';
     ind.style.height = `${item.offsetHeight}px`;
     ind.style.transform = `translateY(${item.offsetTop}px)`;

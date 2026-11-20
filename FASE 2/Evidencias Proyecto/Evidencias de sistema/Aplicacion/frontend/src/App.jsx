@@ -22,6 +22,7 @@ const PreparacionesPage = lazy(() => import('./pages/PreparacionesPage'));
 const UsuariosPage = lazy(() => import('./pages/UsuariosPage'));
 const AnalisisPage = lazy(() => import('./pages/AnalisisPage'));
 import NoEncontrada from './components/NoEncontrada';
+import { TITULOS_LEGALES, RUTAS_LEGALES } from './utils/legal';
 import PaginaError from './components/PaginaError';
 
 const NOMBRE_SITIO = 'Casinos DUOC UC';
@@ -53,7 +54,8 @@ function Enrutador() {
   const tituloPagina = ruta === '/login' ? 'Iniciar sesión'
     : ruta.startsWith('/panel') ? (PAGINAS[ruta]?.titulo || 'Panel')
     : ruta.startsWith('/error') ? 'Error'
-    : ruta === '/' ? 'Menú del día' : 'Página no encontrada';
+    : ruta === '/' ? 'Menú del día'
+    : RUTAS_LEGALES[ruta] ? TITULOS_LEGALES[RUTAS_LEGALES[ruta]] : 'Página no encontrada';
   useTitulo(tituloPagina);
 
   if (ruta.startsWith('/acceso')) return <AccesoPage />;
@@ -110,6 +112,7 @@ function Enrutador() {
     );
   }
 
+  if (RUTAS_LEGALES[ruta]) return <VistaPublica legal={RUTAS_LEGALES[ruta]} />;
   if (ruta !== '/') return <NoEncontrada />;
   return <VistaPublica />;
 }

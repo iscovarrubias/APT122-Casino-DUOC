@@ -63,6 +63,7 @@ function TarjetaOpinion({ o, onFiltrarPlato }) {
 function ListaOpiniones({ filtroInicial, onFiltroAplicado, setErrorGlobal }) {
   const [filtros, setFiltros] = useState({ id_preparacion: '', categoria: '', estrellas: '', estado: '', con_comentario: false, desde: '', hasta: '' });
   const [datos, setDatos] = useState(null);
+  const [cargando, setCargando] = useState(true);
   const [resumen, setResumen] = useState(null);
   const [verPromedios, setVerPromedios] = useState(false);
   const [exportando, setExportando] = useState(false);
@@ -76,11 +77,10 @@ function ListaOpiniones({ filtroInicial, onFiltroAplicado, setErrorGlobal }) {
 
   useEffect(() => {
     let activo = true;
-    setDatos(null);
-    setErrorGlobal(null);
+    setCargando(true);
     consultarOpinionesDetalle(filtros)
-      .then((d) => { if (activo) { setDatos(d); setErrorGlobal(null); } })
-      .catch((e) => { if (activo) setErrorGlobal(e); }); 
+      .then((d) => { if (activo) { setDatos(d); setCargando(false); setErrorGlobal(null); } })
+      .catch((e) => { if (activo) setErrorGlobal(e); });
     return () => { activo = false; };
   }, [filtros, setErrorGlobal]);
 
@@ -151,6 +151,7 @@ function ListaOpiniones({ filtroInicial, onFiltroAplicado, setErrorGlobal }) {
 
       {exportando && <ExportarAnalisis tipo="opiniones" desdeInicial={filtros.desde || haceDiasChile(30)} hastaInicial={filtros.hasta || hoyChile()} onCerrar={() => setExportando(false)} />}
 
+      <div className={`opiniones-resultados${cargando ? ' actualizando' : ''}`} aria-busy={cargando}>
       <div className="kpis">
         <div className="kpi"><span>Opiniones</span><strong>{r.total}</strong></div>
         <div className="kpi"><span>Con comentario</span><strong>{r.con_comentario}</strong></div>
@@ -167,6 +168,7 @@ function ListaOpiniones({ filtroInicial, onFiltroAplicado, setErrorGlobal }) {
           {datos.opiniones.length >= 500 && <p className="texto-suave">Se muestran las 500 más recientes. Usa los filtros para acotar.</p>}
         </div>
       )}
+      </div>
 
       {resumen && resumen.promedios.length > 0 && (
         <section className="tarjeta" style={{ marginTop: 18 }}>
@@ -205,15 +207,15 @@ function ListaOpiniones({ filtroInicial, onFiltroAplicado, setErrorGlobal }) {
 function ListaFavoritos({ setErrorGlobal }) {
   const [filtros, setFiltros] = useState({ id_preparacion: '', desde: '', hasta: '' });
   const [datos, setDatos] = useState(null);
+  const [cargando, setCargando] = useState(true);
   const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
     let activo = true;
-    setDatos(null);
-    setErrorGlobal(null);
+    setCargando(true);
     consultarFavoritosDetalle(filtros)
-      .then((d) => { if (activo) { setDatos(d); setErrorGlobal(null); } })
-      .catch((e) => { if (activo) setErrorGlobal(e); }); 
+      .then((d) => { if (activo) { setDatos(d); setCargando(false); setErrorGlobal(null); } })
+      .catch((e) => { if (activo) setErrorGlobal(e); });
     return () => { activo = false; };
   }, [filtros, setErrorGlobal]);
 
@@ -254,6 +256,7 @@ function ListaFavoritos({ setErrorGlobal }) {
       </section>
       {exportando && <ExportarAnalisis tipo="opiniones" desdeInicial={filtros.desde || haceDiasChile(30)} hastaInicial={filtros.hasta || hoyChile()} onCerrar={() => setExportando(false)} />}
       
+      <div className={`opiniones-resultados${cargando ? ' actualizando' : ''}`} aria-busy={cargando}>
       <div className="kpis">
         <div className="kpi"><span>Marcas de favorito</span><strong>{datos.resumen.total}</strong></div>
         <div className="kpi"><span>Estudiantes</span><strong>{datos.resumen.estudiantes}</strong></div>
@@ -294,6 +297,7 @@ function ListaFavoritos({ setErrorGlobal }) {
           </section>
         </div>
       )}
+      </div>
     </div>
   );
 }
