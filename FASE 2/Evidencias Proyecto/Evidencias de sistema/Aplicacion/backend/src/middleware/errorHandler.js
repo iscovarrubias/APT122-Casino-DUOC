@@ -1,5 +1,6 @@
 function errorHandler(err, req, res, next) {
-  if (!err.status || err.status >= 500) console.error(err);
+  const esDelCliente = err.name === 'MulterError' || (err.code && /^(22|23)/.test(err.code));
+  if (!esDelCliente && (!err.status || err.status >= 500)) console.error(err);
 
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ error: 'El cuerpo de la solicitud no es JSON válido.' });
@@ -26,6 +27,10 @@ function errorHandler(err, req, res, next) {
 
   if (err.code === '23502') {
     return res.status(400).json({ error: 'Falta un campo obligatorio.' });
+  }
+
+  if (['22P02', '22003', '22007', '22008', '2201W', '2201X'].includes(err.code)) {
+    return res.status(400).json({ error: 'Uno de los valores enviados no tiene un formato válido.' });
   }
 
   if (err.code === '23514') {

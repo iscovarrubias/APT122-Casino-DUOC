@@ -61,7 +61,7 @@ async function crear(req, res, next) {
     validarImagen(imagen_url);
     validarPorciones(porciones_receta);
 
-        if (tipo !== undefined && tipo !== null && tipo !== '' && !TIPOS_VALIDOS.includes(tipo)) {
+    if (tipo !== undefined && tipo !== null && tipo !== '' && !TIPOS_VALIDOS.includes(tipo)) {
       throw new ApiError(400, `tipo inválido. Debe ser uno de: ${TIPOS_VALIDOS.join(', ')}.`);
     }
 

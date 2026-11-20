@@ -13,6 +13,10 @@
     "test:estudiante": "node tests/integracion/estudiante.integracion.js",
     "test:acceso": "node tests/integracion/acceso.integracion.js",
     "test:db": "node tests/integracion/jornada.integracion.js && node tests/integracion/estudiante.integracion.js && node tests/integracion/acceso.integracion.js",
+    "test:bd": "node --test --test-concurrency=1 \"tests/bd/*.test.js\"",
+    "test:rendimiento": "node --test --test-reporter=spec tests/bd/rendimiento.bd.test.js",
+    "test:todo": "npm test && npm run test:db && npm run test:bd",
+    "test:cov": "node --test --experimental-test-coverage --test-concurrency=1 --test-coverage-include=\"src/**\" --test-coverage-lines=80 \"tests/*.test.js\" \"tests/bd/*.test.js\" \"tests/integracion/*.js\"",
     "migrar": "node database/migrar.js",
     "respaldo": "node database/respaldo.js",
     "respaldo:verificar": "node database/verificar_respaldo.js"
