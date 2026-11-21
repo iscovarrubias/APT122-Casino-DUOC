@@ -161,7 +161,7 @@ npm run formato          # en backend, frontend o e2e: ordena el código con Pre
 npm run formato:revisar  # revisa el formato sin cambiar nada, igual que la integración continua
 ```
 
-`TEST_DATABASE_URL` debe apuntar a una base distinta de `DATABASE_URL` y con "test" o "prueba" en el nombre, porque las pruebas crean y borran datos. GitHub Actions ejecuta todo esto en cada push y pull request (`.github/workflows/ci.yml`, en la raíz del repositorio), y el backend falla si la cobertura baja del 80 % de líneas y el frontend si baja del 90 %. En total son más de 700 casos: 163 en el backend, 372 en el frontend y 170 ejecuciones de punta a punta con Playwright, con un 89 % de cobertura en el backend y un 93 % en el frontend. Incluyen pruebas de carga de hora punta, pruebas que recorren todas las rutas buscando errores 500, una prueba de contrato que revisa que el frontend solo llame a rutas que existen en el backend, pruebas en navegador que cubren cada funcionalidad con cada rol, en escritorio y en celular, y una revisión automática de accesibilidad WCAG 2.1 AA con axe en todas las pantallas, en modo claro y oscuro. Las páginas públicas obtienen 100 en accesibilidad, buenas prácticas y SEO en Lighthouse.
+`TEST_DATABASE_URL` debe apuntar a una base distinta de `DATABASE_URL` y con "test" o "prueba" en el nombre, porque las pruebas crean y borran datos. GitHub Actions ejecuta todo esto en cada push y pull request (`.github/workflows/ci.yml`, en la raíz del repositorio), y el backend falla si la cobertura baja del 80 % de líneas y el frontend si baja del 90 %. En total son más de 700 casos: 166 en el backend, 372 en el frontend y 170 ejecuciones de punta a punta con Playwright, con un 89 % de cobertura en el backend y un 93 % en el frontend. Incluyen pruebas de carga de hora punta, pruebas que recorren todas las rutas buscando errores 500, una prueba de contrato que revisa que el frontend solo llame a rutas que existen en el backend, pruebas en navegador que cubren cada funcionalidad con cada rol, en escritorio y en celular, y una revisión automática de accesibilidad WCAG 2.1 AA con axe en todas las pantallas, en modo claro y oscuro. Las páginas públicas obtienen 100 en accesibilidad, buenas prácticas y SEO en Lighthouse.
 
 ## Seguridad
 
@@ -192,9 +192,11 @@ El backend arma los correos y los envía por SMTP. Para no depender de un servid
 | Dónde | Variable | Para qué |
 |---|---|---|
 | Backend | `TOKEN_TAREAS` | Clave larga y aleatoria que deben enviar las tareas programadas |
-| Backend | `CORREO_SMTP_HOST`, `CORREO_SMTP_PUERTO`, `CORREO_SMTP_USUARIO`, `CORREO_SMTP_CLAVE`, `CORREO_REMITENTE` | Servidor de correo. Sirve cualquier SMTP gratuito, por ejemplo Brevo (300 correos al día) o una cuenta de Gmail con contraseña de aplicación |
+| Backend | `CORREO_SMTP_HOST`, `CORREO_SMTP_PUERTO`, `CORREO_SMTP_USUARIO`, `CORREO_SMTP_CLAVE`, `CORREO_REMITENTE` | Servidor de correo. Sirve cualquier SMTP gratuito, por ejemplo Brevo (300 correos al día) o una cuenta de Gmail con contraseña de aplicación. Conviene una cuenta creada solo para esto, como `casinos.duoc.noresponder@gmail.com`, porque Gmail siempre envía desde la cuenta con la que se inicia sesión |
 | Backend | `API_URL_PUBLICA` | Dirección pública del backend, para el enlace de baja |
 | GitHub, Settings → Secrets → Actions | `URL_API` y `TOKEN_TAREAS` | Dirección del backend y la misma clave del backend |
+
+Cada correo lleva el logo del casino, una tabla por día con las cuatro categorías y los favoritos marcados. Los días son pestañas desplegables en Apple Mail, el Mail del iPhone y Thunderbird; en Gmail y Outlook aparecen todos abiertos, porque esos programas no permiten elementos desplegables. Al pie se indica que es un correo automático y no se debe responder.
 
 Sin `CORREO_SMTP_HOST`, o con `CORREO_MODO=registro`, los correos no salen: solo quedan registrados en la tabla `correo_enviado`, que es lo que usan las pruebas. Para probar un envío a mano: Actions → Correos programados → Run workflow.
 
