@@ -33,6 +33,7 @@ Cada sprint corresponde a una migración en `database/` (desde la 3, las dos pri
 | 19 | Tipo de venta: combo, solo plato o completo con bebida de máquina |
 | 20 | Opción postre o fruta en el vegetariano y movimiento de corrección para el cierre de jornada |
 | 21 | Variaciones de receta (`preparacion.id_preparacion_base`) |
+| 22 | Avisos por correo: preferencias de cada estudiante (`preferencia_correo`) y registro de lo enviado (`correo_enviado`) |
 
 ## Historias de usuario y requisitos por endpoint
 
@@ -59,6 +60,8 @@ Cada sprint corresponde a una migración en `database/` (desde la 3, las dos pri
 | RF-28 | Roles Cajero y Nutricionista | Tabla `rol` (migración del sprint 6) |
 |  | Predicción de demanda y su confiabilidad | `GET /api/prediccion/*` |
 |  | Variación de una receta | `POST /api/preparaciones` con `id_preparacion_base` |
+|  | Hora estimada de agotamiento para los estudiantes | `GET /api/prediccion/publica` |
+|  | Avisos por correo | `GET` y `PUT /api/estudiante/correos`, `POST /api/correos/tareas/semanal` y `/diaria`, `GET /api/correos/baja` |
 
 ## Requisitos
 
@@ -154,7 +157,7 @@ Para la demostración pública, `database/seed_menu_campomar.sql` carga el menú
 
 ## Pruebas
 
-Son 163 casos en el backend, con un 89 % de líneas cubiertas. Las pruebas que usan base de datos levantan la API completa y le hablan por HTTP igual que lo haría el frontend, así que prueban el sistema de punta a punta y no piezas aisladas.
+Son 166 casos en el backend, con un 89 % de líneas cubiertas. Las pruebas que usan base de datos levantan la API completa y le hablan por HTTP igual que lo haría el frontend, así que prueban el sistema de punta a punta y no piezas aisladas.
 
 | Archivo | Tipo | Qué cubre |
 |---|---|---|
@@ -194,13 +197,15 @@ backend/
 │   ├── config/db.js            Pool de conexiones a PostgreSQL
 │   ├── middleware/             auth (JWT), roles, limitador, subida de imágenes y manejo de errores
 │   ├── routes/                 auth, preparaciones, ingrediente, menu, jornada, analisis, prediccion,
-│   │                           estudiante, opiniones, usuarios e imagenes
+│   │                           estudiante, opiniones, usuarios, imagenes y correos
 │   ├── controllers/            Validación de la entrada y respuesta HTTP
 │   ├── models/                 Acceso a datos (SQL) y transacciones
-│   └── utils/                  entra, eventos (SSE), cache, fecha, nutricion, prediccion, stock y demo
+│   ├── utils/                  entra, eventos (SSE), cache, fecha, nutricion, prediccion, prediccionPublica,
+│   │                           stock, demo, correo, plantillasCorreo y avisosCorreo
+│   └── recursos/               Logo que va adjunto en los correos
 ├── database/
 │   ├── schema.sql              Esquema base
-│   ├── migracion_sprintN.sql   Migraciones de la 3 a la 21, las aplica migrar.js
+│   ├── migracion_sprintN.sql   Migraciones de la 3 a la 22, las aplica migrar.js
 │   ├── migrar.js, respaldo.js y verificar_respaldo.js
 │   ├── seed_sprint1.js         Usuarios de prueba
 │   ├── seed_demo.sql y seed_demo_nutricion.sql      Catálogo y menús de demostración
@@ -219,4 +224,5 @@ backend/
 - **Nutrición "todo o nada":** si falta el dato de algún ingrediente, la información nutricional se muestra como "No disponible" en vez de completarla con supuestos.
 - **Opiniones conservadas:** editar o eliminar una opinión no la borra, queda en `opinion_registro` para el análisis del administrador.
 - **Variaciones de receta:** cuando un plato se prepara distinto, se crea una preparación nueva enlazada a la original (`id_preparacion_base`), con sus propios ingredientes, alérgenos y nutrición, así la receta original y los menús pasados no cambian.
+- **Correos sin duplicados:** antes de enviar, cada aviso se reserva en `correo_enviado`, que no admite el mismo estudiante, tipo y semana o día dos veces. Así, aunque la tarea programada se repita, nadie recibe el mismo correo dos veces, y quien activó el menú semanal y los favoritos recibe un solo correo con sus favoritos destacados.
 - **Origen de los datos de venta:** `venta.origen_dato` distingue entre `real`, `importado` y `simulado`, y la predicción avisa cuando trabaja con datos simulados.

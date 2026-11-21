@@ -1,4 +1,5 @@
 const correoModel = require('../models/correo.model');
+const menuModel = require('../models/menu.model');
 const { enviar, modo } = require('./correo');
 const plantillas = require('./plantillasCorreo');
 const { hoyChile } = require('./fecha');
@@ -21,6 +22,14 @@ function decidirSemanal(destinatario, filas) {
   if (destinatario.menu_semanal) return 'semanal';
   if (destinatario.avisos_favoritos && plantillas.favoritosEn(filas, destinatario.favoritos).length) return 'favoritos_semana';
   return null;
+}
+
+async function composicion() {
+  try {
+    return await menuModel.composicionPorCategoria();
+  } catch {
+    return {};
+  }
 }
 
 async function despachar(destinatario, tipo, clave, correo, enlaceBaja) {
@@ -50,6 +59,7 @@ async function enviarSemanal({ hoy = hoyChile(), urls }) {
   const r = resumen('semanal', lunes);
   const filas = await correoModel.menuPublicado(lunes, viernes);
   if (!filas.length) return { ...r, motivo: 'No hay menú publicado para esa semana.' };
+  const comp = await composicion();
   for (const d of await correoModel.destinatarios()) {
     const tipo = decidirSemanal(d, filas);
     if (!tipo) {
@@ -57,7 +67,7 @@ async function enviarSemanal({ hoy = hoyChile(), urls }) {
       continue;
     }
     const ligas = enlaces(urls, d.token_baja);
-    const datos = { nombre: d.nombre, lunes, viernes, filas, favoritos: d.favoritos, ...ligas };
+    const datos = { nombre: d.nombre, lunes, viernes, filas, favoritos: d.favoritos, composicion: comp, ...ligas };
     const correo = tipo === 'semanal' ? plantillas.correoMenuSemanal(datos) : plantillas.correoFavoritosSemana(datos);
     const estado = await despachar(d, tipo, lunes, correo, ligas.enlaceBaja);
     r[`${estado === 'enviado' ? 'enviados' : estado === 'repetido' ? 'repetidos' : 'fallidos'}`] += 1;
@@ -70,13 +80,21 @@ async function enviarDiario({ hoy = hoyChile(), urls }) {
   if ([0, 6].includes(diaSemana(hoy))) return { ...r, motivo: 'Los fines de semana no hay menú.' };
   const filas = await correoModel.menuPublicado(hoy, hoy);
   if (!filas.length) return { ...r, motivo: 'No hay menú publicado hoy.' };
+  const comp = await composicion();
   for (const d of await correoModel.destinatarios()) {
     if (!d.avisos_favoritos || !plantillas.favoritosEn(filas, d.favoritos).length) {
       r.omitidos += 1;
       continue;
     }
     const ligas = enlaces(urls, d.token_baja);
-    const correo = plantillas.correoFavoritoDelDia({ nombre: d.nombre, fecha: hoy, filas, favoritos: d.favoritos, ...ligas });
+    const correo = plantillas.correoFavoritoDelDia({
+      nombre: d.nombre,
+      fecha: hoy,
+      filas,
+      favoritos: d.favoritos,
+      composicion: comp,
+      ...ligas,
+    });
     const estado = await despachar(d, 'favorito_dia', hoy, correo, ligas.enlaceBaja);
     r[`${estado === 'enviado' ? 'enviados' : estado === 'repetido' ? 'repetidos' : 'fallidos'}`] += 1;
   }

@@ -1,4 +1,8 @@
+const path = require('path');
 const nodemailer = require('nodemailer');
+const { LOGO_CID } = require('./plantillasCorreo');
+
+const LOGO = path.join(__dirname, '..', 'recursos', 'logo-correo.png');
 
 let transporte = null;
 const registro = [];
@@ -26,6 +30,7 @@ async function enviar({ para, asunto, html, texto, enlaceBaja }) {
     subject: asunto,
     html,
     text: texto,
+    attachments: html && html.includes(`cid:${LOGO_CID}`) ? [{ filename: 'logo-casinos-duoc.png', path: LOGO, cid: LOGO_CID }] : undefined,
     headers: enlaceBaja ? { 'List-Unsubscribe': `<${enlaceBaja}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } : undefined,
   };
   if (modo() === 'registro') {
