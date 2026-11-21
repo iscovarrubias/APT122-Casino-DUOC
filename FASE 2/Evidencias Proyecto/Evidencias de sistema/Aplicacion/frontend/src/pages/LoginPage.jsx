@@ -75,10 +75,14 @@ export default function LoginPage() {
     }
   }
 
-  const aviso = error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>;
+  const aviso = error && (
+    <Mensaje tipo="error" onCerrar={() => setError(null)}>
+      {error}
+    </Mensaje>
+  );
 
   return (
-    <div className="login-pagina v2">
+    <main className="login-pagina v2">
       <button type="button" className="login-volver" onClick={() => navegar('/')}>
         <ChevronLeft size={18} aria-hidden="true" /> Volver al menú
       </button>
@@ -93,11 +97,7 @@ export default function LoginPage() {
 
       <div className="login-tarjeta">
         <div className="sidebar-logo login-logo">
-          <img
-            src={esOscuro ? '/logooscuro.svg' : '/logo.svg'}
-            alt="Casinos DuocUC"
-            className="sidebar-logo-img"
-          />
+          <img src={esOscuro ? '/logooscuro.svg' : '/logo.svg'} alt="Casinos DuocUC" className="sidebar-logo-img" />
         </div>
 
         <h1>Iniciar sesión</h1>
@@ -157,9 +157,7 @@ export default function LoginPage() {
 
             {metodo === 'microsoft' && (
               <div className="formulario">
-                <p className="login-ayuda">
-                  Te llevaremos a Microsoft para confirmar tu cuenta. Tu contraseña nunca pasa por este sitio.
-                </p>
+                <p className="login-ayuda">Te llevaremos a Microsoft para confirmar tu cuenta. Tu contraseña nunca pasa por este sitio.</p>
                 {aviso}
                 <a className="boton boton-primario boton-ancho" href={urlInicioMicrosoft(email.trim())}>
                   Continuar con Microsoft
@@ -169,9 +167,7 @@ export default function LoginPage() {
 
             {metodo === 'duoc' && (
               <div className="formulario">
-                <p className="login-ayuda">
-                  Cuenta de estudiante detectada. Esta versión de demostración no pide contraseña.
-                </p>
+                <p className="login-ayuda">Cuenta de estudiante detectada. Esta versión de demostración no pide contraseña.</p>
                 {aviso}
                 <button type="button" className="boton boton-primario boton-ancho" onClick={entrarDemo} disabled={enviando}>
                   {enviando ? 'Ingresando…' : 'Ingresar con mi cuenta DUOC'}
@@ -181,6 +177,6 @@ export default function LoginPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { consultarJornadaHoy, iniciarJornada, cerrarJornada, corregirCierre, ajustarStock, anularVenta, consultarPrediccionHoy } from '../api/gestion';
+import {
+  consultarJornadaHoy,
+  iniciarJornada,
+  cerrarJornada,
+  corregirCierre,
+  ajustarStock,
+  anularVenta,
+  consultarPrediccionHoy,
+} from '../api/gestion';
 import { suscribirCambios } from '../utils/eventos';
 import { formatearHora, ESTADO_TEXTO } from '../utils/formato';
 import { useVentas } from '../utils/useVentas';
@@ -28,10 +36,17 @@ function FilaConteo({ c, valor, onCambiar }) {
   const diferencia = valor === undefined || valor === '' ? null : Number(valor) - c.restante;
   return (
     <label className="stock-fila">
-      <span><strong>{etiqueta(c)}</strong>: {c.preparacion} <span className="texto-suave">(sistema: {c.restante})</span></span>
+      <span>
+        <strong>{etiqueta(c)}</strong>: {c.preparacion} <span className="texto-suave">(sistema: {c.restante})</span>
+      </span>
       <span className="en-linea">
         <input type="number" min="0" step="1" className="entrada-corta" value={valor ?? ''} onChange={(e) => onCambiar(e.target.value)} />
-        {diferencia !== null && diferencia !== 0 && <span className="texto-suave">{diferencia > 0 ? '+' : ''}{diferencia}</span>}
+        {diferencia !== null && diferencia !== 0 && (
+          <span className="texto-suave">
+            {diferencia > 0 ? '+' : ''}
+            {diferencia}
+          </span>
+        )}
       </span>
     </label>
   );
@@ -65,7 +80,10 @@ export default function KioscoPage() {
     cargar();
     const intervalo = setInterval(cargar, 15000);
     const cerrar = suscribirCambios(cargar);
-    return () => { clearInterval(intervalo); cerrar(); };
+    return () => {
+      clearInterval(intervalo);
+      cerrar();
+    };
   }, [cargar]);
 
   const { vender, modales } = useVentas({ estado, cargar, setError, setAviso });
@@ -97,40 +115,79 @@ export default function KioscoPage() {
 
   const reponer = (c) => {
     const n = window.prompt(`¿Cuántas porciones de "${c.preparacion}" repusiste?`);
-    if (n !== null && n.trim() !== '') ejecutar(() => ajustarStock(c.id_menu_preparacion, { accion: 'reposicion', cantidad: Number(n) }), 'Reposición registrada.');
+    if (n !== null && n.trim() !== '')
+      ejecutar(() => ajustarStock(c.id_menu_preparacion, { accion: 'reposicion', cantidad: Number(n) }), 'Reposición registrada.');
   };
 
   const filaCorreccion = (c) => (
     <div key={c.id_menu_preparacion} className="stock-fila" style={{ marginBottom: 10 }}>
       <span>
         <strong>{etiqueta(c)}</strong>: {c.preparacion}{' '}
-        <span className="texto-suave">- quedan {c.restante} de {c.total_disponible} - {ESTADO_TEXTO[c.disponibilidad]}</span>
+        <span className="texto-suave">
+          - quedan {c.restante} de {c.total_disponible} - {ESTADO_TEXTO[c.disponibilidad]}
+        </span>
       </span>
       <span className="en-linea">
-        <input type="number" min="0" step="1" className="entrada-corta" placeholder="Quedan"
-          value={fijar[c.id_menu_preparacion] ?? ''} aria-label={`Cuántas quedan de ${c.preparacion}`}
-          onChange={(e) => setFijar({ ...fijar, [c.id_menu_preparacion]: e.target.value })} />
-        <button className="boton boton-secundario" disabled={ocupado || (fijar[c.id_menu_preparacion] ?? '') === ''}
-          onClick={async () => { if (await ejecutar(() => ajustarStock(c.id_menu_preparacion, { accion: 'quedan', cantidad: Number(fijar[c.id_menu_preparacion]) }), 'Cantidad actualizada.')) setFijar({ ...fijar, [c.id_menu_preparacion]: '' }); }}>
+        <input
+          type="number"
+          min="0"
+          step="1"
+          className="entrada-corta"
+          placeholder="Quedan"
+          value={fijar[c.id_menu_preparacion] ?? ''}
+          aria-label={`Cuántas quedan de ${c.preparacion}`}
+          onChange={(e) => setFijar({ ...fijar, [c.id_menu_preparacion]: e.target.value })}
+        />
+        <button
+          className="boton boton-secundario"
+          disabled={ocupado || (fijar[c.id_menu_preparacion] ?? '') === ''}
+          onClick={async () => {
+            if (
+              await ejecutar(
+                () => ajustarStock(c.id_menu_preparacion, { accion: 'quedan', cantidad: Number(fijar[c.id_menu_preparacion]) }),
+                'Cantidad actualizada.'
+              )
+            )
+              setFijar({ ...fijar, [c.id_menu_preparacion]: '' });
+          }}
+        >
           Fijar
         </button>
-        <button className="boton-texto" disabled={ocupado} onClick={() => reponer(c)}>Repuse…</button>
+        <button className="boton-texto" disabled={ocupado} onClick={() => reponer(c)}>
+          Repuse…
+        </button>
       </span>
     </div>
   );
 
   const filaInicial = (c) => (
     <label key={c.id_menu_preparacion} className="stock-fila">
-      <span><strong>{etiqueta(c)}</strong>: {c.preparacion}</span>
-      <input type="number" min="0" step="1" className="entrada-corta" value={iniciales[c.id_menu_preparacion] ?? c.cantidad_planificada}
-        onChange={(e) => setIniciales({ ...iniciales, [c.id_menu_preparacion]: e.target.value })} />
+      <span>
+        <strong>{etiqueta(c)}</strong>: {c.preparacion}
+      </span>
+      <input
+        type="number"
+        min="0"
+        step="1"
+        className="entrada-corta"
+        value={iniciales[c.id_menu_preparacion] ?? c.cantidad_planificada}
+        onChange={(e) => setIniciales({ ...iniciales, [c.id_menu_preparacion]: e.target.value })}
+      />
     </label>
   );
 
   return (
     <div className="v2">
-      {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
-      {aviso && !error && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
+      {error && typeof error === 'string' && (
+        <Mensaje tipo="error" onCerrar={() => setError(null)}>
+          {error}
+        </Mensaje>
+      )}
+      {aviso && !error && (
+        <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>
+          {aviso}
+        </Mensaje>
+      )}
 
       {estado && !menu && (
         <div className="estado-info">Todavía no hay un menú planificado para hoy. Cárgalo en Planificación del menú.</div>
@@ -142,7 +199,10 @@ export default function KioscoPage() {
       {menu && !jornada && (
         <div className="tarjeta">
           <h2>Iniciar jornada</h2>
-          <p className="texto-suave">Indica cuántas porciones se prepararon de cada componente (por defecto, lo planificado). Al iniciar aparecen los botones de venta.</p>
+          <p className="texto-suave">
+            Indica cuántas porciones se prepararon de cada componente (por defecto, lo planificado). Al iniciar aparecen los botones de
+            venta.
+          </p>
           <div className="stock-lista">
             {principales.length > 0 && (
               <>
@@ -157,8 +217,13 @@ export default function KioscoPage() {
               </>
             )}
           </div>
-          <button className="boton boton-primario" disabled={ocupado || !menu.publicado}
-            onClick={() => ejecutar(() => iniciarJornada(iniciales), 'Jornada iniciada.')}>Iniciar jornada</button>
+          <button
+            className="boton boton-primario"
+            disabled={ocupado || !menu.publicado}
+            onClick={() => ejecutar(() => iniciarJornada(iniciales), 'Jornada iniciada.')}
+          >
+            Iniciar jornada
+          </button>
         </div>
       )}
 
@@ -166,7 +231,9 @@ export default function KioscoPage() {
         <>
           <div className="v2-barra">
             <span className="v2-estado">Jornada abierta desde las {formatearHora(jornada.iniciada_en)}</span>
-            <button className="boton boton-secundario" onClick={() => setCerrando(true)}>Cerrar jornada</button>
+            <button className="boton boton-secundario" onClick={() => setCerrando(true)}>
+              Cerrar jornada
+            </button>
           </div>
 
           <BotonesVenta componentes={componentes} onVender={vender} estimaciones={estimaciones} />
@@ -174,8 +241,7 @@ export default function KioscoPage() {
           <h2 className="v2-subtitulo">Stock de compartidos</h2>
           <CompartidosDelDia componentes={componentes} composicion={estado?.composicion || {}} />
 
-          <UltimasVentas ventas={ventas_recientes} ocupado={ocupado}
-            onAnular={(id) => ejecutar(() => anularVenta(id), 'Venta anulada.')} />
+          <UltimasVentas ventas={ventas_recientes} ocupado={ocupado} onAnular={(id) => ejecutar(() => anularVenta(id), 'Venta anulada.')} />
           <details className="tarjeta">
             <summary>Corregir cantidades o registrar reposición</summary>
             <p className="texto-suave">Úsalo cuando el conteo real no coincide con el sistema o cuando se repone una preparación.</p>
@@ -202,16 +268,21 @@ export default function KioscoPage() {
           <ResumenCierre componentes={componentes} />
           <h3 className="v2-subtitulo">Conteo real de la cocina</h3>
           <p className="texto-suave">
-            Cuenta lo que sobró de cada componente. Si dejas un campo vacío, se usa el stock del sistema. Si cuentas menos de lo que dice el sistema,
-            la diferencia suele ser consumo no registrado, por ejemplo ventas sueltas de pan, jugo o ensalada. Este conteo alimenta el informe de sobrantes.
+            Cuenta lo que sobró de cada componente. Si dejas un campo vacío, se usa el stock del sistema. Si cuentas menos de lo que dice el
+            sistema, la diferencia suele ser consumo no registrado, por ejemplo ventas sueltas de pan, jugo o ensalada. Este conteo alimenta
+            el informe de sobrantes.
           </p>
           <div className="stock-lista">
             {principales.length > 0 && (
               <>
                 <p className="stock-grupo-titulo">Platos</p>
                 {principales.map((c) => (
-                  <FilaConteo key={c.id_menu_preparacion} c={c} valor={sobrantes[c.id_menu_preparacion]}
-                    onCambiar={(v) => setSobrantes({ ...sobrantes, [c.id_menu_preparacion]: v })} />
+                  <FilaConteo
+                    key={c.id_menu_preparacion}
+                    c={c}
+                    valor={sobrantes[c.id_menu_preparacion]}
+                    onCambiar={(v) => setSobrantes({ ...sobrantes, [c.id_menu_preparacion]: v })}
+                  />
                 ))}
               </>
             )}
@@ -219,16 +290,27 @@ export default function KioscoPage() {
               <>
                 <p className="stock-grupo-titulo">Acompañamientos</p>
                 {acompanamientos.map((c) => (
-                  <FilaConteo key={c.id_menu_preparacion} c={c} valor={sobrantes[c.id_menu_preparacion]}
-                    onCambiar={(v) => setSobrantes({ ...sobrantes, [c.id_menu_preparacion]: v })} />
+                  <FilaConteo
+                    key={c.id_menu_preparacion}
+                    c={c}
+                    valor={sobrantes[c.id_menu_preparacion]}
+                    onCambiar={(v) => setSobrantes({ ...sobrantes, [c.id_menu_preparacion]: v })}
+                  />
                 ))}
               </>
             )}
           </div>
           <div className="en-linea">
-            <button className="boton boton-secundario" onClick={() => setCerrando(false)}>Seguir en la jornada</button>
-            <button className="boton boton-primario" disabled={ocupado}
-              onClick={async () => { if (await ejecutar(() => cerrarJornada(sobrantes), 'Jornada cerrada.')) setCerrando(false); }}>
+            <button className="boton boton-secundario" onClick={() => setCerrando(false)}>
+              Seguir en la jornada
+            </button>
+            <button
+              className="boton boton-primario"
+              disabled={ocupado}
+              onClick={async () => {
+                if (await ejecutar(() => cerrarJornada(sobrantes), 'Jornada cerrada.')) setCerrando(false);
+              }}
+            >
               Confirmar cierre
             </button>
           </div>
@@ -237,24 +319,50 @@ export default function KioscoPage() {
 
       {jornada?.estado === 'cerrada' && (
         <div className="tarjeta">
-          <h2>Jornada cerrada a las {formatearHora(jornada.cerrada_en)}{jornada.cierre_automatico ? ' (cierre automático: sin conteo de sobrantes)' : ''}</h2>
+          <h2>
+            Jornada cerrada a las {formatearHora(jornada.cerrada_en)}
+            {jornada.cierre_automatico ? ' (cierre automático: sin conteo de sobrantes)' : ''}
+          </h2>
           <table className="tabla tabla-compacta">
-            <thead><tr><th>Componente</th><th>Preparación</th><th>Disponibles</th><th>Vendidas</th><th>Sobrante</th><th>Dif. del conteo</th><th>Corrección</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Componente</th>
+                <th>Preparación</th>
+                <th>Disponibles</th>
+                <th>Vendidas</th>
+                <th>Sobrante</th>
+                <th>Dif. del conteo</th>
+                <th>Corrección</th>
+              </tr>
+            </thead>
             <tbody>
               {componentes.map((c) => (
                 <tr key={c.id_menu_preparacion}>
-                  <td>{etiqueta(c)}</td><td>{c.preparacion}</td><td>{c.total_disponible}</td><td>{c.vendidas}</td><td>{c.restante}</td>
+                  <td>{etiqueta(c)}</td>
+                  <td>{c.preparacion}</td>
+                  <td>{c.total_disponible}</td>
+                  <td>{c.vendidas}</td>
+                  <td>{c.restante}</td>
                   <td>{c.ajuste_cierre ? c.ajuste_cierre : '—'}</td>
                   <td>{c.ajuste_correccion ? c.ajuste_correccion : '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {corrigiendo
-            ? <CorreccionCierre componentes={componentes} ocupado={ocupado}
-                onGuardar={async (s) => { if (await ejecutar(() => corregirCierre(s), 'Corrección registrada.')) setCorrigiendo(false); }}
-                onCancelar={() => setCorrigiendo(false)} />
-            : <button className="boton boton-secundario" style={{ marginTop: 12 }} disabled={ocupado} onClick={() => setCorrigiendo(true)}>Corregir conteo</button>}
+          {corrigiendo ? (
+            <CorreccionCierre
+              componentes={componentes}
+              ocupado={ocupado}
+              onGuardar={async (s) => {
+                if (await ejecutar(() => corregirCierre(s), 'Corrección registrada.')) setCorrigiendo(false);
+              }}
+              onCancelar={() => setCorrigiendo(false)}
+            />
+          ) : (
+            <button className="boton boton-secundario" style={{ marginTop: 12 }} disabled={ocupado} onClick={() => setCorrigiendo(true)}>
+              Corregir conteo
+            </button>
+          )}
         </div>
       )}
 

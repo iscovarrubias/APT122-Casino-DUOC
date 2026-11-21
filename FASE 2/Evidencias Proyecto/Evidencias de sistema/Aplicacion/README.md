@@ -23,10 +23,19 @@ La consulta del menú no requiere cuenta:
   | Después del cierre | Un aviso de que la jornada de almuerzos ya cerró, con el menú del día en gris como referencia |
   | Sábado y domingo sin menú | Un aviso de que esos días no hay menú, con acceso al menú semanal |
 
+- Hora estimada de agotamiento: un ícono de reloj junto a la disponibilidad del menú. Al pasar el mouse o tocarlo, explica cerca de qué hora se agotaría según las ventas de hoy y de días anteriores, o si debería alcanzar hasta el cierre.
 - Menú semanal de lunes a viernes, los fines de semana muestra la semana siguiente.
-- Preguntas frecuentes.
+- Preguntas frecuentes, Términos y Condiciones, y Política de Privacidad según la Ley 19.628 y la Ley 21.719, con enlace a la política de Duoc UC.
 
-Con la cuenta institucional (Microsoft Entra ID) se suma el perfil del estudiante: alergias propias con aviso en los platos que las contienen, categoría de menú favorita, platos favoritos con alerta y calificaciones con estrellas y comentario.
+Con la cuenta institucional (Microsoft Entra ID) se suma el perfil del estudiante: alergias propias con aviso en los platos que las contienen, categoría de menú favorita, platos favoritos con alerta, calificaciones con estrellas y comentario, y avisos por correo opcionales:
+
+| Opción en «Mi perfil» | Qué recibe |
+|---|---|
+| Menú de la semana | El domingo a mediodía, el menú de lunes a viernes |
+| Avisos de mis favoritos | El domingo, si sus favoritos están en la semana, y la mañana del día en que se sirven |
+| Ambas | Un solo correo el domingo: el menú semanal con los favoritos destacados, más el aviso del día |
+
+Vienen desactivados, cada correo trae un enlace para darse de baja con un clic y nunca se envía dos veces el mismo aviso.
 
 ### Personal del casino
 
@@ -50,7 +59,7 @@ Cada rol ve solo lo que le corresponde:
 | Backend | Node.js 20+, Express 5, JWT, bcrypt y SSE |
 | Base de datos | PostgreSQL 14+ |
 | Autenticación | Contraseña para el personal y Microsoft Entra ID (OIDC con PKCE) para los estudiantes |
-| Calidad | `node:test`, Vitest con Testing Library, cobertura de código, pruebas de carga, oxlint y GitHub Actions |
+| Calidad | `node:test`, Vitest con Testing Library, Playwright, cobertura de código, pruebas de carga, oxlint y GitHub Actions |
 | Despliegue | Render (frontend y backend) con Neon (PostgreSQL), o Docker Compose para levantarlo en local |
 
 ## Estructura
@@ -59,6 +68,7 @@ Cada rol ve solo lo que le corresponde:
 Aplicacion/
 ├── backend/             API REST, modelos, migraciones SQL, scripts de datos y pruebas
 ├── frontend/            Aplicación web en React
+├── e2e/                 Pruebas de punta a punta con Playwright
 ├── docs/                Referencia de la API y guía del login con Microsoft
 ├── .env.ejemplo         Variables para Docker Compose
 └── docker-compose.yml   Levanta la base de datos, el backend y el frontend
@@ -143,9 +153,15 @@ npm test            # pruebas de componentes y páginas (Vitest)
 npm run test:cov    # lo mismo con informe de cobertura
 npm run lint
 npm run build
+
+cd ../e2e
+npx playwright test # recorre la aplicación completa en un navegador real (ver e2e/README.md)
+
+npm run formato          # en backend, frontend o e2e: ordena el código con Prettier
+npm run formato:revisar  # revisa el formato sin cambiar nada, igual que la integración continua
 ```
 
-`TEST_DATABASE_URL` debe apuntar a una base distinta de `DATABASE_URL` y con "test" o "prueba" en el nombre, porque las pruebas crean y borran datos. GitHub Actions ejecuta todo esto en cada push y pull request (`.github/workflows/ci.yml`, en la raíz del repositorio), y el backend falla si la cobertura baja del 80 % de líneas y el frontend si baja del 90 %. En total son más de 530 casos entre backend y frontend, con un 88 % de cobertura en el backend y un 92 % en el frontend. Incluyen pruebas de carga de hora punta, pruebas que recorren todas las rutas buscando errores 500 y una prueba de contrato que revisa que el frontend solo llame a rutas que existen en el backend.
+`TEST_DATABASE_URL` debe apuntar a una base distinta de `DATABASE_URL` y con "test" o "prueba" en el nombre, porque las pruebas crean y borran datos. GitHub Actions ejecuta todo esto en cada push y pull request (`.github/workflows/ci.yml`, en la raíz del repositorio), y el backend falla si la cobertura baja del 80 % de líneas y el frontend si baja del 90 %. En total son más de 700 casos: 163 en el backend, 372 en el frontend y 170 ejecuciones de punta a punta con Playwright, con un 89 % de cobertura en el backend y un 93 % en el frontend. Incluyen pruebas de carga de hora punta, pruebas que recorren todas las rutas buscando errores 500, una prueba de contrato que revisa que el frontend solo llame a rutas que existen en el backend, pruebas en navegador que cubren cada funcionalidad con cada rol, en escritorio y en celular, y una revisión automática de accesibilidad WCAG 2.1 AA con axe en todas las pantallas, en modo claro y oscuro. Las páginas públicas obtienen 100 en accesibilidad, buenas prácticas y SEO en Lighthouse.
 
 ## Seguridad
 
@@ -157,6 +173,30 @@ npm run build
 - Acceso único por correo, el sistema detecta el rol y el método de ingreso (contraseña, Microsoft o demostración).
 - Microsoft Entra ID con OIDC y PKCE, `state` y `nonce`, validación de la firma del token y tickets de un solo uso. Se activa con las variables `ENTRA_*`, ver [`docs/LOGIN_MICROSOFT.md`](docs/LOGIN_MICROSOFT.md).
 - `SSO_SIMULADO` existe solo para demostraciones locales, permite entrar con un correo `@duocuc.cl` sin contraseña.
+
+### Seguridad del repositorio
+
+| Herramienta | Qué hace |
+|---|---|
+| Dependabot (`.github/dependabot.yml`) | Revisa cada semana las librerías del backend y el frontend, y abre un PR cuando hay una actualización o una vulnerabilidad conocida |
+| CodeQL (`.github/workflows/codeql.yml`) | Analiza el código en cada push y cada lunes buscando inyección SQL, XSS, secretos y otros patrones peligrosos. Los hallazgos aparecen en la pestaña Security |
+| `npm audit` en la integración continua | La ejecución falla si una dependencia de producción tiene una vulnerabilidad alta o crítica |
+| Prettier en la integración continua | La ejecución falla si el código no respeta el formato del proyecto |
+
+Para que nada entre a `main` sin pasar la integración continua, en GitHub: Settings → Branches → Add branch protection rule → `main` → marcar "Require status checks to pass before merging" y elegir los jobs `backend`, `frontend` y `e2e`.
+
+## Avisos por correo
+
+El backend arma los correos y los envía por SMTP. Para no depender de un servidor encendido todo el día (Render gratis se suspende), los envíos los dispara GitHub Actions con `.github/workflows/correos.yml`: el domingo a las 12:00 el semanal y de lunes a viernes a las 07:30 el diario (hora de verano de Chile; en invierno, una hora antes).
+
+| Dónde | Variable | Para qué |
+|---|---|---|
+| Backend | `TOKEN_TAREAS` | Clave larga y aleatoria que deben enviar las tareas programadas |
+| Backend | `CORREO_SMTP_HOST`, `CORREO_SMTP_PUERTO`, `CORREO_SMTP_USUARIO`, `CORREO_SMTP_CLAVE`, `CORREO_REMITENTE` | Servidor de correo. Sirve cualquier SMTP gratuito, por ejemplo Brevo (300 correos al día) o una cuenta de Gmail con contraseña de aplicación |
+| Backend | `API_URL_PUBLICA` | Dirección pública del backend, para el enlace de baja |
+| GitHub, Settings → Secrets → Actions | `URL_API` y `TOKEN_TAREAS` | Dirección del backend y la misma clave del backend |
+
+Sin `CORREO_SMTP_HOST`, o con `CORREO_MODO=registro`, los correos no salen: solo quedan registrados en la tabla `correo_enviado`, que es lo que usan las pruebas. Para probar un envío a mano: Actions → Correos programados → Run workflow.
 
 ## Respaldos
 
@@ -186,4 +226,5 @@ Requiere `pg_dump` instalado. En Neon también se puede crear un branch de la ba
 | Login con Microsoft | [`docs/LOGIN_MICROSOFT.md`](docs/LOGIN_MICROSOFT.md) |
 | Backend: sprints, variables, scripts y pruebas | [`backend/README.md`](backend/README.md) |
 | Frontend: pantallas, estructura y pruebas | [`frontend/README.md`](frontend/README.md) |
+| Pruebas de punta a punta con Playwright | [`e2e/README.md`](e2e/README.md) |
 | Diagramas UML, modelo de datos y documentos académicos | Carpetas `FASE 1/` y `FASE 2/` en la raíz del repositorio |

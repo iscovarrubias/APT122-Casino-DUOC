@@ -35,7 +35,13 @@ async function detalle(req, res, next) {
       if (!Number.isInteger(id_preparacion) || id_preparacion <= 0) throw new ApiError(400, 'id_preparacion inválido.');
     }
     const categoria = typeof req.query.categoria === 'string' && req.query.categoria ? req.query.categoria.slice(0, 50) : null;
-    res.json({ desde, hasta, id_preparacion, categoria, ...(await analisisModel.detalle(desde, hasta, req.user.id_sede, { id_preparacion, categoria })) });
+    res.json({
+      desde,
+      hasta,
+      id_preparacion,
+      categoria,
+      ...(await analisisModel.detalle(desde, hasta, req.user.id_sede, { id_preparacion, categoria })),
+    });
   } catch (err) {
     next(err);
   }

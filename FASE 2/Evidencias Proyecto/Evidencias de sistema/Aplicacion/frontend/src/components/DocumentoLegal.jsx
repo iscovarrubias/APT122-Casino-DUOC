@@ -33,8 +33,9 @@ function Terminos() {
     <>
       <Seccion id="t1" titulo="1. Aceptación y alcance">
         <p>
-          Estos términos regulan el uso de Casinos DUOC UC, la plataforma para consultar el menú del casino de la sede Valparaíso y apoyar su gestión.
-          Al usarla, aceptas estas condiciones. Si no estás de acuerdo, puedes seguir informándote del menú directamente en el casino.
+          Estos términos regulan el uso de Casinos DUOC UC, la plataforma para consultar el menú del casino de la sede Valparaíso y apoyar
+          su gestión. Al usarla, aceptas estas condiciones. Si no estás de acuerdo, puedes seguir informándote del menú directamente en el
+          casino.
         </p>
       </Seccion>
 
@@ -50,34 +51,35 @@ function Terminos() {
 
       <Seccion id="t3" titulo="3. Información del menú">
         <p>
-          El menú es informativo y puede cambiar durante el día por motivos operativos, como la falta de un ingrediente. La disponibilidad se actualiza
-          con cada venta, pero puede haber un breve desfase con lo que ocurre en el mostrador. Los precios vigentes son los que informa el casino.
+          El menú es informativo y puede cambiar durante el día por motivos operativos, como la falta de un ingrediente. La disponibilidad
+          se actualiza con cada venta, pero puede haber un breve desfase con lo que ocurre en el mostrador. Los precios vigentes son los que
+          informa el casino.
         </p>
       </Seccion>
 
       <Seccion id="t4" titulo="4. Alérgenos e información nutricional">
         <p>
-          Los alérgenos se declaran por preparación según un catálogo fijo (gluten, lácteos, huevo, pescado, mariscos, frutos secos, maní y soya).
-          Cuando un dato nutricional aparece como «No disponible», significa que el casino aún no lo ha confirmado.
+          Los alérgenos se declaran por preparación según un catálogo fijo (gluten, lácteos, huevo, pescado, mariscos, frutos secos, maní y
+          soya). Cuando un dato nutricional aparece como «No disponible», significa que el casino aún no lo ha confirmado.
         </p>
         <p className="legal-destacado">
-          Esta información es referencial y no reemplaza la consulta con el personal del casino. Si tienes una alergia o una condición de salud,
-          confirma con el personal antes de consumir un plato.
+          Esta información es referencial y no reemplaza la consulta con el personal del casino. Si tienes una alergia o una condición de
+          salud, confirma con el personal antes de consumir un plato.
         </p>
       </Seccion>
 
       <Seccion id="t5" titulo="5. Cuentas y acceso">
         <p>
-          Los estudiantes ingresan con su cuenta institucional de Duoc UC a través de Microsoft. El personal del casino usa las credenciales que le
-          asigna la administración. Las cuentas son personales: no compartas tu acceso y avisa al casino si detectas un uso indebido.
+          Los estudiantes ingresan con su cuenta institucional de Duoc UC a través de Microsoft. El personal del casino usa las credenciales
+          que le asigna la administración. Las cuentas son personales: no compartas tu acceso y avisa al casino si detectas un uso indebido.
         </p>
       </Seccion>
 
       <Seccion id="t6" titulo="6. Opiniones y calificaciones">
         <p>
-          Tus calificaciones y comentarios son públicos para otros estudiantes, que verán tu nombre, la inicial de tu apellido, las estrellas y el
-          comentario. Te pedimos opinar con respeto y sobre la comida o el servicio. No se permiten insultos, contenido discriminatorio, datos de
-          otras personas ni publicidad.
+          Tus calificaciones y comentarios son públicos para otros estudiantes, que verán tu nombre, la inicial de tu apellido, las
+          estrellas y el comentario. Te pedimos opinar con respeto y sobre la comida o el servicio. No se permiten insultos, contenido
+          discriminatorio, datos de otras personas ni publicidad.
         </p>
         <p>
           El casino puede revisar y ocultar opiniones que no cumplan estas reglas. Puedes editar o eliminar tus opiniones cuando quieras. La{' '}
@@ -101,16 +103,16 @@ function Terminos() {
 
       <Seccion id="t9" titulo="9. Carácter académico y propiedad intelectual">
         <p>
-          Casinos DUOC UC es un Proyecto APT (Capstone) de Ingeniería en Informática de Duoc UC, sede Valparaíso, y se entrega sin garantías de
-          servicio. El nombre, el logotipo y las marcas de Duoc UC pertenecen a Duoc UC y se usan en este contexto académico. El código de la
-          plataforma es obra del equipo de desarrollo.
+          Casinos DUOC UC es un Proyecto APT (Capstone) de Ingeniería en Informática de Duoc UC, sede Valparaíso, y se entrega sin garantías
+          de servicio. El nombre, el logotipo y las marcas de Duoc UC pertenecen a Duoc UC y se usan en este contexto académico. El código
+          de la plataforma es obra del equipo de desarrollo.
         </p>
       </Seccion>
 
       <Seccion id="t10" titulo="10. Cambios y legislación aplicable">
         <p>
-          Si estos términos cambian, publicaremos la nueva versión en esta página con su fecha de actualización. Se rigen por las leyes de la
-          República de Chile.
+          Si estos términos cambian, publicaremos la nueva versión en esta página con su fecha de actualización. Se rigen por las leyes de
+          la República de Chile.
         </p>
       </Seccion>
     </>
@@ -122,8 +124,8 @@ function Privacidad() {
     <>
       <Seccion id="p1" titulo="1. Quiénes somos y alcance">
         <p>
-          Casinos DUOC UC es un Proyecto APT (Capstone) de Ingeniería en Informática de Duoc UC, sede Valparaíso, desarrollado para el casino de la
-          sede. Esta política explica qué datos trata la plataforma, para qué y cómo puedes controlarlos.
+          Casinos DUOC UC es un Proyecto APT (Capstone) de Ingeniería en Informática de Duoc UC, sede Valparaíso, desarrollado para el
+          casino de la sede. Esta política explica qué datos trata la plataforma, para qué y cómo puedes controlarlos.
         </p>
         <p>
           Tu cuenta institucional se rige además por la{' '}
@@ -134,9 +136,9 @@ function Privacidad() {
 
       <Seccion id="p2" titulo="2. Marco legal">
         <p>
-          Tratamos los datos conforme a la Ley N° 19.628 sobre protección de la vida privada, y diseñamos la plataforma según la Ley N° 21.719, que
-          la reforma y crea la Agencia de Protección de Datos Personales. Seguimos sus principios de licitud y lealtad, finalidad, proporcionalidad,
-          calidad, responsabilidad, seguridad, transparencia y confidencialidad.
+          Tratamos los datos conforme a la Ley N° 19.628 sobre protección de la vida privada, y diseñamos la plataforma según la Ley N°
+          21.719, que la reforma y crea la Agencia de Protección de Datos Personales. Seguimos sus principios de licitud y lealtad,
+          finalidad, proporcionalidad, calidad, responsabilidad, seguridad, transparencia y confidencialidad.
         </p>
       </Seccion>
 
@@ -147,11 +149,12 @@ function Privacidad() {
             analítica o seguimiento.
           </li>
           <li>
-            <strong>Si inicias sesión con tu cuenta Duoc UC:</strong> tu nombre y tu correo institucional, que entrega Microsoft. No recibimos ni
-            guardamos tu contraseña institucional.
+            <strong>Si inicias sesión con tu cuenta Duoc UC:</strong> tu nombre y tu correo institucional, que entrega Microsoft. No
+            recibimos ni guardamos tu contraseña institucional.
           </li>
           <li>
-            <strong>Lo que tú decides agregar:</strong> alergias, categoría de menú preferida, favoritos, calificaciones y comentarios.
+            <strong>Lo que tú decides agregar:</strong> alergias, categoría de menú preferida, favoritos, calificaciones, comentarios y tus
+            preferencias de avisos por correo.
           </li>
           <li>
             <strong>Personal del casino:</strong> nombre, correo, rol, sede y una contraseña que se guarda cifrada.
@@ -161,57 +164,98 @@ function Privacidad() {
 
       <Seccion id="p4" titulo="4. Alergias: un dato sensible">
         <p className="legal-destacado">
-          Las alergias son datos relativos a la salud, que la ley considera sensibles. Por eso son voluntarias, se usan solo para avisarte cuando un
-          plato contiene un alérgeno que marcaste, no se comparten con nadie y puedes quitarlas cuando quieras desde «Mi perfil».
+          Las alergias son datos relativos a la salud, que la ley considera sensibles. Por eso son voluntarias, se usan solo para avisarte
+          cuando un plato contiene un alérgeno que marcaste, no se comparten con nadie y puedes quitarlas cuando quieras desde «Mi perfil».
         </p>
       </Seccion>
 
       <Seccion id="p5" titulo="5. Para qué usamos los datos">
         <ul>
           <li>Mostrarte el menú con tus favoritos, tu categoría preferida y los avisos de alérgenos.</li>
+          <li>Enviarte por correo el menú de la semana o los avisos de tus favoritos, solo si los activaste.</li>
           <li>Publicar tus calificaciones y comentarios, y calcular el promedio de cada plato.</li>
           <li>Que el casino mejore su oferta con estadísticas agregadas: ventas, platos agotados y promedios de opinión.</li>
           <li>Administrar las cuentas y proteger la plataforma.</li>
         </ul>
         <p>
-          No vendemos datos, no los usamos para publicidad y no tomamos decisiones automatizadas que te afecten. Las predicciones de demanda del
-          casino usan ventas agregadas, no datos de personas.
+          No vendemos datos, no los usamos para publicidad y no tomamos decisiones automatizadas que te afecten. Las predicciones de demanda
+          del casino usan ventas agregadas, no datos de personas.
         </p>
       </Seccion>
 
       <Seccion id="p6" titulo="6. Quién puede ver tus datos">
         <ul>
           <li>
-            <strong>Otros estudiantes:</strong> ven tu nombre, la inicial de tu apellido, tu calificación y tu comentario. Nunca ven tu correo ni
-            tus alergias.
+            <strong>Otros estudiantes:</strong> ven tu nombre, la inicial de tu apellido, tu calificación y tu comentario. Nunca ven tu
+            correo ni tus alergias.
           </li>
           <li>
-            <strong>Personal autorizado del casino</strong> (administración y nutricionista): ve el nombre y el correo asociados a opiniones y
-            favoritos, para moderar y analizar.
+            <strong>Personal autorizado del casino</strong> (administración y nutricionista): ve el nombre y el correo asociados a opiniones
+            y favoritos, para moderar y analizar.
           </li>
           <li>
-            <strong>Proveedores tecnológicos:</strong> Microsoft para el inicio de sesión institucional y servicios de alojamiento en la nube para la
-            aplicación y la base de datos, cuyos servidores pueden estar fuera de Chile. Solo se usan para que la plataforma funcione.
+            <strong>Proveedores tecnológicos:</strong> Microsoft para el inicio de sesión institucional y servicios de alojamiento en la
+            nube para la aplicación, la base de datos y el envío de correos, cuyos servidores pueden estar fuera de Chile. Solo se usan para
+            que la plataforma funcione.
           </li>
           <li>
             <strong>Autoridades:</strong> solo cuando la ley o un tribunal lo exijan.
           </li>
         </ul>
         <p>
-          Cuando editas o eliminas una opinión, deja de mostrarse y de contar en el promedio, pero el casino conserva la versión anterior para
-          moderar contenido inapropiado. Puedes pedir que se elimine de forma definitiva.
+          Cuando editas o eliminas una opinión, deja de mostrarse y de contar en el promedio, pero el casino conserva la versión anterior
+          para moderar contenido inapropiado. Puedes pedir que se elimine de forma definitiva.
+        </p>
+      </Seccion>
+
+      <Seccion id="p6b" titulo="6.1 Avisos por correo">
+        <p>
+          Los correos son opcionales y vienen desactivados. Si los activas en «Mi perfil», usamos tu correo institucional para enviarte el
+          menú de la semana o los avisos de tus favoritos. Para no llenarte de correos, si tienes ambos activos recibes un solo correo
+          semanal con tus favoritos destacados. Guardamos la fecha y el asunto de cada envío para no repetirlo. Cada correo trae un enlace
+          para dejar de recibirlos con un clic.
         </p>
       </Seccion>
 
       <Seccion id="p7" titulo="7. Lo que guardamos en tu navegador">
-        <div className="tabla-scroll">
+        <div className="tabla-scroll" tabIndex={0} role="region" aria-label="Datos que guardamos en tu navegador">
           <table className="tabla tabla-compacta legal-tabla">
-            <thead><tr><th>Nombre</th><th>Para qué sirve</th><th>Cuánto dura</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Para qué sirve</th>
+                <th>Cuánto dura</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td><code>casino_sesion</code></td><td>Mantener tu sesión iniciada</td><td>Hasta que cierras sesión o vence</td></tr>
-              <tr><td><code>casino_tema</code></td><td>Recordar el modo claro u oscuro</td><td>Hasta que lo borres</td></tr>
-              <tr><td><code>casino_splash_visto</code></td><td>No repetir la pantalla de carga</td><td>Hasta cerrar la pestaña</td></tr>
-              <tr><td><code>casino_login_error</code></td><td>Mostrarte un aviso si el inicio de sesión no se completó</td><td>Hasta que ves el aviso</td></tr>
+              <tr>
+                <td>
+                  <code>casino_sesion</code>
+                </td>
+                <td>Mantener tu sesión iniciada</td>
+                <td>Hasta que cierras sesión o vence</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>casino_tema</code>
+                </td>
+                <td>Recordar el modo claro u oscuro</td>
+                <td>Hasta que lo borres</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>casino_splash_visto</code>
+                </td>
+                <td>No repetir la pantalla de carga</td>
+                <td>Hasta cerrar la pestaña</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>casino_login_error</code>
+                </td>
+                <td>Mostrarte un aviso si el inicio de sesión no se completó</td>
+                <td>Hasta que ves el aviso</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -231,8 +275,8 @@ function Privacidad() {
 
       <Seccion id="p9" titulo="9. Cuánto tiempo conservamos los datos">
         <p>
-          Mientras tengas una cuenta o mientras sean necesarios para las finalidades descritas. Las estadísticas del casino se conservan de forma
-          agregada, sin identificar a las personas. Puedes pedir la eliminación de tus datos en cualquier momento.
+          Mientras tengas una cuenta o mientras sean necesarios para las finalidades descritas. Las estadísticas del casino se conservan de
+          forma agregada, sin identificar a las personas. Puedes pedir la eliminación de tus datos en cualquier momento.
         </p>
       </Seccion>
 
@@ -240,8 +284,8 @@ function Privacidad() {
         <p>Tienes derecho de acceso, rectificación, supresión, oposición, portabilidad y bloqueo de tus datos.</p>
         <ul>
           <li>
-            <strong>Desde la plataforma:</strong> en «Mi perfil» puedes ver y cambiar tus alergias y tu categoría preferida, y quitar favoritos y
-            calificaciones cuando quieras.
+            <strong>Desde la plataforma:</strong> en «Mi perfil» puedes ver y cambiar tus alergias y tu categoría preferida, y quitar
+            favoritos y calificaciones cuando quieras.
           </li>
           <li>
             <strong>Para lo demás:</strong> mientras la plataforma sea un proyecto académico, escribe al equipo de desarrollo a través del{' '}
@@ -257,8 +301,8 @@ function Privacidad() {
 
       <Seccion id="p11" titulo="11. Cambios a esta política">
         <p>
-          Si esta política cambia, publicaremos la nueva versión en esta página con su fecha de actualización. Si el cambio afecta cómo usamos
-          tus datos, te lo avisaremos en la plataforma.
+          Si esta política cambia, publicaremos la nueva versión en esta página con su fecha de actualización. Si el cambio afecta cómo
+          usamos tus datos, te lo avisaremos en la plataforma.
         </p>
       </Seccion>
     </>
@@ -289,7 +333,9 @@ export default function DocumentoLegal({ tipo }) {
       {esPrivacidad ? <Privacidad /> : <Terminos />}
 
       <div className="legal-pie">
-        <button type="button" className="boton boton-secundario" onClick={() => navegar('/')}>Volver al menú</button>
+        <button type="button" className="boton boton-secundario" onClick={() => navegar('/')}>
+          Volver al menú
+        </button>
       </div>
     </article>
   );

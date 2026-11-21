@@ -4,8 +4,15 @@ import ConfirmacionProvider from '../context/ConfirmacionProvider';
 import MenuPrincipal from './MenuPrincipal';
 
 const item = (componente, nombre, calorias, extra = {}) => ({
-  id_menu_preparacion: nombre, id_preparacion: nombre, nombre, componente, categoria: null,
-  precio: 0, disponibilidad: 'disponible', ingredientes: [], alergenos: [],
+  id_menu_preparacion: nombre,
+  id_preparacion: nombre,
+  nombre,
+  componente,
+  categoria: null,
+  precio: 0,
+  disponibilidad: 'disponible',
+  ingredientes: [],
+  alergenos: [],
   informacion_nutricional: calorias == null ? null : { calorias, proteinas_g: 1, carbohidratos_g: 1, grasas_g: 1 },
   ...extra,
 });
@@ -49,7 +56,12 @@ describe('MenuPrincipal', () => {
   });
 
   it('con la jornada abierta muestra disponible y las porciones que quedan', () => {
-    const abierta = DIA.map((c) => ({ ...c, jornada_estado: 'abierta', cantidad_restante: 30, stock_actualizado_en: '2026-11-19T12:05:00' }));
+    const abierta = DIA.map((c) => ({
+      ...c,
+      jornada_estado: 'abierta',
+      cantidad_restante: 30,
+      stock_actualizado_en: '2026-11-19T12:05:00',
+    }));
     montar('JUNAEB', abierta, [regla('Bebida')]);
     expect(screen.getAllByText('Disponible').length).toBeGreaterThan(0);
     expect(screen.queryByText('Aún no inicia la jornada')).not.toBeInTheDocument();

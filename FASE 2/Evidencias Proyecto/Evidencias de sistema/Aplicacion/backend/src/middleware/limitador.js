@@ -3,12 +3,15 @@ const MAXIMO_REGISTROS = 10000;
 function crearLimitadorDeFallos({ ventanaMs, maximo, clave, mensaje }) {
   const registros = new Map();
 
-  const limpieza = setInterval(() => {
-    const ahora = Date.now();
-    for (const [k, r] of registros) {
-      if (r.expira <= ahora) registros.delete(k);
-    }
-  }, Math.min(ventanaMs, 60000));
+  const limpieza = setInterval(
+    () => {
+      const ahora = Date.now();
+      for (const [k, r] of registros) {
+        if (r.expira <= ahora) registros.delete(k);
+      }
+    },
+    Math.min(ventanaMs, 60000)
+  );
   limpieza.unref();
 
   return (req, res, next) => {
@@ -42,12 +45,15 @@ function crearLimitadorDeFallos({ ventanaMs, maximo, clave, mensaje }) {
 function crearLimitadorDeSolicitudes({ ventanaMs, maximo, clave, mensaje }) {
   const registros = new Map();
 
-  const limpieza = setInterval(() => {
-    const ahora = Date.now();
-    for (const [k, r] of registros) {
-      if (r.expira <= ahora) registros.delete(k);
-    }
-  }, Math.min(ventanaMs, 60000));
+  const limpieza = setInterval(
+    () => {
+      const ahora = Date.now();
+      for (const [k, r] of registros) {
+        if (r.expira <= ahora) registros.delete(k);
+      }
+    },
+    Math.min(ventanaMs, 60000)
+  );
   limpieza.unref();
 
   return (req, res, next) => {

@@ -1,18 +1,41 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('../api/gestion', () => ({
-  consultarMes: vi.fn(), consultarAnalisisDetalle: vi.fn(), consultarMensual: vi.fn(),
-  consultarOpinionesDetalle: vi.fn(), consultarFavoritosDetalle: vi.fn(),
+  consultarMes: vi.fn(),
+  consultarAnalisisDetalle: vi.fn(),
+  consultarMensual: vi.fn(),
+  consultarOpinionesDetalle: vi.fn(),
+  consultarFavoritosDetalle: vi.fn(),
 }));
 
 import * as api from '../api/gestion';
 import {
-  construirPeriodo, cargarPeriodo, principalesDe, acompDe, combosDe, diasDelPeriodo, categoriasDelPeriodo,
-  totalesDelPeriodo, nombreLargo, encabezadoDia, rangoSemana, lineasIncluye, nombreArchivo, estiloCategoria,
+  construirPeriodo,
+  cargarPeriodo,
+  principalesDe,
+  acompDe,
+  combosDe,
+  diasDelPeriodo,
+  categoriasDelPeriodo,
+  totalesDelPeriodo,
+  nombreLargo,
+  encabezadoDia,
+  rangoSemana,
+  lineasIncluye,
+  nombreArchivo,
+  estiloCategoria,
 } from './exportarMenu';
 import { exportarExcel, descargarBlob } from './exportarExcel';
 import {
-  excelVentas, excelGeneral, excelOpiniones, resumirOpiniones, nombreArchivoAnalisis, cargarVentas, cargarOpinionesExport, cargarGeneral, graficoBarras,
+  excelVentas,
+  excelGeneral,
+  excelOpiniones,
+  resumirOpiniones,
+  nombreArchivoAnalisis,
+  cargarVentas,
+  cargarOpinionesExport,
+  cargarGeneral,
+  graficoBarras,
 } from './exportarAnalisis';
 import { capturarDescargas, abrirExcel, textosDeHoja, simularCanvas, leerBlob } from '../pruebas/descargas';
 
@@ -56,7 +79,11 @@ describe('exportarMenu: armar el período a exportar', () => {
   });
 
   it('el sábado solo se incluye si algún sábado tiene menú', () => {
-    const conSabado = construirPeriodo({ modo: 'semana', fecha: '2026-11-18', dias: [...SEMANA, dia('2026-11-21', [comp('Plato Principal', 'General', 'Cazuela', 50)])] });
+    const conSabado = construirPeriodo({
+      modo: 'semana',
+      fecha: '2026-11-18',
+      dias: [...SEMANA, dia('2026-11-21', [comp('Plato Principal', 'General', 'Cazuela', 50)])],
+    });
     expect(conSabado.conSabado).toBe(true);
     expect(diasDelPeriodo(conSabado)).toHaveLength(6);
   });
@@ -80,7 +107,11 @@ describe('exportarMenu: armar el período a exportar', () => {
   });
 
   it('agrega al final las categorías que no son las cuatro de siempre', () => {
-    const p = construirPeriodo({ modo: 'semana', fecha: '2026-11-18', dias: [dia('2026-11-16', [comp('Plato Principal', 'Especial', 'Paella', 10)])] });
+    const p = construirPeriodo({
+      modo: 'semana',
+      fecha: '2026-11-18',
+      dias: [dia('2026-11-16', [comp('Plato Principal', 'Especial', 'Paella', 10)])],
+    });
     expect(categoriasDelPeriodo(p)).toEqual(['General', 'JUNAEB', 'Vegetariano', 'Hipocalórico', 'Especial']);
     expect(estiloCategoria('Especial').texto).toBe('374151');
   });
@@ -95,7 +126,9 @@ describe('exportarMenu: armar el período a exportar', () => {
   });
 
   it('una semana que cruza de mes consulta los dos meses', async () => {
-    api.consultarMes.mockImplementation(async (mes) => ({ dias: mes === '2026-12' ? [dia('2026-12-02', [comp('Plato Principal', 'General', 'Charquicán', 90)])] : [] }));
+    api.consultarMes.mockImplementation(async (mes) => ({
+      dias: mes === '2026-12' ? [dia('2026-12-02', [comp('Plato Principal', 'General', 'Charquicán', 90)])] : [],
+    }));
     const p = await cargarPeriodo({ modo: 'semana', fecha: '2026-12-01' });
     expect(api.consultarMes.mock.calls.map((c) => c[0])).toEqual(['2026-11', '2026-12']);
     expect(p.semanas[0].dias[2].tiene).toBe(true);
@@ -136,12 +169,52 @@ describe('Exportación a Excel', () => {
 
   const DETALLE = {
     por_categoria: [
-      { categoria: 'General', es_principal: true, dias: 5, precio_promedio: '3500', vendidas: 480, planificadas: 600, porcentaje_consumo: 80, dias_agotado: 1, porcentaje_agotado: 20, hora_agotamiento: '13:40', ritmo_hora: 160 },
-      { categoria: 'JUNAEB', es_principal: true, dias: 5, precio_promedio: null, vendidas: 300, planificadas: 300, porcentaje_consumo: 100, dias_agotado: 4, porcentaje_agotado: 80, hora_agotamiento: '13:05', ritmo_hora: 210 },
+      {
+        categoria: 'General',
+        es_principal: true,
+        dias: 5,
+        precio_promedio: '3500',
+        vendidas: 480,
+        planificadas: 600,
+        porcentaje_consumo: 80,
+        dias_agotado: 1,
+        porcentaje_agotado: 20,
+        hora_agotamiento: '13:40',
+        ritmo_hora: 160,
+      },
+      {
+        categoria: 'JUNAEB',
+        es_principal: true,
+        dias: 5,
+        precio_promedio: null,
+        vendidas: 300,
+        planificadas: 300,
+        porcentaje_consumo: 100,
+        dias_agotado: 4,
+        porcentaje_agotado: 80,
+        hora_agotamiento: '13:05',
+        ritmo_hora: 210,
+      },
       { categoria: 'Postre', es_principal: false, vendidas: 200, planificadas: 250 },
     ],
-    preparaciones: [{ nombre: 'Pollo arvejado', componente: 'Plato Principal', dias: 2, vendidas: 220, planificadas: 230, porcentaje_consumo: 95.6, dias_agotado: 1, hora_agotamiento: '13:50', ritmo_hora: 120 }],
-    ventas_por_hora: [{ hora: 12, unidades: 300 }, { hora: 13, unidades: 420 }, { hora: 14, unidades: 60 }],
+    preparaciones: [
+      {
+        nombre: 'Pollo arvejado',
+        componente: 'Plato Principal',
+        dias: 2,
+        vendidas: 220,
+        planificadas: 230,
+        porcentaje_consumo: 95.6,
+        dias_agotado: 1,
+        hora_agotamiento: '13:50',
+        ritmo_hora: 120,
+      },
+    ],
+    ventas_por_hora: [
+      { hora: 12, unidades: 300 },
+      { hora: 13, unidades: 420 },
+      { hora: 14, unidades: 60 },
+    ],
     por_dia: [
       { fecha: '2026-11-16T00:00:00', categoria: 'General', vendidas: 110, planificadas: 120, precio: '3500', hora_agotado: null },
       { fecha: '2026-11-17T00:00:00', categoria: 'JUNAEB', vendidas: 80, planificadas: 80, precio: null, hora_agotado: '13:02' },
@@ -149,7 +222,18 @@ describe('Exportación a Excel', () => {
   };
   const GENERAL = {
     resumen: { jornadas_cerradas: 5, con_conteo_de_cocina: 4, con_correccion: 1 },
-    platos: [{ nombre: 'Arroz con pollo', jornadas: 5, dias_agotado: 4, porcentaje_agotado: 80, minutos_hasta_agotarse: 65, agotado_sin_hora: 0, vendidas_por_jornada: 60, sobrante_promedio: 0 }],
+    platos: [
+      {
+        nombre: 'Arroz con pollo',
+        jornadas: 5,
+        dias_agotado: 4,
+        porcentaje_agotado: 80,
+        minutos_hasta_agotarse: 65,
+        agotado_sin_hora: 0,
+        vendidas_por_jornada: 60,
+        sobrante_promedio: 0,
+      },
+    ],
   };
 
   it('el informe de ventas trae resumen, preparaciones, horas, informe general y día a día', async () => {
@@ -171,7 +255,16 @@ describe('Exportación a Excel', () => {
   }, 20000);
 
   it('sin datos de un período el informe igual se genera, con guiones en vez de vacíos', async () => {
-    await excelVentas({ desde: '2026-11-01', hasta: '2026-11-30', etiqueta: 'Noviembre de 2026', detalle: { por_categoria: [], preparaciones: [], ventas_por_hora: [], por_dia: [] }, general: { platos: [] } }, { graficos: false });
+    await excelVentas(
+      {
+        desde: '2026-11-01',
+        hasta: '2026-11-30',
+        etiqueta: 'Noviembre de 2026',
+        detalle: { por_categoria: [], preparaciones: [], ventas_por_hora: [], por_dia: [] },
+        general: { platos: [] },
+      },
+      { graficos: false }
+    );
     const libro = await abrirExcel(descargas[0].blob);
     expect(libro.worksheets.map((h) => h.name)).toEqual(['Resumen', 'Preparaciones', 'Ventas por hora']);
     expect(textosDeHoja(libro.getWorksheet('Resumen'))).toContain('—');
@@ -187,10 +280,45 @@ describe('Exportación a Excel', () => {
   }, 20000);
 
   const OPINIONES = [
-    { id_preparacion: 1, preparacion: 'Pollo arvejado', estrellas: 5, estado: 'vigente', comentario: 'Muy rico', autor: 'Ana P.', correo: 'an.p@duocuc.cl', categoria: 'General', creado_en: '2026-11-16T13:00:00' },
-    { id_preparacion: 1, preparacion: 'Pollo arvejado', estrellas: 3, estado: 'vigente', comentario: '', autor: 'Beto R.', correo: 'be.r@duocuc.cl', creado_en: '2026-11-16T13:10:00' },
-    { id_preparacion: 1, preparacion: 'Pollo arvejado', estrellas: 1, estado: 'editada', comentario: 'Antes', autor: 'Beto R.', creado_en: '2026-11-16T13:05:00' },
-    { id_preparacion: 2, preparacion: 'Flan', estrellas: 2, estado: 'eliminada', comentario: 'Borrada', autor: 'Caro S.', creado_en: '2026-11-17T13:00:00' },
+    {
+      id_preparacion: 1,
+      preparacion: 'Pollo arvejado',
+      estrellas: 5,
+      estado: 'vigente',
+      comentario: 'Muy rico',
+      autor: 'Ana P.',
+      correo: 'an.p@duocuc.cl',
+      categoria: 'General',
+      creado_en: '2026-11-16T13:00:00',
+    },
+    {
+      id_preparacion: 1,
+      preparacion: 'Pollo arvejado',
+      estrellas: 3,
+      estado: 'vigente',
+      comentario: '',
+      autor: 'Beto R.',
+      correo: 'be.r@duocuc.cl',
+      creado_en: '2026-11-16T13:10:00',
+    },
+    {
+      id_preparacion: 1,
+      preparacion: 'Pollo arvejado',
+      estrellas: 1,
+      estado: 'editada',
+      comentario: 'Antes',
+      autor: 'Beto R.',
+      creado_en: '2026-11-16T13:05:00',
+    },
+    {
+      id_preparacion: 2,
+      preparacion: 'Flan',
+      estrellas: 2,
+      estado: 'eliminada',
+      comentario: 'Borrada',
+      autor: 'Caro S.',
+      creado_en: '2026-11-17T13:00:00',
+    },
   ];
 
   it('resumirOpiniones promedia solo las opiniones vigentes', () => {
@@ -205,11 +333,20 @@ describe('Exportación a Excel', () => {
     api.consultarOpinionesDetalle.mockResolvedValue({ opiniones: OPINIONES });
     api.consultarFavoritosDetalle.mockResolvedValue({
       resumen: { total: 3, estudiantes: 2 },
-      por_preparacion: [{ nombre: 'Flan', total: 2 }, { nombre: 'Pollo arvejado', total: 1 }],
+      por_preparacion: [
+        { nombre: 'Flan', total: 2 },
+        { nombre: 'Pollo arvejado', total: 1 },
+      ],
       favoritos: [{ preparacion: 'Flan', autor: 'Ana P.', correo: 'an.p@duocuc.cl', creado_en: '2026-11-16T12:00:00' }],
     });
     const datos = await cargarOpinionesExport('2026-11-01', '2026-11-30', { estado: 'vigente', soloComentario: true });
-    expect(api.consultarOpinionesDetalle).toHaveBeenCalledWith({ desde: '2026-11-01', hasta: '2026-11-30', estado: 'vigente', con_comentario: true, limite: 5000 });
+    expect(api.consultarOpinionesDetalle).toHaveBeenCalledWith({
+      desde: '2026-11-01',
+      hasta: '2026-11-30',
+      estado: 'vigente',
+      con_comentario: true,
+      limite: 5000,
+    });
     await excelOpiniones(datos);
     const libro = await abrirExcel(descargas[0].blob);
     expect(libro.worksheets.map((h) => h.name)).toEqual(['Opiniones', 'Por preparación', 'Estrellas', 'Favoritos']);
@@ -221,11 +358,20 @@ describe('Exportación a Excel', () => {
   }, 20000);
 
   it('graficoBarras dibuja y entrega un PNG', async () => {
-    const buffer = await graficoBarras({ titulo: 'Prueba', etiquetas: ['A', 'B'], series: [{ nombre: 'x', valores: [1, 0], color: '#000' }, { nombre: 'y', valores: [null, 3], color: ['#111', '#222'] }] });
+    const buffer = await graficoBarras({
+      titulo: 'Prueba',
+      etiquetas: ['A', 'B'],
+      series: [
+        { nombre: 'x', valores: [1, 0], color: '#000' },
+        { nombre: 'y', valores: [null, 3], color: ['#111', '#222'] },
+      ],
+    });
     expect(new Uint8Array(buffer).slice(0, 4)).toEqual(new Uint8Array([0x89, 0x50, 0x4e, 0x47]));
   });
 
   it('los nombres de archivo no llevan espacios', () => {
-    expect(nombreArchivoAnalisis('ventas y agotamiento', '2026-11-01', '2026-11-30', 'xlsx')).toBe('ventas_y_agotamiento_2026-11-01_a_2026-11-30.xlsx');
+    expect(nombreArchivoAnalisis('ventas y agotamiento', '2026-11-01', '2026-11-30', 'xlsx')).toBe(
+      'ventas_y_agotamiento_2026-11-01_a_2026-11-30.xlsx'
+    );
   });
 });

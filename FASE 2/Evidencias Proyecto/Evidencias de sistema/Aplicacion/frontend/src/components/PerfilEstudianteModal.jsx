@@ -14,6 +14,7 @@ export default function PerfilEstudianteModal({ onCerrar }) {
   const [ok, setOk] = useState(false);
 
   const [categoriaSel, setCategoriaSel] = useState(categoriaPreferida || '');
+  const [correos, setCorreos] = useState({ menu_semanal: false, avisos_favoritos: false });
 
   const [errorConexion, setErrorConexion] = useState(false);
 
@@ -23,12 +24,22 @@ export default function PerfilEstudianteModal({ onCerrar }) {
     pedir('/api/preparaciones/alergenos', { conToken: false })
       .then(setCatalogo)
       .catch(() => setErrorConexion(true));
+    pedir('/api/estudiante/correos')
+      .then((c) => setCorreos({ menu_semanal: !!c?.menu_semanal, avisos_favoritos: !!c?.avisos_favoritos }))
+      .catch(() => {});
   };
 
-  useEffect(() => { cargarCatalogo(); }, []);
+  const alternarCorreo = (campo) => {
+    setCorreos((c) => ({ ...c, [campo]: !c[campo] }));
+    setOk(false);
+  };
+
+  useEffect(() => {
+    cargarCatalogo();
+  }, []);
 
   const alternar = (nombre) => {
-    setSeleccion((s) => s.includes(nombre) ? s.filter((a) => a !== nombre) : [...s, nombre]);
+    setSeleccion((s) => (s.includes(nombre) ? s.filter((a) => a !== nombre) : [...s, nombre]));
     setOk(false);
   };
 
@@ -45,6 +56,7 @@ export default function PerfilEstudianteModal({ onCerrar }) {
       const resultados = await Promise.allSettled([
         pedir('/api/estudiante/alergias', { metodo: 'PUT', cuerpo: { alergenos: seleccion } }),
         guardarCategoriaPreferida(categoriaSel || null),
+        pedir('/api/estudiante/correos', { metodo: 'PUT', cuerpo: correos }),
       ]);
       const fallo = resultados.find((r) => r.status === 'rejected');
       if (fallo) throw fallo.reason;
@@ -75,9 +87,7 @@ export default function PerfilEstudianteModal({ onCerrar }) {
           <>
             <fieldset className="grupo">
               <legend>Mis alergias</legend>
-              <p className="texto-suave">
-               Cuando el menú del día incluya alguno, verás un aviso arriba del plato.
-              </p>
+              <p className="texto-suave">Cuando el menú del día incluya alguno, verás un aviso arriba del plato.</p>
               <div className="chips-alergia">
                 {catalogo.map((a) => (
                   <button
@@ -95,9 +105,7 @@ export default function PerfilEstudianteModal({ onCerrar }) {
 
             <fieldset className="grupo">
               <legend>Mi categoría preferida</legend>
-              <p className="texto-suave">
-                Cuando entres al menú del día, se abrirá directamente en esta categoría
-              </p>
+              <p className="texto-suave">Cuando entres al menú del día, se abrirá directamente en esta categoría</p>
               <div className="chips-alergia">
                 {CATEGORIAS.map((c) => (
                   <button
@@ -119,30 +127,60 @@ export default function PerfilEstudianteModal({ onCerrar }) {
               {favoritos.map((f) => (
                 <div key={f.id_preparacion} className="en-linea" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
                   <span>{f.nombre}</span>
-                  <button
-                    type="button"
-                    className="boton-texto peligro"
-                    onClick={() => quitarFavorito(f.id_preparacion)}
-                  >
+                  <button type="button" className="boton-texto peligro" onClick={() => quitarFavorito(f.id_preparacion)}>
                     Quitar
                   </button>
                 </div>
               ))}
             </fieldset>
 
-            {error && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
-            {ok && <Mensaje tipo="ok" onCerrar={() => setOk(false)}>Cambios guardados.</Mensaje>}
+            <fieldset className="grupo">
+              <legend>Avisos por correo</legend>
+              <p className="texto-suave">
+                Te escribiremos a tu correo institucional. Puedes desactivarlos aquí o desde el enlace al final de cada correo.
+              </p>
+              <label className="interruptor-correo">
+                <input type="checkbox" checked={correos.menu_semanal} onChange={() => alternarCorreo('menu_semanal')} />
+                <span>
+                  <strong>Menú de la semana</strong>
+                  <span className="texto-suave">Cada domingo a mediodía, el menú de lunes a viernes.</span>
+                </span>
+              </label>
+              <label className="interruptor-correo">
+                <input type="checkbox" checked={correos.avisos_favoritos} onChange={() => alternarCorreo('avisos_favoritos')} />
+                <span>
+                  <strong>Avisos de mis favoritos</strong>
+                  <span className="texto-suave">
+                    Un aviso el domingo si tus favoritos están en la semana, y otro la mañana del día en que se sirven.
+                  </span>
+                </span>
+              </label>
+              {correos.menu_semanal && correos.avisos_favoritos && (
+                <p className="texto-suave aviso-correo-unico">
+                  Como tienes ambos activos, el domingo recibirás un solo correo: el menú semanal con tus favoritos destacados.
+                </p>
+              )}
+              {correos.avisos_favoritos && favoritos.length === 0 && (
+                <p className="texto-suave aviso-correo-unico">Marca platos con el corazón para recibir sus avisos.</p>
+              )}
+            </fieldset>
+
+            {error && (
+              <Mensaje tipo="error" onCerrar={() => setError(null)}>
+                {error}
+              </Mensaje>
+            )}
+            {ok && (
+              <Mensaje tipo="ok" onCerrar={() => setOk(false)}>
+                Cambios guardados.
+              </Mensaje>
+            )}
           </>
         )}
 
         <div className="modal-acciones">
           {!errorConexion && (
-            <button
-              type="button"
-              className="boton boton-primario"
-              onClick={guardarTodo}
-              disabled={guardando}
-            >
+            <button type="button" className="boton boton-primario" onClick={guardarTodo} disabled={guardando}>
               {guardando ? 'Guardando…' : 'Guardar'}
             </button>
           )}

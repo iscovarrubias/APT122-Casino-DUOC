@@ -21,15 +21,31 @@ import ErrorBoundary from './ErrorBoundary';
 import Ayuda from './Ayuda';
 
 const estudiante = (extra = {}) => ({
-  usuario: { rol: 'Estudiante', nombre: 'Ana' }, alergias: [], favoritos: [], calificaciones: [], categoriaPreferida: null,
-  calificacionDe: () => null, guardarCalificacion: vi.fn(async () => {}), quitarCalificacion: vi.fn(async () => {}),
-  marcarFavorito: vi.fn(async () => {}), quitarFavorito: vi.fn(async () => {}), guardarCategoriaPreferida: vi.fn(async () => {}), ...extra,
+  usuario: { rol: 'Estudiante', nombre: 'Ana' },
+  alergias: [],
+  favoritos: [],
+  calificaciones: [],
+  categoriaPreferida: null,
+  calificacionDe: () => null,
+  guardarCalificacion: vi.fn(async () => {}),
+  quitarCalificacion: vi.fn(async () => {}),
+  marcarFavorito: vi.fn(async () => {}),
+  quitarFavorito: vi.fn(async () => {}),
+  guardarCategoriaPreferida: vi.fn(async () => {}),
+  ...extra,
 });
 
 describe('PerfilEstudianteModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    pedir.mockImplementation(async (ruta) => (ruta === '/api/preparaciones/alergenos' ? [{ id_alergeno: 1, nombre: 'Gluten' }, { id_alergeno: 2, nombre: 'Lácteos' }] : {}));
+    pedir.mockImplementation(async (ruta) =>
+      ruta === '/api/preparaciones/alergenos'
+        ? [
+            { id_alergeno: 1, nombre: 'Gluten' },
+            { id_alergeno: 2, nombre: 'Lácteos' },
+          ]
+        : {}
+    );
   });
 
   it('guarda alergias y categoría preferida y avisa al resto de la página', async () => {
@@ -45,11 +61,45 @@ describe('PerfilEstudianteModal', () => {
     await usuario.click(screen.getByRole('button', { name: 'Lácteos' }));
     await usuario.click(screen.getByRole('button', { name: 'Vegetariano' }));
     await usuario.click(screen.getByRole('button', { name: 'Guardar' }));
-    await waitFor(() => expect(pedir).toHaveBeenCalledWith('/api/estudiante/alergias', { metodo: 'PUT', cuerpo: { alergenos: ['Lácteos'] } }));
+    await waitFor(() =>
+      expect(pedir).toHaveBeenCalledWith('/api/estudiante/alergias', { metodo: 'PUT', cuerpo: { alergenos: ['Lácteos'] } })
+    );
     expect(ctx.guardarCategoriaPreferida).toHaveBeenCalledWith('Vegetariano');
     expect(await screen.findByText('Cambios guardados.')).toBeInTheDocument();
     expect(aviso).toHaveBeenCalled();
     window.removeEventListener('estudiante-perfil-actualizado', aviso);
+  });
+
+  it('carga y guarda las preferencias de avisos por correo', async () => {
+    useEstudiante.mockReturnValue(estudiante({ favoritos: [{ id_preparacion: 1, nombre: 'Pastel de choclo' }] }));
+    pedir.mockImplementation(async (ruta) => {
+      if (ruta === '/api/preparaciones/alergenos') return [];
+      if (ruta === '/api/estudiante/correos') return { menu_semanal: true, avisos_favoritos: false };
+      return {};
+    });
+    render(<PerfilEstudianteModal onCerrar={() => {}} />);
+    const menu = await screen.findByRole('checkbox', { name: /Menú de la semana/ });
+    await waitFor(() => expect(menu).toBeChecked());
+    const favoritos = screen.getByRole('checkbox', { name: /Avisos de mis favoritos/ });
+    expect(favoritos).not.toBeChecked();
+    expect(screen.queryByText(/recibirás un solo correo/)).not.toBeInTheDocument();
+    await userEvent.click(favoritos);
+    expect(screen.getByText(/recibirás un solo correo: el menú semanal con tus favoritos destacados/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+    await waitFor(() =>
+      expect(pedir).toHaveBeenCalledWith('/api/estudiante/correos', {
+        metodo: 'PUT',
+        cuerpo: { menu_semanal: true, avisos_favoritos: true },
+      })
+    );
+    expect(await screen.findByText('Cambios guardados.')).toBeInTheDocument();
+  });
+
+  it('activar avisos de favoritos sin favoritos sugiere marcar alguno', async () => {
+    useEstudiante.mockReturnValue(estudiante());
+    render(<PerfilEstudianteModal onCerrar={() => {}} />);
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Avisos de mis favoritos/ }));
+    expect(screen.getByText('Marca platos con el corazón para recibir sus avisos.')).toBeInTheDocument();
   });
 
   it('tocar de nuevo la categoría preferida la quita', async () => {
@@ -63,7 +113,13 @@ describe('PerfilEstudianteModal', () => {
   });
 
   it('si algo falla al guardar muestra el motivo', async () => {
-    useEstudiante.mockReturnValue(estudiante({ guardarCategoriaPreferida: vi.fn(async () => { throw new Error('Sin conexión'); }) }));
+    useEstudiante.mockReturnValue(
+      estudiante({
+        guardarCategoriaPreferida: vi.fn(async () => {
+          throw new Error('Sin conexión');
+        }),
+      })
+    );
     const usuario = userEvent.setup();
     render(<PerfilEstudianteModal onCerrar={() => {}} />);
     await usuario.click(await screen.findByRole('button', { name: 'Guardar' }));
@@ -90,7 +146,12 @@ describe('PerfilEstudianteModal', () => {
 
 describe('Opinion: calificar un plato', () => {
   const ITEM = { id_preparacion: 7, nombre: 'Budín', categoria: 'Vegetariano', calificacion_promedio: 4.25, calificaciones_total: 4 };
-  const montar = (item = ITEM) => render(<ConfirmacionProvider><Opinion item={item} /></ConfirmacionProvider>);
+  const montar = (item = ITEM) =>
+    render(
+      <ConfirmacionProvider>
+        <Opinion item={item} />
+      </ConfirmacionProvider>
+    );
   beforeEach(() => vi.clearAllMocks());
 
   it('muestra el promedio y la cantidad de votos', () => {
@@ -154,10 +215,12 @@ describe('OpinionModal', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('promedia las opiniones con texto y las lista', async () => {
-    consultarOpinionesDePlato.mockResolvedValue({ opiniones: [
-      { id_calificacion: 1, autor: 'Ana P.', estrellas: 5, comentario: 'Rico', actualizado_en: '2026-11-16T13:00:00' },
-      { id_calificacion: 2, autor: 'Beto R.', estrellas: 2, comentario: 'Frío', actualizado_en: '2026-11-17T13:00:00' },
-    ] });
+    consultarOpinionesDePlato.mockResolvedValue({
+      opiniones: [
+        { id_calificacion: 1, autor: 'Ana P.', estrellas: 5, comentario: 'Rico', actualizado_en: '2026-11-16T13:00:00' },
+        { id_calificacion: 2, autor: 'Beto R.', estrellas: 2, comentario: 'Frío', actualizado_en: '2026-11-17T13:00:00' },
+      ],
+    });
     render(<OpinionModal idPreparacion={7} nombrePlato="Budín" onCerrar={() => {}} />);
     expect(await screen.findByText('3.5')).toBeInTheDocument();
     expect(screen.getByText('- 2 opiniones con texto')).toBeInTheDocument();
@@ -199,7 +262,13 @@ describe('BotonFavorito y AvisoAlergias', () => {
   });
 
   it('un error al marcar no rompe la tarjeta', async () => {
-    useEstudiante.mockReturnValue(estudiante({ marcarFavorito: vi.fn(async () => { throw new Error('x'); }) }));
+    useEstudiante.mockReturnValue(
+      estudiante({
+        marcarFavorito: vi.fn(async () => {
+          throw new Error('x');
+        }),
+      })
+    );
     render(<BotonFavorito idPreparacion={7} nombre="Budín" />);
     await userEvent.click(screen.getByRole('button'));
     expect(screen.getByRole('button')).toBeInTheDocument();
@@ -225,8 +294,14 @@ describe('ErrorBoundary y Ayuda', () => {
   it('si un componente explota muestra una página de error sin detalles técnicos en vez de la pantalla en blanco', () => {
     const original = console.error;
     console.error = () => {};
-    const Roto = () => { throw new Error('se cayó la tarjeta'); };
-    render(<ErrorBoundary><Roto /></ErrorBoundary>);
+    const Roto = () => {
+      throw new Error('se cayó la tarjeta');
+    };
+    render(
+      <ErrorBoundary>
+        <Roto />
+      </ErrorBoundary>
+    );
     console.error = original;
     expect(screen.getByText('Algo salió mal')).toBeInTheDocument();
     expect(screen.queryByText(/se cayó la tarjeta/)).not.toBeInTheDocument();
@@ -234,7 +309,11 @@ describe('ErrorBoundary y Ayuda', () => {
   });
 
   it('sin errores muestra el contenido normal', () => {
-    render(<ErrorBoundary><p>todo bien</p></ErrorBoundary>);
+    render(
+      <ErrorBoundary>
+        <p>todo bien</p>
+      </ErrorBoundary>
+    );
     expect(screen.getByText('todo bien')).toBeInTheDocument();
   });
 

@@ -6,10 +6,14 @@ export default function ConfirmacionProvider({ children }) {
   const resolver = useRef(null);
   const cancelarRef = useRef(null);
 
-  const confirmar = useCallback((opciones) => new Promise((resolve) => {
-    resolver.current = resolve;
-    setPedido(typeof opciones === 'string' ? { mensaje: opciones } : opciones);
-  }), []);
+  const confirmar = useCallback(
+    (opciones) =>
+      new Promise((resolve) => {
+        resolver.current = resolve;
+        setPedido(typeof opciones === 'string' ? { mensaje: opciones } : opciones);
+      }),
+    []
+  );
 
   const cerrar = useCallback((respuesta) => {
     resolver.current?.(respuesta);
@@ -20,7 +24,9 @@ export default function ConfirmacionProvider({ children }) {
   useEffect(() => {
     if (!pedido) return undefined;
     cancelarRef.current?.focus();
-    const tecla = (e) => { if (e.key === 'Escape') cerrar(false); };
+    const tecla = (e) => {
+      if (e.key === 'Escape') cerrar(false);
+    };
     document.addEventListener('keydown', tecla);
     return () => document.removeEventListener('keydown', tecla);
   }, [pedido, cerrar]);
@@ -29,11 +35,19 @@ export default function ConfirmacionProvider({ children }) {
     <ConfirmacionContext.Provider value={confirmar}>
       {children}
       {pedido && (
-        <div className="modal-fondo v2" role="alertdialog" aria-modal="true"
-          aria-labelledby="confirmacion-titulo" aria-describedby="confirmacion-mensaje" onClick={() => cerrar(false)}>
+        <div
+          className="modal-fondo v2"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="confirmacion-titulo"
+          aria-describedby="confirmacion-mensaje"
+          onClick={() => cerrar(false)}
+        >
           <div className="modal modal-confirmacion" onClick={(e) => e.stopPropagation()}>
             <h2 id="confirmacion-titulo">{pedido.titulo || 'Confirmar'}</h2>
-            <p id="confirmacion-mensaje" className="texto-suave">{pedido.mensaje}</p>
+            <p id="confirmacion-mensaje" className="texto-suave">
+              {pedido.mensaje}
+            </p>
             <div className="modal-acciones">
               <button ref={cancelarRef} type="button" className="boton boton-secundario" onClick={() => cerrar(false)}>
                 {pedido.textoCancelar || 'Cancelar'}

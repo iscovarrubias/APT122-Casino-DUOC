@@ -22,6 +22,10 @@ export function obtenerMenuHoy(categoria, fecha) {
   return obtener(`/api/menu/hoy?${params.toString()}`, 'Error al consultar el menú');
 }
 
+export function obtenerPrediccionPublica() {
+  return obtener('/api/prediccion/publica', 'Error al consultar la estimación');
+}
+
 export function obtenerPreparaciones() {
   return obtener('/api/preparaciones', 'Error al consultar preparaciones');
 }

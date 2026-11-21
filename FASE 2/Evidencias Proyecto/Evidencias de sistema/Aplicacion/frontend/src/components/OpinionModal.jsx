@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { consultarOpinionesDePlato } from '../api/gestion';
 import { Estrellas } from './Opinion';
 import Mensaje from './Mensaje';
-import PaginaError from './PaginaError'; 
+import PaginaError from './PaginaError';
 
 export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
   const [datos, setDatos] = useState(null);
@@ -12,15 +12,19 @@ export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
   useEffect(() => {
     let activo = true;
     consultarOpinionesDePlato(idPreparacion)
-      .then((d) => { if (activo) setDatos(d); })
-      .catch((err) => { if (activo) setError(err); }); 
-    return () => { activo = false; };
+      .then((d) => {
+        if (activo) setDatos(d);
+      })
+      .catch((err) => {
+        if (activo) setError(err);
+      });
+    return () => {
+      activo = false;
+    };
   }, [idPreparacion]);
 
   const opiniones = datos?.opiniones || [];
-  const promedio = opiniones.length
-    ? Math.round((opiniones.reduce((s, o) => s + o.estrellas, 0) / opiniones.length) * 10) / 10
-    : null;
+  const promedio = opiniones.length ? Math.round((opiniones.reduce((s, o) => s + o.estrellas, 0) / opiniones.length) * 10) / 10 : null;
 
   function formatearFecha(iso) {
     if (!iso) return '';
@@ -33,11 +37,15 @@ export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
       <div className="modal">
         <h2>Opiniones de "{nombrePlato}"</h2>
 
-        {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+        {error && typeof error === 'string' && (
+          <Mensaje tipo="error" onCerrar={() => setError(null)}>
+            {error}
+          </Mensaje>
+        )}
         {error && typeof error === 'object' && !datos && (
           <PaginaError compacta codigo={error.estado ?? 0} detalle={error.message} onReintentar={() => window.location.reload()} />
         )}
-        
+
         {!datos && !error && <Cargando>Cargando opiniones…</Cargando>}
 
         {datos && opiniones.length === 0 && (
@@ -61,7 +69,9 @@ export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
                 <article key={o.id_calificacion} className="opinion-item">
                   <header className="opinion-item-cabeza">
                     <strong>{o.autor}</strong>
-                    <span className="texto-suave" style={{ margin: 0 }}>{formatearFecha(o.actualizado_en)}</span>
+                    <span className="texto-suave" style={{ margin: 0 }}>
+                      {formatearFecha(o.actualizado_en)}
+                    </span>
                   </header>
                   <Estrellas valor={o.estrellas} tam={14} />
                   <p>{o.comentario}</p>
@@ -72,7 +82,9 @@ export default function OpinionModal({ idPreparacion, nombrePlato, onCerrar }) {
         )}
 
         <div className="modal-acciones">
-          <button type="button" className="boton boton-secundario" onClick={onCerrar}>Cerrar</button>
+          <button type="button" className="boton boton-secundario" onClick={onCerrar}>
+            Cerrar
+          </button>
         </div>
       </div>
     </div>

@@ -26,11 +26,15 @@ async function arrancar() {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(extra.headers || {}),
       },
-      body: cuerpo === undefined ? undefined : (typeof cuerpo === 'string' || cuerpo instanceof FormData ? cuerpo : JSON.stringify(cuerpo)),
+      body: cuerpo === undefined ? undefined : typeof cuerpo === 'string' || cuerpo instanceof FormData ? cuerpo : JSON.stringify(cuerpo),
     });
     const texto = await r.text();
     let datos = null;
-    try { datos = JSON.parse(texto); } catch { datos = null; }
+    try {
+      datos = JSON.parse(texto);
+    } catch {
+      datos = null;
+    }
     return { s: r.status, d: datos, texto, ms: performance.now() - inicio, headers: r.headers };
   }
 
@@ -63,7 +67,9 @@ async function limpiarHoy() {
   const q = (s) => pool.query(s, [hoyChile()]);
   const ids = '(SELECT id_menu_preparacion FROM menu_preparacion WHERE id_menu IN (SELECT id_menu FROM menu WHERE fecha = $1))';
   await q(`DELETE FROM movimiento_stock WHERE id_menu_preparacion IN ${ids}`);
-  await q('DELETE FROM venta_combo WHERE id_jornada IN (SELECT j.id_jornada FROM jornada j JOIN menu m ON m.id_menu = j.id_menu WHERE m.fecha = $1)');
+  await q(
+    'DELETE FROM venta_combo WHERE id_jornada IN (SELECT j.id_jornada FROM jornada j JOIN menu m ON m.id_menu = j.id_menu WHERE m.fecha = $1)'
+  );
   await q('DELETE FROM jornada WHERE id_menu IN (SELECT id_menu FROM menu WHERE fecha = $1)');
   await q(`DELETE FROM disponibilidad WHERE id_menu_preparacion IN ${ids}`);
   await q(`DELETE FROM venta WHERE id_menu_preparacion IN ${ids}`);
@@ -94,9 +100,18 @@ async function prepararJornadaHoy(api, tokenAdmin, { porciones = 200, iniciar = 
   };
   let idMenu;
   for (const [nombre, tipo, categoria] of PLAN_HOY) {
-    const r = await api('POST', '/menu/planificacion', {
-      fecha: hoyChile(), id_preparacion: idDe(nombre), tipo_componente: tipo, categoria, cantidad_planificada: porciones,
-    }, tokenAdmin);
+    const r = await api(
+      'POST',
+      '/menu/planificacion',
+      {
+        fecha: hoyChile(),
+        id_preparacion: idDe(nombre),
+        tipo_componente: tipo,
+        categoria,
+        cantidad_planificada: porciones,
+      },
+      tokenAdmin
+    );
     assert.equal(r.s, 201, r.texto);
     idMenu = r.d.menu.id_menu;
   }

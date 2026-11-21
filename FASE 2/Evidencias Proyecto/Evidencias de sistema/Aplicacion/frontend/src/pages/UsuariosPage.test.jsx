@@ -47,7 +47,14 @@ describe('UsuariosPage', () => {
     await usuario.type(dialogo.querySelector('input[type="password"]'), 'ClaveSegura1');
     await usuario.selectOptions(within(dialogo).getByRole('combobox'), 'Nutricionista');
     await usuario.click(within(dialogo).getByRole('button', { name: 'Crear usuario' }));
-    await waitFor(() => expect(api.crearUsuario).toHaveBeenCalledWith({ nombre: 'Nueva Persona', email: 'nu.persona@duocuc.cl', password: 'ClaveSegura1', rol: 'Nutricionista' }));
+    await waitFor(() =>
+      expect(api.crearUsuario).toHaveBeenCalledWith({
+        nombre: 'Nueva Persona',
+        email: 'nu.persona@duocuc.cl',
+        password: 'ClaveSegura1',
+        rol: 'Nutricionista',
+      })
+    );
     expect(await screen.findByText('Usuario creado.')).toBeInTheDocument();
   });
 

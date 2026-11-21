@@ -48,7 +48,10 @@ test('CP-34 no usa días posteriores a la fecha estimada', () => {
 test('CP-35 backtest: con demanda constante el modelo no se equivoca y sobra menos que lo planificado', () => {
   let f = '2026-09-01';
   const dias = [];
-  for (let i = 0; i < 10; i++) { dias.push(obs(f, 40)); f = sumarDias(f, 1); }
+  for (let i = 0; i < 10; i++) {
+    dias.push(obs(f, 40));
+    f = sumarDias(f, 1);
+  }
   const r = p.backtestDemanda(dias);
   assert.equal(r.dias, 6);
   assert.equal(r.mae_modelo, 0);
@@ -60,7 +63,10 @@ test('CP-35 backtest: con demanda constante el modelo no se equivoca y sobra men
 test('CP-36 backtest: los días con agotamiento bajan la cobertura de lo planificado', () => {
   let f = '2026-09-01';
   const dias = [];
-  for (let i = 0; i < 10; i++) { dias.push(obs(f, 50, { agoto: i % 2 === 0, planificado: 50 })); f = sumarDias(f, 1); }
+  for (let i = 0; i < 10; i++) {
+    dias.push(obs(f, 50, { agoto: i % 2 === 0, planificado: 50 }));
+    f = sumarDias(f, 1);
+  }
   const r = p.backtestDemanda(dias);
   assert.ok(r.cobertura_planificado < 100);
   assert.ok(r.cobertura_sugerencia >= r.cobertura_planificado);
@@ -112,7 +118,10 @@ test('CP-41 backtest de agotamiento: con un patrón estable el error es de pocos
 test('CP-42 combinar resultados suma acumulados en vez de promediar promedios', () => {
   let f = '2026-09-01';
   const a = [];
-  for (let i = 0; i < 10; i++) { a.push(obs(f, 40)); f = sumarDias(f, 1); }
+  for (let i = 0; i < 10; i++) {
+    a.push(obs(f, 40));
+    f = sumarDias(f, 1);
+  }
   const r1 = p.backtestDemanda(a);
   const global = p.combinarDemanda([r1, r1]);
   assert.equal(global.dias, r1.dias * 2);

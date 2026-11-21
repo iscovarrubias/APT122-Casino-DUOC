@@ -12,7 +12,8 @@ import { useEstudiante } from './useEstudiante';
 import { infoError, ERRORES } from './errores';
 
 const PERFIL = {
-  alergias: ['Gluten'], categoria_preferida: 'Vegetariano',
+  alergias: ['Gluten'],
+  categoria_preferida: 'Vegetariano',
   favoritos: [{ id_preparacion: 7, nombre: 'Budín' }],
   calificaciones: [{ id_preparacion: 7, estrellas: 5, comentario: 'Rico' }],
 };
@@ -20,10 +21,17 @@ const PERFIL = {
 const espia = { ctx: null };
 function Espia() {
   const c = useEstudiante();
-  useEffect(() => { espia.ctx = c; });
+  useEffect(() => {
+    espia.ctx = c;
+  });
   return <p>{`alergias:${c.alergias.join(',')} favoritos:${c.favoritos.length} preferida:${c.categoriaPreferida ?? '-'}`}</p>;
 }
-const montar = () => render(<EstudianteProvider><Espia /></EstudianteProvider>);
+const montar = () =>
+  render(
+    <EstudianteProvider>
+      <Espia />
+    </EstudianteProvider>
+  );
 
 describe('EstudianteProvider: perfil del estudiante', () => {
   beforeEach(() => {
@@ -77,7 +85,9 @@ describe('EstudianteProvider: perfil del estudiante', () => {
     useAuth.mockReturnValue({ usuario: { rol: 'Estudiante' } });
     montar();
     await screen.findByText(/Gluten/);
-    act(() => { window.dispatchEvent(new Event('estudiante-perfil-actualizado')); });
+    act(() => {
+      window.dispatchEvent(new Event('estudiante-perfil-actualizado'));
+    });
     await waitFor(() => expect(pedir.mock.calls.filter(([r]) => r === '/api/estudiante/perfil')).toHaveLength(2));
   });
 

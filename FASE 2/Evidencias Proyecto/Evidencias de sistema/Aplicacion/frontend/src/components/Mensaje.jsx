@@ -13,8 +13,14 @@ function Glifo({ tipo }) {
   if (tipo === 'error') return <X size={20} strokeWidth={3.2} aria-hidden="true" />;
   return (
     <svg
-      width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="3.4" strokeLinecap="round" aria-hidden="true"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3.4"
+      strokeLinecap="round"
+      aria-hidden="true"
     >
       {tipo === 'aviso' ? (
         <>
@@ -31,16 +37,7 @@ function Glifo({ tipo }) {
   );
 }
 
-export default function Mensaje({
-  tipo = 'aviso',
-  titulo,
-  children,
-  autoCerrar = false,
-  onCerrar,
-  role,
-  className = '',
-  style,
-}) {
+export default function Mensaje({ tipo = 'aviso', titulo, children, autoCerrar = false, onCerrar, role, className = '', style }) {
   useEffect(() => {
     if (!autoCerrar || !onCerrar) return undefined;
     const id = setTimeout(onCerrar, 7000);
@@ -51,11 +48,7 @@ export default function Mensaje({
   const textoTitulo = titulo === undefined ? config.titulo : titulo;
 
   return (
-    <div
-      className={`mensaje mensaje-${tipo} ${className}`.trim()}
-      role={role || config.role}
-      style={style}
-    >
+    <div className={`mensaje mensaje-${tipo} ${className}`.trim()} role={role || config.role} style={style}>
       <span className="mensaje-icono" aria-hidden="true">
         <Glifo tipo={tipo} />
       </span>
@@ -64,12 +57,7 @@ export default function Mensaje({
         <div className="mensaje-texto">{children}</div>
       </div>
       {onCerrar && (
-        <button
-          type="button"
-          className="mensaje-cerrar"
-          onClick={onCerrar}
-          aria-label="Cerrar mensaje"
-        >
+        <button type="button" className="mensaje-cerrar" onClick={onCerrar} aria-label="Cerrar mensaje">
           <X size={16} strokeWidth={2.6} />
         </button>
       )}

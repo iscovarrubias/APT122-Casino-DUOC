@@ -21,8 +21,7 @@ export const eliminarPreparacion = (id) => pedir(`/api/preparaciones/${id}`, { m
 export const asignarAlergenos = (id, alergenos) => pedir(`/api/preparaciones/${id}/alergenos`, { metodo: 'PUT', cuerpo: { alergenos } });
 export const guardarNutricion = (id, datos) => pedir(`/api/preparaciones/${id}/nutricion`, { metodo: 'PUT', cuerpo: datos });
 export const subirImagen = (archivo) => pedirArchivo('/api/preparaciones/imagen', archivo);
-export const calcularNutricionApi = (datos) =>
-  pedir('/api/preparaciones/calcular-nutricion', { metodo: 'POST', cuerpo: datos });
+export const calcularNutricionApi = (datos) => pedir('/api/preparaciones/calcular-nutricion', { metodo: 'POST', cuerpo: datos });
 
 export const consultarPlanificacion = (fecha) => pedir(`/api/menu/planificacion?fecha=${fecha}`);
 export const agregarComponente = (datos) => pedir('/api/menu/planificacion', { metodo: 'POST', cuerpo: datos });
@@ -35,15 +34,11 @@ export const cambiarDisponibilidad = (idComponente, estado) =>
 
 export const consultarJornadaHoy = () => pedir('/api/jornada/hoy');
 
-export const iniciarJornada = (cantidades = {}) =>
-  pedir('/api/jornada/iniciar', { metodo: 'POST', cuerpo: { cantidades } });
+export const iniciarJornada = (cantidades = {}) => pedir('/api/jornada/iniciar', { metodo: 'POST', cuerpo: { cantidades } });
 
-export const cerrarJornada = (sobrantes = {}) =>
-  pedir('/api/jornada/cerrar', { metodo: 'POST', cuerpo: { sobrantes } });
-export const corregirCierre = (sobrantes) =>
-  pedir('/api/jornada/corregir', { metodo: 'POST', cuerpo: { sobrantes } });
-export const reabrirJornada = () =>
-  pedir('/api/jornada/reabrir', { metodo: 'POST' });
+export const cerrarJornada = (sobrantes = {}) => pedir('/api/jornada/cerrar', { metodo: 'POST', cuerpo: { sobrantes } });
+export const corregirCierre = (sobrantes) => pedir('/api/jornada/corregir', { metodo: 'POST', cuerpo: { sobrantes } });
+export const reabrirJornada = () => pedir('/api/jornada/reabrir', { metodo: 'POST' });
 
 export const ajustarStock = (idComponente, { accion, cantidad, observacion }) =>
   pedir(`/api/jornada/componentes/${idComponente}/stock`, {
@@ -54,8 +49,7 @@ export const ajustarStock = (idComponente, { accion, cantidad, observacion }) =>
 export const registrarVenta = (categoria, opcion = null, tipo_venta = 'combo') =>
   pedir('/api/jornada/ventas', { metodo: 'POST', cuerpo: { categoria, opcion, tipo_venta } });
 
-export const anularVenta = (idVentaCombo) =>
-  pedir(`/api/jornada/ventas/${idVentaCombo}/anular`, { metodo: 'POST' });
+export const anularVenta = (idVentaCombo) => pedir(`/api/jornada/ventas/${idVentaCombo}/anular`, { metodo: 'POST' });
 
 export const listarUsuarios = (q, rol) => {
   const params = new URLSearchParams();
@@ -77,14 +71,21 @@ export const consultarAnalisisDetalle = (desde, hasta, { id_preparacion, categor
 };
 export const consultarOpinionesDetalle = (filtros = {}) => {
   const q = new URLSearchParams();
-  Object.entries(filtros).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '' && v !== false) q.set(k, v === true ? '1' : v); });
+  Object.entries(filtros).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '' && v !== false) q.set(k, v === true ? '1' : v);
+  });
   return pedir(`/api/opiniones/detalle?${q}`);
 };
-export const consultarMensual = (arg) => (typeof arg === 'string' ? pedir(`/api/analisis/mensual?mes=${arg}`) : pedir(`/api/analisis/mensual?desde=${arg.desde}&hasta=${arg.hasta}`));
+export const consultarMensual = (arg) =>
+  typeof arg === 'string'
+    ? pedir(`/api/analisis/mensual?mes=${arg}`)
+    : pedir(`/api/analisis/mensual?desde=${arg.desde}&hasta=${arg.hasta}`);
 
 export const consultarFavoritosDetalle = (filtros = {}) => {
   const q = new URLSearchParams();
-  Object.entries(filtros).forEach(([k, v]) => { if (v) q.set(k, v); });
+  Object.entries(filtros).forEach(([k, v]) => {
+    if (v) q.set(k, v);
+  });
   return pedir(`/api/opiniones/favoritos?${q}`);
 };
 export const consultarOpiniones = () => pedir('/api/opiniones');
@@ -94,17 +95,14 @@ export const consultarSugerencias = (fecha) => pedir(`/api/prediccion/sugerencia
 export const consultarPrediccionHoy = () => pedir('/api/prediccion/hoy');
 export const consultarConfiabilidad = () => pedir('/api/prediccion/confiabilidad');
 export const consultarConfigAuth = () => pedir('/api/auth/config', { conToken: false });
-export const identificarCorreo = (email) =>
-  pedir('/api/auth/identificar', { metodo: 'POST', cuerpo: { email }, conToken: false });
+export const identificarCorreo = (email) => pedir('/api/auth/identificar', { metodo: 'POST', cuerpo: { email }, conToken: false });
 export const canjearTicketMicrosoft = (ticket) =>
   pedir('/api/auth/microsoft/canje', { metodo: 'POST', cuerpo: { ticket }, conToken: false });
 export const urlInicioMicrosoft = (email) =>
   `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/microsoft/inicio?login_hint=${encodeURIComponent(email)}`;
-export const iniciarSesionDuoc = (email) =>
-  pedir('/api/auth/duoc', { metodo: 'POST', cuerpo: { email }, conToken: false });
+export const iniciarSesionDuoc = (email) => pedir('/api/auth/duoc', { metodo: 'POST', cuerpo: { email }, conToken: false });
 
 export const actualizarCategoriaPreferida = (categoria) =>
   pedir('/api/estudiante/categoria-preferida', { metodo: 'PUT', cuerpo: { categoria } });
 
-export const consultarOpinionesDePlato = (id) =>
-  pedir(`/api/preparaciones/${id}/opiniones`, { conToken: false });
+export const consultarOpinionesDePlato = (id) => pedir(`/api/preparaciones/${id}/opiniones`, { conToken: false });

@@ -13,7 +13,13 @@ import PanelSidebar from './PanelSidebar';
 import Sidebar from './Sidebar';
 import AccesoPage from '../pages/AccesoPage';
 
-const sesion = (rol, extra = {}) => ({ usuario: rol ? { nombre: 'Isabella Covarrubias', rol } : null, kiosco: false, cerrarSesion: vi.fn(), iniciarConTicket: vi.fn(), ...extra });
+const sesion = (rol, extra = {}) => ({
+  usuario: rol ? { nombre: 'Isabella Covarrubias', rol } : null,
+  kiosco: false,
+  cerrarSesion: vi.fn(),
+  iniciarConTicket: vi.fn(),
+  ...extra,
+});
 
 describe('PanelSidebar', () => {
   let alternar;
@@ -28,7 +34,9 @@ describe('PanelSidebar', () => {
     render(<PanelSidebar ruta="/panel/menu" />);
     expect(screen.getAllByText('¡Hola, Isabella!').length).toBeGreaterThan(0);
     const nav = screen.getByRole('navigation', { name: 'Secciones del panel' });
-    const secciones = within(nav).getAllByRole('button').map((b) => b.getAttribute('aria-label'));
+    const secciones = within(nav)
+      .getAllByRole('button')
+      .map((b) => b.getAttribute('aria-label'));
     expect(secciones).toEqual(['Planificación del menú', 'Preparaciones', 'Ingredientes', 'Análisis']);
     expect(within(nav).getByRole('button', { name: 'Planificación del menú' })).toHaveAttribute('aria-current', 'page');
   });
@@ -143,10 +151,14 @@ describe('Sidebar del menú público', () => {
     const onCambiarVista = vi.fn();
     useAuth.mockReturnValue(sesion(null));
     render(<Sidebar vistaActiva="diario" onCambiarVista={onCambiarVista} onAbrirPerfil={() => {}} />);
-    act(() => { screen.getByRole('button', { name: /Semanal/ }).click(); });
+    act(() => {
+      screen.getByRole('button', { name: /Semanal/ }).click();
+    });
     expect(pagina.classList.contains('saliendo')).toBe(true);
     expect(onCambiarVista).not.toHaveBeenCalled();
-    act(() => { vi.advanceTimersByTime(150); });
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
     expect(onCambiarVista).toHaveBeenCalledWith('semanal');
     pagina.remove();
     vi.useRealTimers();
@@ -158,7 +170,9 @@ describe('AccesoPage: vuelta desde Microsoft', () => {
     vi.clearAllMocks();
     sessionStorage.clear();
   });
-  afterEach(() => { window.location.hash = ''; });
+  afterEach(() => {
+    window.location.hash = '';
+  });
 
   it('canjea el ticket y lleva al personal a su panel', async () => {
     const s = sesion(null, { iniciarConTicket: vi.fn(async () => ({ usuario: { rol: 'Nutricionista' }, kiosco: false })) });
@@ -193,7 +207,13 @@ describe('AccesoPage: vuelta desde Microsoft', () => {
   });
 
   it('si el canje falla muestra el motivo del servidor', async () => {
-    useAuth.mockReturnValue(sesion(null, { iniciarConTicket: vi.fn(async () => { throw new Error('El ticket ya fue usado.'); }) }));
+    useAuth.mockReturnValue(
+      sesion(null, {
+        iniciarConTicket: vi.fn(async () => {
+          throw new Error('El ticket ya fue usado.');
+        }),
+      })
+    );
     window.location.hash = '/acceso?ticket=viejo';
     render(<AccesoPage />);
     await waitFor(() => expect(sessionStorage.getItem('casino_login_error')).toBe('El ticket ya fue usado.'));

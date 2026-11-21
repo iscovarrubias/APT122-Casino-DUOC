@@ -15,7 +15,9 @@ function conectar() {
     suscriptores.forEach((dispersionMs, cb) => {
       const espera = dispersionMs > 0 ? Math.random() * dispersionMs : 0;
       setTimeout(() => {
-        try { cb(); } catch { }
+        try {
+          cb();
+        } catch {}
       }, espera);
     });
   });

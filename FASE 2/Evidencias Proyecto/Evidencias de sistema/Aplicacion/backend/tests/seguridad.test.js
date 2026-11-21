@@ -11,7 +11,8 @@ const path = require('node:path');
 const app = require('../src/app');
 const { crearLimitadorDeFallos } = require('../src/middleware/limitador');
 
-let servidor; let base;
+let servidor;
+let base;
 test.before(async () => {
   servidor = http.createServer(app);
   await new Promise((r) => servidor.listen(0, '127.0.0.1', r));
@@ -52,17 +53,37 @@ test('CP-44 el inicio de sesión rechaza cuerpos vacíos sin romperse', async ()
 });
 
 test('CP-45 el inicio de sesión DUOC está apagado si no se habilita', async () => {
-  const r = await fetch(`${base}/api/auth/duoc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'x@duocuc.cl' }) });
+  const r = await fetch(`${base}/api/auth/duoc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'x@duocuc.cl' }),
+  });
   assert.equal(r.status, 404);
 });
 
 test('CP-46 el limitador bloquea tras demasiados fallos y se libera con un acierto', () => {
   const limitador = crearLimitadorDeFallos({ ventanaMs: 60000, maximo: 2, clave: () => 'k', mensaje: 'bloqueado' });
   const llamar = (status) => {
-    let corte = null; let fin;
-    const res = { statusCode: status, set() {}, status(c) { corte = c; return this; }, json() { return this; }, on(ev, fn) { if (ev === 'finish') fin = fn; } };
+    let corte = null;
+    let fin;
+    const res = {
+      statusCode: status,
+      set() {},
+      status(c) {
+        corte = c;
+        return this;
+      },
+      json() {
+        return this;
+      },
+      on(ev, fn) {
+        if (ev === 'finish') fin = fn;
+      },
+    };
     let siguio = false;
-    limitador({}, res, () => { siguio = true; });
+    limitador({}, res, () => {
+      siguio = true;
+    });
     if (siguio && fin) fin();
     return corte;
   };
@@ -73,12 +94,20 @@ test('CP-46 el limitador bloquea tras demasiados fallos y se libera con un acier
 
 function arrancar(env) {
   return spawnSync(process.execPath, [path.join(__dirname, '../src/app.js')], {
-    cwd: require('node:os').tmpdir(), env: { PATH: process.env.PATH, ...env }, encoding: 'utf8', timeout: 8000,
+    cwd: require('node:os').tmpdir(),
+    env: { PATH: process.env.PATH, ...env },
+    encoding: 'utf8',
+    timeout: 8000,
   });
 }
 
 test('CP-47 en producción no arranca con SSO simulado, secreto corto o sin CORS', () => {
-  const buenos = { NODE_ENV: 'production', DATABASE_URL: 'postgres://x@127.0.0.1:1/x', JWT_SECRET: 'a'.repeat(40), CORS_ORIGIN: 'https://casino.example' };
+  const buenos = {
+    NODE_ENV: 'production',
+    DATABASE_URL: 'postgres://x@127.0.0.1:1/x',
+    JWT_SECRET: 'a'.repeat(40),
+    CORS_ORIGIN: 'https://casino.example',
+  };
   const sso = arrancar({ ...buenos, SSO_SIMULADO: 'true' });
   assert.equal(sso.status, 1);
   assert.match(sso.stderr, /SSO_SIMULADO/);

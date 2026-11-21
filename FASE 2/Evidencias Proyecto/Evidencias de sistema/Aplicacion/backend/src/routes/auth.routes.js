@@ -1,5 +1,15 @@
 const express = require('express');
-const { login, yo, loginDuoc, configPublica, identificar, microsoftInicio, microsoftCallback, microsoftCanje, actualizarTema } = require('../controllers/auth.controller');
+const {
+  login,
+  yo,
+  loginDuoc,
+  configPublica,
+  identificar,
+  microsoftInicio,
+  microsoftCallback,
+  microsoftCanje,
+  actualizarTema,
+} = require('../controllers/auth.controller');
 const { autenticar } = require('../middleware/auth');
 const { crearLimitadorDeFallos, crearLimitadorDeSolicitudes } = require('../middleware/limitador');
 
@@ -11,7 +21,10 @@ const MENSAJE = 'Demasiados intentos fallidos. Espera unos minutos antes de volv
 const limitePorCuenta = crearLimitadorDeFallos({
   ventanaMs: VENTANA_MS,
   maximo: Number(process.env.LIMITE_LOGIN_POR_CUENTA) || 8,
-  clave: (req) => `${req.ip}|${String(req.body?.email || '').trim().toLowerCase()}`,
+  clave: (req) =>
+    `${req.ip}|${String(req.body?.email || '')
+      .trim()
+      .toLowerCase()}`,
   mensaje: MENSAJE,
 });
 

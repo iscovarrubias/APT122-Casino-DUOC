@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { pedir, pedirArchivo, configurarCliente, ErrorApi, resolverUrl } from './cliente';
 
-const respuesta = (status, cuerpo) => ({ ok: status < 400, status, json: async () => { if (cuerpo === undefined) throw new Error('sin cuerpo'); return cuerpo; } });
+const respuesta = (status, cuerpo) => ({
+  ok: status < 400,
+  status,
+  json: async () => {
+    if (cuerpo === undefined) throw new Error('sin cuerpo');
+    return cuerpo;
+  },
+});
 
 describe('cliente de la API', () => {
   let alSesionInvalida;
@@ -39,7 +46,10 @@ describe('cliente de la API', () => {
 
   it('muestra el mensaje de error que manda el servidor', async () => {
     fetch.mockResolvedValue(respuesta(409, { error: 'La jornada ya está iniciada.' }));
-    await expect(pedir('/api/jornada/iniciar', { metodo: 'POST', cuerpo: {} })).rejects.toMatchObject({ message: 'La jornada ya está iniciada.', estado: 409 });
+    await expect(pedir('/api/jornada/iniciar', { metodo: 'POST', cuerpo: {} })).rejects.toMatchObject({
+      message: 'La jornada ya está iniciada.',
+      estado: 409,
+    });
   });
 
   it('si el servidor no manda JSON igual entrega un error entendible', async () => {
@@ -63,7 +73,9 @@ describe('cliente de la API', () => {
 
   it('un 401 al iniciar sesión (sin token) no dispara el cierre de sesión', async () => {
     fetch.mockResolvedValue(respuesta(401, { error: 'Correo o contraseña incorrectos.' }));
-    await expect(pedir('/api/auth/login', { metodo: 'POST', cuerpo: {}, conToken: false })).rejects.toThrow('Correo o contraseña incorrectos.');
+    await expect(pedir('/api/auth/login', { metodo: 'POST', cuerpo: {}, conToken: false })).rejects.toThrow(
+      'Correo o contraseña incorrectos.'
+    );
     expect(alSesionInvalida).not.toHaveBeenCalled();
   });
 

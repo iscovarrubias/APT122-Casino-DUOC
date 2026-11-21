@@ -3,8 +3,13 @@ import { render, screen } from '@testing-library/react';
 import ResumenCierre from './ResumenCierre';
 
 const comp = (extra) => ({
-  id_menu_preparacion: extra.preparacion, componente: 'Plato Principal', categoria: 'General',
-  disponibilidad: 'disponible', disponibilidad_actualizada_en: null, restante: 5, ...extra,
+  id_menu_preparacion: extra.preparacion,
+  componente: 'Plato Principal',
+  categoria: 'General',
+  disponibilidad: 'disponible',
+  disponibilidad_actualizada_en: null,
+  restante: 5,
+  ...extra,
 });
 
 describe('ResumenCierre', () => {
@@ -19,9 +24,18 @@ describe('ResumenCierre', () => {
   });
 
   it('indica que se agotó y a qué hora', () => {
-    render(<ResumenCierre componentes={[comp({
-      preparacion: 'Pollo', restante: 0, disponibilidad: 'agotado', disponibilidad_actualizada_en: '2026-11-13T13:42:00',
-    })]} />);
+    render(
+      <ResumenCierre
+        componentes={[
+          comp({
+            preparacion: 'Pollo',
+            restante: 0,
+            disponibilidad: 'agotado',
+            disponibilidad_actualizada_en: '2026-11-13T13:42:00',
+          }),
+        ]}
+      />
+    );
     expect(screen.getByText('Se agotó a las 13:42')).toBeInTheDocument();
   });
 
@@ -31,10 +45,14 @@ describe('ResumenCierre', () => {
   });
 
   it('separa platos y acompañamientos', () => {
-    render(<ResumenCierre componentes={[
-      comp({ preparacion: 'Pollo' }),
-      comp({ preparacion: 'Ensalada chilena', componente: 'Ensalada', categoria: null, restante: 12 }),
-    ]} />);
+    render(
+      <ResumenCierre
+        componentes={[
+          comp({ preparacion: 'Pollo' }),
+          comp({ preparacion: 'Ensalada chilena', componente: 'Ensalada', categoria: null, restante: 12 }),
+        ]}
+      />
+    );
     expect(screen.getByText('Platos')).toBeInTheDocument();
     expect(screen.getByText('Acompañamientos')).toBeInTheDocument();
     expect(screen.getByText('Quedaron 12 unidades')).toBeInTheDocument();

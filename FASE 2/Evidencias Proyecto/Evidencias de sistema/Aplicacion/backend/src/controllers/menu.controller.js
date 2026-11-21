@@ -24,11 +24,7 @@ async function hoy(req, res, next) {
       await jornadaModel.cerrarVencidas();
       demo.ponerAlDia();
     }
-    const resultado = await cache.con(
-      `${fecha}|${categoria || ''}`,
-      2000,
-      () => menuModel.menuDelDia(fecha, categoria)
-    );
+    const resultado = await cache.con(`${fecha}|${categoria || ''}`, 2000, () => menuModel.menuDelDia(fecha, categoria));
     res.json({
       fecha,
       categoria: categoria || 'todas',
@@ -44,10 +40,7 @@ async function verHistorialMenus(req, res, next) {
   try {
     const desde = fechaDe(req.query.desde, haceDiasChile(30));
     const hasta = fechaDe(req.query.hasta, hoyChile());
-    const [menus, composicion] = await Promise.all([
-      menuModel.historialMenus(desde, hasta),
-      menuModel.composicionPorCategoria(),
-    ]);
+    const [menus, composicion] = await Promise.all([menuModel.historialMenus(desde, hasta), menuModel.composicionPorCategoria()]);
     res.json({ desde, hasta, menus, composicion });
   } catch (err) {
     next(err);
@@ -87,7 +80,11 @@ async function planificarComponente(req, res, next) {
 
     const menu = await menuModel.obtenerOCrearMenu(fecha);
     const componente = await menuModel.agregarComponente(menu.id_menu, {
-      id_preparacion, tipo_componente, categoria, cantidad_planificada, precio,
+      id_preparacion,
+      tipo_componente,
+      categoria,
+      cantidad_planificada,
+      precio,
     });
     res.status(201).json({ menu, componente });
   } catch (err) {
@@ -150,7 +147,9 @@ async function actualizarDisponibilidad(req, res, next) {
     const { estado, observacion } = req.body;
     if (!estado) throw new ApiError(400, 'El estado es obligatorio.');
     const registro = await menuModel.actualizarDisponibilidad(req.params.id, {
-      estado, observacion, id_usuario: req.user.id_usuario,
+      estado,
+      observacion,
+      id_usuario: req.user.id_usuario,
     });
     eventos.emitir();
     res.status(201).json(registro);
@@ -185,7 +184,8 @@ async function copiar(req, res, next) {
       throw new ApiError(400, 'copias debe ser una lista de 1 a 31 pares { origen, destino }.');
     }
     for (const c of copias) {
-      if (!c || !esFechaISO(c.origen) || !esFechaISO(c.destino)) throw new ApiError(400, 'Cada copia necesita origen y destino (AAAA-MM-DD).');
+      if (!c || !esFechaISO(c.origen) || !esFechaISO(c.destino))
+        throw new ApiError(400, 'Cada copia necesita origen y destino (AAAA-MM-DD).');
       if (c.origen === c.destino) throw new ApiError(400, 'El origen y el destino no pueden ser el mismo día.');
     }
     res.json(await menuModel.copiarMenus(copias, { sobrescribir: sobrescribir === true }));
@@ -195,7 +195,16 @@ async function copiar(req, res, next) {
 }
 
 module.exports = {
-  verMes, copiar,
-  hoy, verHistorialMenus, verPlanificacion, planificarComponente, actualizarComponente,
-  eliminarComponente, publicar, despublicar, actualizarDisponibilidad, verHistorialDisponibilidad,
+  verMes,
+  copiar,
+  hoy,
+  verHistorialMenus,
+  verPlanificacion,
+  planificarComponente,
+  actualizarComponente,
+  eliminarComponente,
+  publicar,
+  despublicar,
+  actualizarDisponibilidad,
+  verHistorialDisponibilidad,
 };

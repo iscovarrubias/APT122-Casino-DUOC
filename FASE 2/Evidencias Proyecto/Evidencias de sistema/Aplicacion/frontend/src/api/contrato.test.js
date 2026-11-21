@@ -32,7 +32,9 @@ function leerRutasBackend() {
 }
 
 let rutas;
-beforeAll(() => { rutas = leerRutasBackend(); });
+beforeAll(() => {
+  rutas = leerRutasBackend();
+});
 
 const existe = (metodo, url) => {
   const sinQuery = url.split('?')[0];
@@ -40,17 +42,40 @@ const existe = (metodo, url) => {
 };
 
 const ARGUMENTOS = {
-  iniciarSesionApi: ['a@duocuc.cl', 'x', false], actualizarIngrediente: [5, {}], eliminarIngrediente: [5],
-  actualizarPreparacion: [5, {}], desactivarPreparacion: [5], reactivarPreparacion: [5], eliminarPreparacion: [5],
-  asignarAlergenos: [5, []], guardarNutricion: [5, {}], consultarPlanificacion: ['2026-11-20'], actualizarComponente: [5, {}],
-  quitarComponente: [5], publicarMenu: [5], despublicarMenu: [5], cambiarDisponibilidad: [5, 'agotado'],
-  ajustarStock: [5, { accion: 'quedan', cantidad: 3 }], registrarVenta: ['General', 'Postre'], anularVenta: [5],
-  listarUsuarios: ['ana', 'Cajero'], actualizarUsuario: [5, {}], cambiarClave: [5, 'Clave1234'],
-  consultarAnalisis: ['2026-11-01', '2026-11-30'], consultarAnalisisDetalle: ['2026-11-01', '2026-11-30', { id_preparacion: 3, categoria: 'General' }],
-  consultarOpinionesDetalle: [{ desde: '2026-11-01', con_comentario: true }], consultarMensual: ['2026-11'],
-  consultarFavoritosDetalle: [{ desde: '2026-11-01' }], consultarMes: ['2026-11'], copiarMenus: [[], false],
-  consultarSugerencias: ['2026-11-20'], identificarCorreo: ['a@duocuc.cl'], canjearTicketMicrosoft: ['t'],
-  iniciarSesionDuoc: ['a@duocuc.cl'], actualizarCategoriaPreferida: ['General'], consultarOpinionesDePlato: [5],
+  iniciarSesionApi: ['a@duocuc.cl', 'x', false],
+  actualizarIngrediente: [5, {}],
+  eliminarIngrediente: [5],
+  actualizarPreparacion: [5, {}],
+  desactivarPreparacion: [5],
+  reactivarPreparacion: [5],
+  eliminarPreparacion: [5],
+  asignarAlergenos: [5, []],
+  guardarNutricion: [5, {}],
+  consultarPlanificacion: ['2026-11-20'],
+  actualizarComponente: [5, {}],
+  quitarComponente: [5],
+  publicarMenu: [5],
+  despublicarMenu: [5],
+  cambiarDisponibilidad: [5, 'agotado'],
+  ajustarStock: [5, { accion: 'quedan', cantidad: 3 }],
+  registrarVenta: ['General', 'Postre'],
+  anularVenta: [5],
+  listarUsuarios: ['ana', 'Cajero'],
+  actualizarUsuario: [5, {}],
+  cambiarClave: [5, 'Clave1234'],
+  consultarAnalisis: ['2026-11-01', '2026-11-30'],
+  consultarAnalisisDetalle: ['2026-11-01', '2026-11-30', { id_preparacion: 3, categoria: 'General' }],
+  consultarOpinionesDetalle: [{ desde: '2026-11-01', con_comentario: true }],
+  consultarMensual: ['2026-11'],
+  consultarFavoritosDetalle: [{ desde: '2026-11-01' }],
+  consultarMes: ['2026-11'],
+  copiarMenus: [[], false],
+  consultarSugerencias: ['2026-11-20'],
+  identificarCorreo: ['a@duocuc.cl'],
+  canjearTicketMicrosoft: ['t'],
+  iniciarSesionDuoc: ['a@duocuc.cl'],
+  actualizarCategoriaPreferida: ['General'],
+  consultarOpinionesDePlato: [5],
 };
 
 describe('Contrato entre el frontend y el backend', () => {

@@ -10,7 +10,7 @@ import DocumentoLegal from '../components/DocumentoLegal';
 import { TITULOS_LEGALES } from '../utils/legal';
 import { navegar } from '../ruteo/useRuta';
 import PantallaCarga from '../components/PantallaCarga';
-import { obtenerMenuHoy } from '../api/menu';
+import { obtenerMenuHoy, obtenerPrediccionPublica } from '../api/menu';
 import { hoyChile, parseFechaISO, estadoEfectivo, NO_DISPONIBLE, CATEGORIAS_MENU } from '../utils/formato';
 import { suscribirCambios } from '../utils/eventos';
 import Cargando from '../components/Cargando';
@@ -62,10 +62,14 @@ function VistaDiario({ onVerSemanal }) {
     if (categoriaPreferida) setCategoria(categoriaPreferida);
   }, [categoriaPreferida]);
   const [datos, setDatos] = useState(null);
+  const [prediccion, setPrediccion] = useState({});
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
   const cargar = useCallback(async () => {
+    obtenerPrediccionPublica()
+      .then((r) => setPrediccion(Object.fromEntries((r?.categorias || []).map((c) => [c.categoria, c]))))
+      .catch(() => setPrediccion({}));
     try {
       const respuesta = await obtenerMenuHoy(null, hoyChile());
       setDatos(respuesta);
@@ -82,7 +86,10 @@ function VistaDiario({ onVerSemanal }) {
     cargar();
     const intervalo = setInterval(cargar, INTERVALO_SONDEO_MS);
     const cerrar = suscribirCambios(cargar, { dispersionMs: 2000 });
-    return () => { clearInterval(intervalo); cerrar(); };
+    return () => {
+      clearInterval(intervalo);
+      cerrar();
+    };
   }, [cargar]);
 
   const delDia = datos?.preparaciones || [];
@@ -101,7 +108,13 @@ function VistaDiario({ onVerSemanal }) {
   return (
     <>
       <div className="main-header">
-        <h1>Menú del día <span className="titulo-separador" aria-hidden="true">|</span> <span className="titulo-fecha">{formatearFechaLarga(datos?.fecha || hoyChile())}</span></h1>
+        <h1>
+          Menú del día{' '}
+          <span className="titulo-separador" aria-hidden="true">
+            |
+          </span>{' '}
+          <span className="titulo-fecha">{formatearFechaLarga(datos?.fecha || hoyChile())}</span>
+        </h1>
       </div>
 
       <CategoriaTabs categoriaActiva={categoria} onSeleccionar={setCategoria} estados={estados} />
@@ -114,7 +127,10 @@ function VistaDiario({ onVerSemanal }) {
           compacta
           codigo={error.estado ?? 0}
           detalle={error.message}
-          onReintentar={() => { setCargando(true); cargar(); }}
+          onReintentar={() => {
+            setCargando(true);
+            cargar();
+          }}
         />
       )}
 
@@ -139,6 +155,7 @@ function VistaDiario({ onVerSemanal }) {
           categoria={categoria}
           componentes={visibles}
           composicionDeCategoria={datos.composicion?.[categoria] || []}
+          prediccion={jornadaCerrada ? null : prediccion[categoria] || null}
         />
       )}
     </>
@@ -176,11 +193,7 @@ export default function VistaPublica({ legal = null }) {
 
   return (
     <div className="app-layout">
-      <Sidebar
-        vistaActiva={legal ? null : vista}
-        onCambiarVista={cambiarVista}
-        onAbrirPerfil={() => setPerfilAbierto(true)}
-      />
+      <Sidebar vistaActiva={legal ? null : vista} onCambiarVista={cambiarVista} onAbrirPerfil={() => setPerfilAbierto(true)} />
 
       <main className="main v2 v2-pub">
         {legal ? (
@@ -205,9 +218,7 @@ export default function VistaPublica({ legal = null }) {
         )}
       </main>
 
-      {perfilAbierto && (
-        <PerfilEstudianteModal onCerrar={() => setPerfilAbierto(false)} />
-      )}
+      {perfilAbierto && <PerfilEstudianteModal onCerrar={() => setPerfilAbierto(false)} />}
     </div>
   );
 }

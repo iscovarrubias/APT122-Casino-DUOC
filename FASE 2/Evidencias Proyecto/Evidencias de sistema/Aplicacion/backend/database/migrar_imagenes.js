@@ -10,10 +10,16 @@ async function main() {
   let movidas = 0;
   for (const p of rows) {
     const archivo = path.join(RUTA_UPLOADS, path.basename(new URL(p.imagen_url, 'http://x').pathname));
-    if (!fs.existsSync(archivo)) { console.warn(`Sin archivo para "${p.nombre}": ${archivo}`); continue; }
+    if (!fs.existsSync(archivo)) {
+      console.warn(`Sin archivo para "${p.nombre}": ${archivo}`);
+      continue;
+    }
     const buffer = fs.readFileSync(archivo);
     const formato = detectarFormato(buffer);
-    if (!formato) { console.warn(`Formato no reconocido: ${archivo}`); continue; }
+    if (!formato) {
+      console.warn(`Formato no reconocido: ${archivo}`);
+      continue;
+    }
     const id = await imagenModel.guardar(buffer, formato.tipo);
     await pool.query('UPDATE preparacion SET imagen_url = $2 WHERE id_preparacion = $1', [p.id_preparacion, `${imagenModel.RUTA}${id}`]);
     movidas++;
@@ -21,4 +27,7 @@ async function main() {
   console.log(`Fotos migradas: ${movidas} de ${rows.length}.`);
   await pool.end();
 }
-main().catch((e) => { console.error(e.message); process.exit(1); });
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});

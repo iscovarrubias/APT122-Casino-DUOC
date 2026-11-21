@@ -3,28 +3,59 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../api/gestion', () => ({
-  listarIngredientes: vi.fn(), listarCategoriasIngrediente: vi.fn(), listarCatalogoAlergenos: vi.fn(),
-  crearIngrediente: vi.fn(), actualizarIngrediente: vi.fn(), eliminarIngrediente: vi.fn(),
+  listarIngredientes: vi.fn(),
+  listarCategoriasIngrediente: vi.fn(),
+  listarCatalogoAlergenos: vi.fn(),
+  crearIngrediente: vi.fn(),
+  actualizarIngrediente: vi.fn(),
+  eliminarIngrediente: vi.fn(),
 }));
 
 import * as api from '../api/gestion';
 import ConfirmacionProvider from '../context/ConfirmacionProvider';
 import IngredientesPage from './IngredientesPage';
 
-const CATEGORIAS = [{ id_categoria_ingrediente: 1, nombre: 'Carnes y aves' }, { id_categoria_ingrediente: 2, nombre: 'Lácteos y huevos' }];
-const ALERGENOS = [{ id_alergeno: 1, nombre: 'Lácteos' }, { id_alergeno: 2, nombre: 'Huevo' }];
+const CATEGORIAS = [
+  { id_categoria_ingrediente: 1, nombre: 'Carnes y aves' },
+  { id_categoria_ingrediente: 2, nombre: 'Lácteos y huevos' },
+];
+const ALERGENOS = [
+  { id_alergeno: 1, nombre: 'Lácteos' },
+  { id_alergeno: 2, nombre: 'Huevo' },
+];
 const ing = (id, nombre, cat, extra = {}) => ({
-  id_ingrediente: id, nombre, id_categoria_ingrediente: cat, calorias_100g: '120', proteinas_100g: '20', carbohidratos_100g: '0',
-  grasas_100g: '4', sin_cuantificar: false, alergenos: [], usos: 2, ...extra,
+  id_ingrediente: id,
+  nombre,
+  id_categoria_ingrediente: cat,
+  calorias_100g: '120',
+  proteinas_100g: '20',
+  carbohidratos_100g: '0',
+  grasas_100g: '4',
+  sin_cuantificar: false,
+  alergenos: [],
+  usos: 2,
+  ...extra,
 });
 const LISTA = [
   ing(1, 'Pechuga de pollo', 1),
   ing(2, 'Queso mantecoso', 2, { alergenos: ['Lácteos'], usos: 0 }),
-  ing(3, 'Comino', null, { sin_cuantificar: true, calorias_100g: null, proteinas_100g: null, carbohidratos_100g: null, grasas_100g: null, usos: 1 }),
+  ing(3, 'Comino', null, {
+    sin_cuantificar: true,
+    calorias_100g: null,
+    proteinas_100g: null,
+    carbohidratos_100g: null,
+    grasas_100g: null,
+    usos: 1,
+  }),
   ing(4, 'Ricota', 2, { calorias_100g: null, usos: 0 }),
 ];
 
-const montar = () => render(<ConfirmacionProvider><IngredientesPage /></ConfirmacionProvider>);
+const montar = () =>
+  render(
+    <ConfirmacionProvider>
+      <IngredientesPage />
+    </ConfirmacionProvider>
+  );
 const filaDe = async (nombre) => (await screen.findByText(nombre)).closest('tr');
 
 describe('IngredientesPage', () => {
@@ -99,10 +130,18 @@ describe('IngredientesPage', () => {
     await usuario.type(within(dialogo).getByLabelText('Carbohidratos (g)'), '0.7');
     await usuario.type(within(dialogo).getByLabelText('Grasas (g)'), '9.5');
     await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar ingrediente' }));
-    await waitFor(() => expect(api.crearIngrediente).toHaveBeenCalledWith({
-      nombre: 'Huevo de gallina', id_categoria_ingrediente: 2, sin_cuantificar: false, alergenos: ['Huevo'],
-      calorias_100g: 143, proteinas_100g: 12.6, carbohidratos_100g: 0.7, grasas_100g: 9.5,
-    }));
+    await waitFor(() =>
+      expect(api.crearIngrediente).toHaveBeenCalledWith({
+        nombre: 'Huevo de gallina',
+        id_categoria_ingrediente: 2,
+        sin_cuantificar: false,
+        alergenos: ['Huevo'],
+        calorias_100g: 143,
+        proteinas_100g: 12.6,
+        carbohidratos_100g: 0.7,
+        grasas_100g: 9.5,
+      })
+    );
     expect(await screen.findByText('Ingrediente creado.')).toBeInTheDocument();
   });
 
@@ -129,8 +168,15 @@ describe('IngredientesPage', () => {
     await usuario.clear(within(dialogo).getByLabelText('Calorías (kcal)'));
     await usuario.type(within(dialogo).getByLabelText('Calorías (kcal)'), '165');
     await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar cambios' }));
-    await waitFor(() => expect(api.actualizarIngrediente).toHaveBeenCalledWith(1, expect.objectContaining({ calorias_100g: 165, id_categoria_ingrediente: 1 })));
-    expect(await screen.findByText(/3 preparación\(es\) con nutrición calculada se recalcularon; 1 quedaron sin información/)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(api.actualizarIngrediente).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ calorias_100g: 165, id_categoria_ingrediente: 1 })
+      )
+    );
+    expect(
+      await screen.findByText(/3 preparación\(es\) con nutrición calculada se recalcularon; 1 quedaron sin información/)
+    ).toBeInTheDocument();
   });
 
   it('borrar pide confirmación y no borra si se cancela', async () => {

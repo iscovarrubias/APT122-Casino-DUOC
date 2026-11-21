@@ -4,8 +4,13 @@ import userEvent from '@testing-library/user-event';
 import RecetaModal from './RecetaModal';
 
 const BUDIN = {
-  id_preparacion: 7, nombre: 'Budín de Zapallitos', tipo: 'Plato Principal', activa: true, porciones_receta: 10,
-  descripcion: 'Budín gratinado.', base_nombre: null,
+  id_preparacion: 7,
+  nombre: 'Budín de Zapallitos',
+  tipo: 'Plato Principal',
+  activa: true,
+  porciones_receta: 10,
+  descripcion: 'Budín gratinado.',
+  base_nombre: null,
   ingredientes_detalle: [
     { id_ingrediente: 1, nombre: 'Zapallito italiano', cantidad_g: 2500 },
     { id_ingrediente: 2, nombre: 'Queso', cantidad_g: 300 },
@@ -40,7 +45,14 @@ describe('RecetaModal', () => {
   });
 
   it('indica de qué plato es variación', () => {
-    render(<RecetaModal preparacion={{ ...BUDIN, nombre: 'Budín sin queso', base_nombre: 'Budín de Zapallitos' }} puedeCrearVariacion={false} onCrearVariacion={vi.fn()} onCerrar={vi.fn()} />);
+    render(
+      <RecetaModal
+        preparacion={{ ...BUDIN, nombre: 'Budín sin queso', base_nombre: 'Budín de Zapallitos' }}
+        puedeCrearVariacion={false}
+        onCrearVariacion={vi.fn()}
+        onCerrar={vi.fn()}
+      />
+    );
     expect(screen.getByText('Variación de Budín de Zapallitos')).toBeInTheDocument();
   });
 });

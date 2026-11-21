@@ -17,7 +17,9 @@ function leerGuardado() {
 export function aplicarTema(nuevo) {
   temaActual = nuevo;
   document.documentElement.dataset.theme = nuevo === 'oscuro' ? 'oscuro' : '';
-  try { localStorage.setItem(CLAVE, nuevo); } catch {}
+  try {
+    localStorage.setItem(CLAVE, nuevo);
+  } catch {}
   suscriptores.forEach((cb) => cb());
 }
 
@@ -38,7 +40,7 @@ export function useTema() {
   const alternar = () => {
     const nuevo = tema === 'oscuro' ? 'claro' : 'oscuro';
     aplicarTema(nuevo);
-    
+
     if (usuario) {
       pedir('/api/auth/tema', { metodo: 'PATCH', cuerpo: { tema: nuevo } }).catch(() => {});
     }

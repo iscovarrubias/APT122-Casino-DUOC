@@ -11,8 +11,7 @@ export default function BotonFavorito({ idPreparacion, nombre }) {
     try {
       if (esFavorito) await quitarFavorito(idPreparacion);
       else await marcarFavorito(idPreparacion);
-    } catch {
-    }
+    } catch {}
   };
 
   return (

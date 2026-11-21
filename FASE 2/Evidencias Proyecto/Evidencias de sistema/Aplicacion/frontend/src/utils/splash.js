@@ -17,5 +17,7 @@ export function debeMostrarSplash() {
 }
 
 export function marcarSplashVisto() {
-  try { sessionStorage.setItem(CLAVE, '1'); } catch {  }
+  try {
+    sessionStorage.setItem(CLAVE, '1');
+  } catch {}
 }

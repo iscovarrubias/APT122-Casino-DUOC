@@ -18,15 +18,7 @@ export default function ImagenOIcono({ url, tipo, tamano = 40, className = 'card
   const [fallo, setFallo] = useState(false);
 
   if (url && !fallo) {
-    return (
-      <img
-        src={resolverUrl(url)}
-        alt=""
-        className={className}
-        loading="lazy"
-        onError={() => setFallo(true)}
-      />
-    );
+    return <img src={resolverUrl(url)} alt="" className={className} loading="lazy" onError={() => setFallo(true)} />;
   }
   return <IconoComponente tipo={tipo} tamano={tamano} />;
 }

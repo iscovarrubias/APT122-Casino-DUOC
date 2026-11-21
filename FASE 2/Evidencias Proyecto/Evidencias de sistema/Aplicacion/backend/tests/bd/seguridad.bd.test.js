@@ -16,7 +16,7 @@ test.after(async () => {
 });
 
 const firmar = (payload, secreto = process.env.JWT_SECRET, opciones = {}) => jwt.sign(payload, secreto, { expiresIn: '1h', ...opciones });
-const datosAdmin = async () => (await pool.query("SELECT id_usuario, email, id_sede FROM usuario WHERE email = $1", [ADMIN.email])).rows[0];
+const datosAdmin = async () => (await pool.query('SELECT id_usuario, email, id_sede FROM usuario WHERE email = $1', [ADMIN.email])).rows[0];
 
 test.describe('Autenticación con tokens', () => {
   test('SEG-01 rechaza un token firmado con otra clave', async () => {
@@ -76,7 +76,10 @@ test.describe('Inicio de sesión', () => {
     };
     const conCuenta = await medir((await s.crearUsuario(admin, 'Cajero', 'tiempo')).email);
     const sinCuenta = await medir(`fantasma.${Date.now()}@duocuc.cl`);
-    assert.ok(Math.abs(conCuenta - sinCuenta) < Math.max(conCuenta, sinCuenta) * 0.6 + 25, `con cuenta ${conCuenta.toFixed(1)} ms, sin cuenta ${sinCuenta.toFixed(1)} ms`);
+    assert.ok(
+      Math.abs(conCuenta - sinCuenta) < Math.max(conCuenta, sinCuenta) * 0.6 + 25,
+      `con cuenta ${conCuenta.toFixed(1)} ms, sin cuenta ${sinCuenta.toFixed(1)} ms`
+    );
   });
 
   test('SEG-09 bloquea una cuenta con 429 tras 8 intentos fallidos y avisa cuándo reintentar', async () => {
@@ -102,7 +105,12 @@ test.describe('Inicio de sesión', () => {
       await s.api('POST', '/auth/login', ADMIN),
       await s.api('GET', '/auth/yo', undefined, admin),
       await s.api('GET', '/usuarios', undefined, admin),
-      await s.api('POST', '/usuarios', { nombre: 'Sin hash', email: `sinhash.${Date.now()}@duocuc.cl`, password: 'Test1234', rol: 'Cajero' }, admin),
+      await s.api(
+        'POST',
+        '/usuarios',
+        { nombre: 'Sin hash', email: `sinhash.${Date.now()}@duocuc.cl`, password: 'Test1234', rol: 'Cajero' },
+        admin
+      ),
     ];
     for (const r of respuestas) {
       assert.ok(r.s < 400, r.texto);
@@ -111,7 +119,11 @@ test.describe('Inicio de sesión', () => {
   });
 
   test('SEG-12 el inicio de sesión rechaza tipos inesperados sin romperse (objetos en vez de texto)', async () => {
-    for (const cuerpo of [{ email: { $ne: null }, password: 'x' }, { email: ADMIN.email, password: { $gt: '' } }, { email: [ADMIN.email], password: ['Test1234'] }]) {
+    for (const cuerpo of [
+      { email: { $ne: null }, password: 'x' },
+      { email: ADMIN.email, password: { $gt: '' } },
+      { email: [ADMIN.email], password: ['Test1234'] },
+    ]) {
       assert.equal((await s.api('POST', '/auth/login', cuerpo)).s, 400);
     }
   });
@@ -143,7 +155,14 @@ test.describe('Autorización por rol', () => {
 
   test('SEG-14 un estudiante no entra a ninguna ruta del personal', async () => {
     const alumno = await s.crearEstudiante();
-    for (const [metodo, ruta] of [['GET', '/usuarios'], ['GET', '/jornada/hoy'], ['GET', '/preparaciones/gestion'], ['GET', '/analisis/resumen'], ['GET', '/opiniones'], ['POST', '/jornada/ventas']]) {
+    for (const [metodo, ruta] of [
+      ['GET', '/usuarios'],
+      ['GET', '/jornada/hoy'],
+      ['GET', '/preparaciones/gestion'],
+      ['GET', '/analisis/resumen'],
+      ['GET', '/opiniones'],
+      ['POST', '/jornada/ventas'],
+    ]) {
       assert.equal((await s.api(metodo, ruta, metodo === 'GET' ? undefined : {}, alumno.token)).s, 403, `${metodo} ${ruta}`);
     }
   });
@@ -163,7 +182,11 @@ test.describe('Aislamiento entre estudiantes', () => {
 
     assert.equal((await s.api('PUT', '/estudiante/alergias', { alergenos: [nombreAlergeno] }, ana.token)).s, 200);
     assert.equal((await s.api('PUT', `/estudiante/favoritos/${plato.id_preparacion}`, {}, ana.token)).s, 200);
-    assert.equal((await s.api('PUT', `/estudiante/calificaciones/${plato.id_preparacion}`, { estrellas: 5, comentario: 'Privado de Ana' }, ana.token)).s, 200);
+    assert.equal(
+      (await s.api('PUT', `/estudiante/calificaciones/${plato.id_preparacion}`, { estrellas: 5, comentario: 'Privado de Ana' }, ana.token))
+        .s,
+      200
+    );
 
     const perfilBeto = (await s.api('GET', '/estudiante/perfil', undefined, beto.token)).d;
     assert.deepEqual(perfilBeto.alergias, []);
@@ -187,10 +210,21 @@ test.describe('Aislamiento entre estudiantes', () => {
 test.describe('Entradas maliciosas', () => {
   test('SEG-18 ignora campos inyectados al crear un usuario (sede, estado, hash)', async () => {
     const email = `inyeccion.${Date.now()}@duocuc.cl`;
-    const r = await s.api('POST', '/usuarios', {
-      nombre: 'Inyección', email, password: 'Test1234', rol: 'Cajero',
-      id_sede: 999999, activo: false, password_hash: 'texto-plano', id_usuario: 1,
-    }, admin);
+    const r = await s.api(
+      'POST',
+      '/usuarios',
+      {
+        nombre: 'Inyección',
+        email,
+        password: 'Test1234',
+        rol: 'Cajero',
+        id_sede: 999999,
+        activo: false,
+        password_hash: 'texto-plano',
+        id_usuario: 1,
+      },
+      admin
+    );
     assert.equal(r.s, 201, r.texto);
     const fila = (await pool.query('SELECT id_usuario, id_sede, activo, password_hash FROM usuario WHERE email = $1', [email])).rows[0];
     assert.equal(fila.id_sede, (await datosAdmin()).id_sede);
@@ -201,7 +235,12 @@ test.describe('Entradas maliciosas', () => {
 
   test('SEG-19 al editar un usuario no se puede cambiar su correo ni su contraseña por la puerta de atrás', async () => {
     const persona = await s.crearUsuario(admin, 'Cajero', 'edicion');
-    const r = await s.api('PATCH', `/usuarios/${persona.id_usuario}`, { nombre: 'Editado', email: 'robado@duocuc.cl', password_hash: 'x', id_sede: 999999 }, admin);
+    const r = await s.api(
+      'PATCH',
+      `/usuarios/${persona.id_usuario}`,
+      { nombre: 'Editado', email: 'robado@duocuc.cl', password_hash: 'x', id_sede: 999999 },
+      admin
+    );
     assert.equal(r.s, 200, r.texto);
     const fila = (await pool.query('SELECT email, id_sede FROM usuario WHERE id_usuario = $1', [persona.id_usuario])).rows[0];
     assert.equal(fila.email, persona.email);
@@ -253,7 +292,11 @@ test.describe('Entradas maliciosas', () => {
 
   test('SEG-25 un ejecutable con extensión de imagen y tipo inventado se rechaza', async () => {
     const formulario = new FormData();
-    formulario.append('imagen', new Blob([Buffer.from('MZ\x90\x00\x03\x00\x00\x00\x04\x00\x00\x00')], { type: 'application/x-msdownload' }), 'foto.jpg');
+    formulario.append(
+      'imagen',
+      new Blob([Buffer.from('MZ\x90\x00\x03\x00\x00\x00\x04\x00\x00\x00')], { type: 'application/x-msdownload' }),
+      'foto.jpg'
+    );
     const r = await s.api('POST', '/preparaciones/imagen', formulario, admin);
     assert.equal(r.s, 400);
   });

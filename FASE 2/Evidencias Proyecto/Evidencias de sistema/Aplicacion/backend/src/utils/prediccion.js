@@ -12,7 +12,10 @@ function diaSemana(fecha) {
 function ponderada(valores) {
   let pesos = 0;
   let suma = 0;
-  valores.forEach((v, i) => { pesos += i + 1; suma += (i + 1) * v; });
+  valores.forEach((v, i) => {
+    pesos += i + 1;
+    suma += (i + 1) * v;
+  });
   return suma / pesos;
 }
 
@@ -26,23 +29,31 @@ function estimarDemanda(observaciones, fecha, { ventana = 4, minimo = 2 } = {}) 
   const previas = observaciones.filter((o) => o.fecha < fecha);
   let base = 'mismo_dia';
   let muestra = previas.filter((o) => o.dow === diaSemana(fecha)).slice(-ventana);
-  if (muestra.length < minimo) { muestra = previas.slice(-ventana * 2); base = 'general'; }
+  if (muestra.length < minimo) {
+    muestra = previas.slice(-ventana * 2);
+    base = 'general';
+  }
   if (muestra.length < minimo) return null;
 
   const valores = muestra.map(demandaAjustada);
   const media = ponderada(valores);
   const sd = desviacion(valores);
   return {
-    base, n: muestra.length, censuradas: muestra.filter((o) => o.agoto).length,
-    media: r1(media), desviacion: r1(sd),
+    base,
+    n: muestra.length,
+    censuradas: muestra.filter((o) => o.agoto).length,
+    media: r1(media),
+    desviacion: r1(sd),
     sugerido: redondearA5(media + 0.5 * sd),
-    minimo: Math.max(0, Math.floor(media - sd)), maximo: Math.ceil(media + sd),
+    minimo: Math.max(0, Math.floor(media - sd)),
+    maximo: Math.ceil(media + sd),
   };
 }
 
 function resumirDemanda(s) {
   return {
-    dias: s.n, dias_sin_agotar: s.sinCensura,
+    dias: s.n,
+    dias_sin_agotar: s.sinCensura,
     mae_modelo: s.sinCensura ? r1(s.errModelo / s.sinCensura) : null,
     mae_base: s.sinCensura ? r1(s.errBase / s.sinCensura) : null,
     mejora_pct: s.sinCensura && s.errBase > 0 ? Math.round((1 - s.errModelo / s.errBase) * 100) : null,
@@ -93,7 +104,7 @@ function estimarAgotamiento({ curva, restante, vendidasHoy, ahora, cierre, paso 
   const porBin = new Map(curva.map((c) => [c.bin, c.unidades]));
   const esperadoHoy = (() => {
     let s = 0;
-    for (let b = curva[0].bin; b < ahora; b += paso) s += (porBin.get(b) || 0) * (Math.min(b + paso, ahora) - b) / paso;
+    for (let b = curva[0].bin; b < ahora; b += paso) s += ((porBin.get(b) || 0) * (Math.min(b + paso, ahora) - b)) / paso;
     return s;
   })();
   const escala = esperadoHoy > 0 && vendidasHoy > 0 ? acotar(vendidasHoy / esperadoHoy, 0.5, 2) : 1;
@@ -105,7 +116,13 @@ function estimarAgotamiento({ curva, restante, vendidasHoy, ahora, cierre, paso 
     const unidades = (porBin.get(b) || 0) * escala * ((fin - ini) / paso);
     if (unidades > 0 && acum + unidades >= restante - 1e-9) {
       const minuto = Math.round(ini + ((restante - acum) / unidades) * (fin - ini));
-      return { agotaria: true, minuto, hora: hhmm(minuto), minutos_restantes: Math.max(0, minuto - ahora), escala: Math.round(escala * 100) / 100 };
+      return {
+        agotaria: true,
+        minuto,
+        hora: hhmm(minuto),
+        minutos_restantes: Math.max(0, minuto - ahora),
+        escala: Math.round(escala * 100) / 100,
+      };
     }
     acum += unidades;
   }
@@ -114,7 +131,8 @@ function estimarAgotamiento({ curva, restante, vendidasHoy, ahora, cierre, paso 
 
 function resumirAgotamiento(s) {
   return {
-    dias: s.n, sin_estimacion: s.n - s.nModelo,
+    dias: s.n,
+    sin_estimacion: s.n - s.nModelo,
     mae_modelo_min: s.nModelo ? r1(s.errModelo / s.nModelo) : null,
     mae_simple_min: s.nSimple ? r1(s.errSimple / s.nSimple) : null,
     dentro_15_min_pct: s.n ? Math.round((100 * s.dentro15) / s.n) : null,
@@ -134,7 +152,10 @@ function backtestAgotamiento(dias, { minHistoria = 4, cierre = 960, paso = PASO 
     let ahora = null;
     for (const b of bins) {
       vendidas += b.unidades;
-      if (vendidas >= d.planificado * 0.5) { ahora = b.bin + paso; break; }
+      if (vendidas >= d.planificado * 0.5) {
+        ahora = b.bin + paso;
+        break;
+      }
     }
     const restante = d.planificado - vendidas;
     if (ahora == null || restante <= 0) continue;
@@ -142,27 +163,45 @@ function backtestAgotamiento(dias, { minHistoria = 4, cierre = 960, paso = PASO 
     const pred = estimarAgotamiento({ curva, restante, vendidasHoy: vendidas, ahora, cierre, paso });
     if (pred && pred.agotaria) {
       const e = Math.abs(pred.minuto - d.hora_agotado);
-      s.nModelo++; s.errModelo += e;
+      s.nModelo++;
+      s.errModelo += e;
       if (e <= 15) s.dentro15++;
     }
     const ritmo = vendidas / Math.max(ahora - bins[0].bin, 1);
-    s.nSimple++; s.errSimple += Math.abs(ahora + restante / ritmo - d.hora_agotado);
+    s.nSimple++;
+    s.errSimple += Math.abs(ahora + restante / ritmo - d.hora_agotado);
   }
   return { ...resumirAgotamiento(s), sumas: s };
 }
 
 function combinarDemanda(lista) {
   const t = sumasDemandaVacias();
-  lista.forEach((x) => Object.keys(t).forEach((k) => { t[k] += x.sumas[k]; }));
+  lista.forEach((x) =>
+    Object.keys(t).forEach((k) => {
+      t[k] += x.sumas[k];
+    })
+  );
   return resumirDemanda(t);
 }
 function combinarAgotamiento(lista) {
   const t = sumasAgotamientoVacias();
-  lista.forEach((x) => Object.keys(t).forEach((k) => { t[k] += x.sumas[k]; }));
+  lista.forEach((x) =>
+    Object.keys(t).forEach((k) => {
+      t[k] += x.sumas[k];
+    })
+  );
   return resumirAgotamiento(t);
 }
 
 module.exports = {
-  diaSemana, estimarDemanda, backtestDemanda, construirCurva, estimarAgotamiento,
-  backtestAgotamiento, combinarDemanda, combinarAgotamiento, FACTOR_CENSURA, PASO,
+  diaSemana,
+  estimarDemanda,
+  backtestDemanda,
+  construirCurva,
+  estimarAgotamiento,
+  backtestAgotamiento,
+  combinarDemanda,
+  combinarAgotamiento,
+  FACTOR_CENSURA,
+  PASO,
 };

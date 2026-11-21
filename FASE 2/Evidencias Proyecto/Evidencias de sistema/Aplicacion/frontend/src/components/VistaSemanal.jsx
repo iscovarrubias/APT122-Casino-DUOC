@@ -17,9 +17,9 @@ const TIPOS_FILA = [
 ];
 
 const COMPOSICION_POR_DEFECTO = {
-  General:    ['Ensalada', 'Sopa', 'Pan', 'Bebida', 'Postre', 'Fruta'],
-  JUNAEB:       ['Bebida'],
-  Vegetariano:  ['Ensalada', 'Sopa', 'Pan', 'Bebida', 'Postre', 'Fruta'],
+  General: ['Ensalada', 'Sopa', 'Pan', 'Bebida', 'Postre', 'Fruta'],
+  JUNAEB: ['Bebida'],
+  Vegetariano: ['Ensalada', 'Sopa', 'Pan', 'Bebida', 'Postre', 'Fruta'],
   Hipocalórico: ['Ensalada', 'Sopa', 'Fruta', 'Bebida'],
 };
 
@@ -38,7 +38,7 @@ function formatearFechaLarga(fecha) {
 }
 
 function colorComponente(categoria) {
-  if (!categoria) return { color: '#6B7280', light: '#EEF0F3' };
+  if (!categoria) return { color: '#4B5563', light: '#EEF0F3', texto: '#4B5563' };
   return CATEGORIAS_COLOR[categoria] || CATEGORIAS_COLOR.General;
 }
 
@@ -106,16 +106,16 @@ function TablaMenuDia({ menu, composicion }) {
   const filas = TIPOS_FILA.filter((f) => f.key !== 'pan' || hayPan);
 
   return (
-    <div className="semanal-tabla-scroll">
+    <div className="semanal-tabla-scroll" tabIndex={0} role="region" aria-label="Menú de la semana por categoría">
       <table className="semanal-tabla">
         <thead>
           <tr>
             <th className="semanal-tabla-esquina" aria-hidden="true"></th>
             {categorias.map((cat) => {
-              const { color, light } = colorComponente(cat);
+              const { texto, light } = colorComponente(cat);
               return (
                 <th key={cat}>
-                  <span className="semanal-tipo" style={{ color, background: light }}>
+                  <span className="semanal-tipo" style={{ color: texto, background: light }}>
                     {cat}
                   </span>
                 </th>
@@ -174,7 +174,9 @@ export default function VistaSemanal() {
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
   useEffect(() => {
     if (!inicializado.current && menus && menus.length > 0) {
       inicializado.current = true;
@@ -198,16 +200,17 @@ export default function VistaSemanal() {
 
   if (cargando) return <PantallaCarga compacta mensaje="Cargando menú semanal…" />;
 
-  if (error) return (
-    <PaginaError
-      compacta
-      codigo={error.estado ?? 0}
-      detalle={error.message}
-      onReintentar={cargar}
-      rutaInicio="/"
-      textoInicio="Ir al Menú Diario"
-    />
-  );
+  if (error)
+    return (
+      <PaginaError
+        compacta
+        codigo={error.estado ?? 0}
+        detalle={error.message}
+        onReintentar={cargar}
+        rutaInicio="/"
+        textoInicio="Ir al Menú Diario"
+      />
+    );
 
   return (
     <div className="semanal-acordeon">
@@ -215,32 +218,30 @@ export default function VistaSemanal() {
         const expandido = abierto === fechaISO;
         const total = categoriasDelDia(menu, composicion).length;
         return (
-          <section
-            key={fechaISO}
-            className={`semanal-card ${esHoy ? 'semanal-card-hoy' : ''} ${expandido ? 'abierto' : ''}`}
-          >
-            <button
-              type="button"
-              className="semanal-card-header"
-              aria-expanded={expandido}
-              onClick={() => alternar(fechaISO)}
-            >
+          <section key={fechaISO} className={`semanal-card ${esHoy ? 'semanal-card-hoy' : ''} ${expandido ? 'abierto' : ''}`}>
+            <button type="button" className="semanal-card-header" aria-expanded={expandido} onClick={() => alternar(fechaISO)}>
               <div className="semanal-card-titulo">
                 <span className="semanal-card-dia">{nombre}</span>
                 {esHoy && <span className="semanal-badge-hoy">Hoy</span>}
                 <span className="semanal-card-fecha">{formatearFechaLarga(fecha)}</span>
               </div>
               <div className="semanal-card-resumen">
-                {menu
-                  ? <span className="semanal-card-count">{total} {total === 1 ? 'menú' : 'menús'}</span>
-                  : <span className="semanal-card-vacio">Sin menú</span>}
-                <span className="semanal-chevron" aria-hidden="true">{expandido ? '−' : '+'}</span>
+                {menu ? (
+                  <span className="semanal-card-count">
+                    {total} {total === 1 ? 'menú' : 'menús'}
+                  </span>
+                ) : (
+                  <span className="semanal-card-vacio">Sin menú</span>
+                )}
+                <span className="semanal-chevron" aria-hidden="true">
+                  {expandido ? '−' : '+'}
+                </span>
               </div>
             </button>
 
             {expandido && (
               <div className="semanal-card-cuerpo">
-              <TablaMenuDia menu={menu} composicion={composicion} />
+                <TablaMenuDia menu={menu} composicion={composicion} />
               </div>
             )}
           </section>

@@ -7,9 +7,11 @@ const DIR = __dirname;
 const baseline = process.argv.includes('--baseline');
 
 const orden = (f) => Number((f.match(/sprint(\d+)/) || [])[1] || 0);
-const migraciones = () => fs.readdirSync(DIR)
-  .filter((f) => /^migracion_.*\.sql$/.test(f))
-  .sort((a, b) => orden(a) - orden(b) || a.localeCompare(b));
+const migraciones = () =>
+  fs
+    .readdirSync(DIR)
+    .filter((f) => /^migracion_.*\.sql$/.test(f))
+    .sort((a, b) => orden(a) - orden(b) || a.localeCompare(b));
 
 async function main() {
   if (!process.env.DATABASE_URL) throw new Error('Falta DATABASE_URL.');
@@ -25,7 +27,9 @@ async function main() {
       console.log('Base vacía: creando el esquema base (schema.sql).');
       await cliente.query(fs.readFileSync(path.join(DIR, 'schema.sql'), 'utf8'));
     } else if (hechas.size === 0 && !baseline) {
-      throw new Error('La base ya tiene tablas pero no hay registro de migraciones. Si ya aplicaste todo a mano, ejecuta: npm run migrar -- --baseline');
+      throw new Error(
+        'La base ya tiene tablas pero no hay registro de migraciones. Si ya aplicaste todo a mano, ejecuta: npm run migrar -- --baseline'
+      );
     }
 
     for (const archivo of migraciones()) {
@@ -51,4 +55,7 @@ async function main() {
   }
 }
 
-main().catch((err) => { console.error(err.message); process.exit(1); });
+main().catch((err) => {
+  console.error(err.message);
+  process.exit(1);
+});

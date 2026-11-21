@@ -3,8 +3,14 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../api/gestion', () => ({
-  consultarJornadaHoy: vi.fn(), iniciarJornada: vi.fn(), cerrarJornada: vi.fn(), corregirCierre: vi.fn(),
-  ajustarStock: vi.fn(), anularVenta: vi.fn(), consultarPrediccionHoy: vi.fn(), registrarVenta: vi.fn(),
+  consultarJornadaHoy: vi.fn(),
+  iniciarJornada: vi.fn(),
+  cerrarJornada: vi.fn(),
+  corregirCierre: vi.fn(),
+  ajustarStock: vi.fn(),
+  anularVenta: vi.fn(),
+  consultarPrediccionHoy: vi.fn(),
+  registrarVenta: vi.fn(),
 }));
 vi.mock('../utils/eventos', () => ({ suscribirCambios: vi.fn(() => () => {}) }));
 
@@ -13,8 +19,17 @@ import { suscribirCambios } from '../utils/eventos';
 import KioscoPage from './KioscoPage';
 
 const comp = (id, componente, categoria, preparacion, restante = 20, extra = {}) => ({
-  id_menu_preparacion: id, componente, categoria, preparacion, restante, cantidad_planificada: 20, total_disponible: 20,
-  vendidas: 20 - restante, disponibilidad: restante <= 0 ? 'agotado' : restante <= 6 ? 'baja_disponibilidad' : 'disponible', precio: 3500, ...extra,
+  id_menu_preparacion: id,
+  componente,
+  categoria,
+  preparacion,
+  restante,
+  cantidad_planificada: 20,
+  total_disponible: 20,
+  vendidas: 20 - restante,
+  disponibilidad: restante <= 0 ? 'agotado' : restante <= 6 ? 'baja_disponibilidad' : 'disponible',
+  precio: 3500,
+  ...extra,
 });
 const COMPONENTES = [
   comp(5, 'Postre', null, 'Flan'),
@@ -23,7 +38,13 @@ const COMPONENTES = [
   comp(6, 'Bebida', null, 'Jugo de naranja'),
 ];
 const MENU = { id_menu: 1, publicado: true };
-const ABIERTA = { menu: MENU, jornada: { estado: 'abierta', iniciada_en: '2026-11-20T12:00:00' }, componentes: COMPONENTES, composicion: {}, ventas_recientes: [] };
+const ABIERTA = {
+  menu: MENU,
+  jornada: { estado: 'abierta', iniciada_en: '2026-11-20T12:00:00' },
+  componentes: COMPONENTES,
+  composicion: {},
+  ventas_recientes: [],
+};
 
 describe('KioscoPage: disponibilidad de la cocina', () => {
   beforeEach(() => {
@@ -65,7 +86,10 @@ describe('KioscoPage: disponibilidad de la cocina', () => {
     expect(filas[0]).toMatch(/General/);
     expect(filas[1]).toMatch(/JUNAEB/);
     expect(filas[2]).toMatch(/Postre/);
-    const campoPollo = screen.getByText(/Pollo arvejado/).closest('label').querySelector('input');
+    const campoPollo = screen
+      .getByText(/Pollo arvejado/)
+      .closest('label')
+      .querySelector('input');
     await usuario.clear(campoPollo);
     await usuario.type(campoPollo, '45');
     await usuario.click(screen.getByRole('button', { name: 'Iniciar jornada' }));
@@ -104,7 +128,9 @@ describe('KioscoPage: disponibilidad de la cocina', () => {
     const usuario = userEvent.setup();
     render(<KioscoPage />);
     await usuario.click(await screen.findByText('Corregir cantidades o registrar reposición'));
-    await usuario.click(within(screen.getByLabelText('Cuántas quedan de Flan').closest('.stock-fila')).getByRole('button', { name: 'Repuse…' }));
+    await usuario.click(
+      within(screen.getByLabelText('Cuántas quedan de Flan').closest('.stock-fila')).getByRole('button', { name: 'Repuse…' })
+    );
     expect(api.ajustarStock).not.toHaveBeenCalled();
   });
 
@@ -131,7 +157,11 @@ describe('KioscoPage: disponibilidad de la cocina', () => {
   });
 
   it('con la jornada cerrada muestra la tabla final y permite corregir el conteo', async () => {
-    api.consultarJornadaHoy.mockResolvedValue({ ...ABIERTA, jornada: { estado: 'cerrada', cerrada_en: '2026-11-20T15:30:00', cierre_automatico: true }, componentes: [comp(1, 'Plato Principal', 'General', 'Pollo arvejado', 3, { ajuste_cierre: -2 })] });
+    api.consultarJornadaHoy.mockResolvedValue({
+      ...ABIERTA,
+      jornada: { estado: 'cerrada', cerrada_en: '2026-11-20T15:30:00', cierre_automatico: true },
+      componentes: [comp(1, 'Plato Principal', 'General', 'Pollo arvejado', 3, { ajuste_cierre: -2 })],
+    });
     const usuario = userEvent.setup();
     render(<KioscoPage />);
     expect(await screen.findByText(/cierre automático: sin conteo de sobrantes/)).toBeInTheDocument();

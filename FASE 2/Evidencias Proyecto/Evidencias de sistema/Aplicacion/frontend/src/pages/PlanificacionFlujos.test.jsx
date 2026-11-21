@@ -3,37 +3,97 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../api/gestion', () => ({
-  consultarPlanificacion: vi.fn(), listarPreparaciones: vi.fn(), agregarComponente: vi.fn(), actualizarComponente: vi.fn(),
-  quitarComponente: vi.fn(), publicarMenu: vi.fn(), despublicarMenu: vi.fn(), consultarMes: vi.fn(), copiarMenus: vi.fn(),
-  consultarSugerencias: vi.fn(), listarCatalogoAlergenos: vi.fn(), listarIngredientes: vi.fn(),
-  crearPreparacion: vi.fn(), actualizarPreparacion: vi.fn(), asignarAlergenos: vi.fn(), guardarNutricion: vi.fn(),
-  subirImagen: vi.fn(), calcularNutricionApi: vi.fn(), desactivarPreparacion: vi.fn(), reactivarPreparacion: vi.fn(), eliminarPreparacion: vi.fn(),
+  consultarPlanificacion: vi.fn(),
+  listarPreparaciones: vi.fn(),
+  agregarComponente: vi.fn(),
+  actualizarComponente: vi.fn(),
+  quitarComponente: vi.fn(),
+  publicarMenu: vi.fn(),
+  despublicarMenu: vi.fn(),
+  consultarMes: vi.fn(),
+  copiarMenus: vi.fn(),
+  consultarSugerencias: vi.fn(),
+  listarCatalogoAlergenos: vi.fn(),
+  listarIngredientes: vi.fn(),
+  crearPreparacion: vi.fn(),
+  actualizarPreparacion: vi.fn(),
+  asignarAlergenos: vi.fn(),
+  guardarNutricion: vi.fn(),
+  subirImagen: vi.fn(),
+  calcularNutricionApi: vi.fn(),
+  desactivarPreparacion: vi.fn(),
+  reactivarPreparacion: vi.fn(),
+  eliminarPreparacion: vi.fn(),
 }));
 vi.mock('../api/menu', () => ({ obtenerMenuHoy: vi.fn() }));
 vi.mock('../context/auth-context', () => ({ useAuth: () => ({ usuario: { rol: 'Administrador' } }) }));
-vi.mock('../components/ExportarMenu', () => ({ default: ({ vistaMes, onCerrar }) => <div role="dialog" aria-label="Exportar menú">{vistaMes ? 'mes' : 'semana'}<button type="button" onClick={onCerrar}>Cerrar exportar</button></div> }));
+vi.mock('../components/ExportarMenu', () => ({
+  default: ({ vistaMes, onCerrar }) => (
+    <div role="dialog" aria-label="Exportar menú">
+      {vistaMes ? 'mes' : 'semana'}
+      <button type="button" onClick={onCerrar}>
+        Cerrar exportar
+      </button>
+    </div>
+  ),
+}));
 
 import * as api from '../api/gestion';
 import { obtenerMenuHoy } from '../api/menu';
 import ConfirmacionProvider from '../context/ConfirmacionProvider';
 import PlanificacionPage from './PlanificacionPage';
 
-const p = (id, nombre, tipo = 'Plato Principal', extra = {}) => ({ id_preparacion: id, nombre, tipo, activa: true, ingredientes: [], ingredientes_detalle: [], alergenos: [], nutricion: null, id_preparacion_base: null, ...extra });
+const p = (id, nombre, tipo = 'Plato Principal', extra = {}) => ({
+  id_preparacion: id,
+  nombre,
+  tipo,
+  activa: true,
+  ingredientes: [],
+  ingredientes_detalle: [],
+  alergenos: [],
+  nutricion: null,
+  id_preparacion_base: null,
+  ...extra,
+});
 const PREPARACIONES = [
-  p(1, 'Pollo arvejado'), p(2, 'Arroz con pollo'), p(3, 'Budín de zapallitos'), p(4, 'Pollo a la plancha'),
-  p(10, 'Ensalada chilena', 'Ensalada'), p(11, 'Sopa de verduras', 'Sopa'), p(12, 'Pan amasado', 'Pan'),
-  p(13, 'Flan', 'Postre'), p(14, 'Manzana', 'Fruta'), p(15, 'Jugo de naranja', 'Bebida'), p(16, 'Agua mineral', 'Bebida'),
+  p(1, 'Pollo arvejado'),
+  p(2, 'Arroz con pollo'),
+  p(3, 'Budín de zapallitos'),
+  p(4, 'Pollo a la plancha'),
+  p(10, 'Ensalada chilena', 'Ensalada'),
+  p(11, 'Sopa de verduras', 'Sopa'),
+  p(12, 'Pan amasado', 'Pan'),
+  p(13, 'Flan', 'Postre'),
+  p(14, 'Manzana', 'Fruta'),
+  p(15, 'Jugo de naranja', 'Bebida'),
+  p(16, 'Agua mineral', 'Bebida'),
   p(17, 'Charquicán', 'Plato Principal', { activa: false }),
 ];
-const comp = (id, componente, categoria, id_preparacion, preparacion, cantidad = 50, precio = null) => ({ id_menu_preparacion: id, componente, categoria, id_preparacion, preparacion, cantidad_planificada: cantidad, precio });
+const comp = (id, componente, categoria, id_preparacion, preparacion, cantidad = 50, precio = null) => ({
+  id_menu_preparacion: id,
+  componente,
+  categoria,
+  id_preparacion,
+  preparacion,
+  cantidad_planificada: cantidad,
+  precio,
+});
 const VACIO = { menu: null, componentes: [], precios_recientes: { General: 3500, JUNAEB: 0 } };
 const PARCIAL = {
   menu: { id_menu: 9, publicado: false },
-  componentes: [comp(100, 'Plato Principal', 'General', 1, 'Pollo arvejado', 120, 3500), comp(101, 'Bebida', null, 15, 'Jugo de naranja', 200)],
+  componentes: [
+    comp(100, 'Plato Principal', 'General', 1, 'Pollo arvejado', 120, 3500),
+    comp(101, 'Bebida', null, 15, 'Jugo de naranja', 200),
+  ],
   precios_recientes: {},
 };
 
-const montar = () => render(<ConfirmacionProvider><PlanificacionPage /></ConfirmacionProvider>);
+const montar = () =>
+  render(
+    <ConfirmacionProvider>
+      <PlanificacionPage />
+    </ConfirmacionProvider>
+  );
 const tarjeta = (titulo) => screen.getByRole('combobox', { name: `Preparación para ${titulo}` }).closest('article');
 
 describe('Planificación: editar un día', () => {
@@ -42,8 +102,13 @@ describe('Planificación: editar un día', () => {
     vi.setSystemTime(new Date('2026-11-18T15:00:00Z'));
     vi.clearAllMocks();
     api.listarPreparaciones.mockResolvedValue(PREPARACIONES);
-    api.consultarSugerencias.mockResolvedValue({ categorias: [{ categoria: 'General', estimacion: { sugerido: 135, minimo: 120, maximo: 150, n: 4, base: 'mismo_dia' } }], compartidos: { por_tipo: { Bebida: 260 } } });
-    ['agregarComponente', 'actualizarComponente', 'quitarComponente', 'publicarMenu', 'despublicarMenu'].forEach((f) => api[f].mockResolvedValue({}));
+    api.consultarSugerencias.mockResolvedValue({
+      categorias: [{ categoria: 'General', estimacion: { sugerido: 135, minimo: 120, maximo: 150, n: 4, base: 'mismo_dia' } }],
+      compartidos: { por_tipo: { Bebida: 260 } },
+    });
+    ['agregarComponente', 'actualizarComponente', 'quitarComponente', 'publicarMenu', 'despublicarMenu'].forEach((f) =>
+      api[f].mockResolvedValue({})
+    );
   });
   afterEach(() => vi.useRealTimers());
 
@@ -60,7 +125,11 @@ describe('Planificación: editar un día', () => {
     montar();
     await screen.findByText(/Faltan 9/);
     expect(within(tarjeta('General')).queryByRole('option', { name: 'Charquicán' })).not.toBeInTheDocument();
-    expect(within(tarjeta('Bebida')).getAllByRole('option').map((o) => o.textContent)).toEqual(['Elegir preparación', 'Jugo de naranja', 'Agua mineral']);
+    expect(
+      within(tarjeta('Bebida'))
+        .getAllByRole('option')
+        .map((o) => o.textContent)
+    ).toEqual(['Elegir preparación', 'Jugo de naranja', 'Agua mineral']);
   });
 
   it('agrega un plato usando la sugerencia de cantidad', async () => {
@@ -74,7 +143,16 @@ describe('Planificación: editar un día', () => {
     await usuario.click(within(general).getByRole('button', { name: 'Usar' }));
     expect(within(general).getByLabelText('Cantidad planificada')).toHaveValue(135);
     await usuario.click(within(general).getByRole('button', { name: 'Agregar' }));
-    await waitFor(() => expect(api.agregarComponente).toHaveBeenCalledWith({ fecha: '2026-11-18', id_preparacion: 1, cantidad_planificada: 135, tipo_componente: 'Plato Principal', categoria: 'General', precio: 3500 }));
+    await waitFor(() =>
+      expect(api.agregarComponente).toHaveBeenCalledWith({
+        fecha: '2026-11-18',
+        id_preparacion: 1,
+        cantidad_planificada: 135,
+        tipo_componente: 'Plato Principal',
+        categoria: 'General',
+        precio: 3500,
+      })
+    );
     expect(await screen.findByText('Cambios guardados.')).toBeInTheDocument();
   });
 
@@ -90,7 +168,9 @@ describe('Planificación: editar un día', () => {
     await usuario.clear(within(general).getByLabelText('Cantidad planificada'));
     await usuario.type(within(general).getByLabelText('Cantidad planificada'), '140');
     await usuario.click(guardar);
-    await waitFor(() => expect(api.actualizarComponente).toHaveBeenCalledWith(100, { id_preparacion: 1, cantidad_planificada: 140, precio: 3500 }));
+    await waitFor(() =>
+      expect(api.actualizarComponente).toHaveBeenCalledWith(100, { id_preparacion: 1, cantidad_planificada: 140, precio: 3500 })
+    );
   });
 
   it('quitar un componente pide confirmación', async () => {
@@ -123,7 +203,11 @@ describe('Planificación: editar un día', () => {
     await screen.findByText(/Faltan 9/);
     await usuario.selectOptions(within(tarjeta('General')).getByRole('combobox'), '1');
     await usuario.click(screen.getByRole('button', { name: 'Guardar todo el menú' }));
-    expect(await screen.findByText(/No se agregó nada\. Falta: Plato Principal - General: falta la cantidad, Plato Principal - JUNAEB: falta el plato/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        /No se agregó nada\. Falta: Plato Principal - General: falta la cantidad, Plato Principal - JUNAEB: falta el plato/
+      )
+    ).toBeInTheDocument();
     expect(api.agregarComponente).not.toHaveBeenCalled();
   });
 
@@ -152,7 +236,9 @@ describe('Planificación: editar un día', () => {
     await llenar('Bebida', 15, 250);
     await usuario.click(screen.getByRole('button', { name: 'Guardar todo el menú' }));
     await waitFor(() => expect(api.agregarComponente).toHaveBeenCalledTimes(9));
-    expect(api.agregarComponente).toHaveBeenCalledWith(expect.objectContaining({ tipo_componente: 'Plato Principal', categoria: 'JUNAEB', precio: 0 }));
+    expect(api.agregarComponente).toHaveBeenCalledWith(
+      expect.objectContaining({ tipo_componente: 'Plato Principal', categoria: 'JUNAEB', precio: 0 })
+    );
     expect(api.agregarComponente).not.toHaveBeenCalledWith(expect.objectContaining({ tipo_componente: 'Pan' }));
     expect(await screen.findByText('9 cambio(s) guardado(s).')).toBeInTheDocument();
   }, 20000);
@@ -169,17 +255,32 @@ describe('Planificación: editar un día', () => {
     const [categoria] = within(d).getAllByRole('combobox');
     await usuario.selectOptions(categoria, 'JUNAEB');
     await waitFor(() => expect(within(d).getAllByRole('combobox')[1]).toBeInTheDocument());
-    expect(within(within(d).getAllByRole('combobox')[1]).getAllByRole('option').map((o) => o.textContent)).toEqual(['Elegir tipo', 'Bebida']);
+    expect(
+      within(within(d).getAllByRole('combobox')[1])
+        .getAllByRole('option')
+        .map((o) => o.textContent)
+    ).toEqual(['Elegir tipo', 'Bebida']);
     await usuario.selectOptions(within(d).getAllByRole('combobox')[1], 'Bebida');
     await usuario.selectOptions(within(d).getAllByRole('combobox')[2], '16');
     await usuario.type(within(d).getByRole('spinbutton'), '60');
     await usuario.click(within(d).getByRole('button', { name: 'Crear especial' }));
-    await waitFor(() => expect(api.agregarComponente).toHaveBeenCalledWith({ fecha: '2026-11-18', id_preparacion: 16, cantidad_planificada: 60, tipo_componente: 'Bebida', categoria: 'JUNAEB' }));
+    await waitFor(() =>
+      expect(api.agregarComponente).toHaveBeenCalledWith({
+        fecha: '2026-11-18',
+        id_preparacion: 16,
+        cantidad_planificada: 60,
+        tipo_componente: 'Bebida',
+        categoria: 'JUNAEB',
+      })
+    );
     expect(await screen.findByText('Acompañamiento especial creado.')).toBeInTheDocument();
   });
 
   it('un especial cargado aparece aparte y el compartido indica la excepción', async () => {
-    api.consultarPlanificacion.mockResolvedValue({ ...PARCIAL, componentes: [...PARCIAL.componentes, comp(102, 'Bebida', 'JUNAEB', 16, 'Agua mineral', 60)] });
+    api.consultarPlanificacion.mockResolvedValue({
+      ...PARCIAL,
+      componentes: [...PARCIAL.componentes, comp(102, 'Bebida', 'JUNAEB', 16, 'Agua mineral', 60)],
+    });
     montar();
     expect(await screen.findByText('Especiales de este día')).toBeInTheDocument();
     expect(screen.getByText('En todos los menús - excepto JUNAEB')).toBeInTheDocument();
@@ -218,10 +319,23 @@ describe('Planificación: editar un día', () => {
 });
 
 describe('Planificación: vista mensual y copiar y pegar', () => {
-  const MES = { dias: [
-    { fecha: '2026-11-16', publicado: true, componentes: [{ componente: 'Plato Principal', categoria: 'JUNAEB', preparacion: 'Arroz con pollo' }, { componente: 'Plato Principal', categoria: 'General', preparacion: 'Pollo arvejado' }] },
-    { fecha: '2026-11-17', publicado: false, componentes: [{ componente: 'Plato Principal', categoria: 'General', preparacion: 'Cazuela' }] },
-  ] };
+  const MES = {
+    dias: [
+      {
+        fecha: '2026-11-16',
+        publicado: true,
+        componentes: [
+          { componente: 'Plato Principal', categoria: 'JUNAEB', preparacion: 'Arroz con pollo' },
+          { componente: 'Plato Principal', categoria: 'General', preparacion: 'Pollo arvejado' },
+        ],
+      },
+      {
+        fecha: '2026-11-17',
+        publicado: false,
+        componentes: [{ componente: 'Plato Principal', categoria: 'General', preparacion: 'Cazuela' }],
+      },
+    ],
+  };
 
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -241,7 +355,10 @@ describe('Planificación: vista mensual y copiar y pegar', () => {
     await usuario.click(screen.getByRole('button', { name: 'Mes' }));
     await screen.findByText('Noviembre de 2026');
   }
-  const celda = (dia) => screen.getAllByRole('button').find((b) => b.classList.contains('mes-celda') && b.querySelector('.mes-dia')?.textContent === String(dia));
+  const celda = (dia) =>
+    screen
+      .getAllByRole('button')
+      .find((b) => b.classList.contains('mes-celda') && b.querySelector('.mes-dia')?.textContent === String(dia));
 
   it('muestra el estado de cada día y los platos ordenados por categoría', async () => {
     const usuario = userEvent.setup();
@@ -290,7 +407,13 @@ describe('Planificación: vista mensual y copiar y pegar', () => {
   });
 
   it('copia una semana completa de lunes a sábado e informa lo omitido', async () => {
-    api.copiarMenus.mockResolvedValue({ copiados: 2, omitidos: [{ fecha: '2026-11-25', motivo: 'Ya tiene una jornada iniciada.' }, { fecha: '2026-11-27', motivo: 'El origen no tiene menú.' }] });
+    api.copiarMenus.mockResolvedValue({
+      copiados: 2,
+      omitidos: [
+        { fecha: '2026-11-25', motivo: 'Ya tiene una jornada iniciada.' },
+        { fecha: '2026-11-27', motivo: 'El origen no tiene menú.' },
+      ],
+    });
     const usuario = userEvent.setup();
     await abrirMes(usuario);
     await usuario.click(screen.getByRole('button', { name: /Copiar y pegar/ }));

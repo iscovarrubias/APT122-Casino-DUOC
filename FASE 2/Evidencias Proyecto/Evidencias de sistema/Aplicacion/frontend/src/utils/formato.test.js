@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
-  estadoEfectivo, NO_DISPONIBLE, calcularCaloriasTotales, calcularPrecioTotal, CATEGORIAS_MENU, colorTextoSobre,
-  conGrupoOpcion, agruparComponentes, calcularCaloriasConOpcion,
+  estadoEfectivo,
+  NO_DISPONIBLE,
+  calcularCaloriasTotales,
+  calcularPrecioTotal,
+  CATEGORIAS_MENU,
+  colorTextoSobre,
+  conGrupoOpcion,
+  agruparComponentes,
+  calcularCaloriasConOpcion,
 } from './formato';
 import { ordenarConVariaciones } from './formato';
 
@@ -19,7 +26,9 @@ describe('estadoEfectivo', () => {
   });
 
   it('con stock respeta la disponibilidad indicada', () => {
-    expect(estadoEfectivo({ jornada_estado: 'abierta', disponibilidad: 'baja_disponibilidad', cantidad_restante: 4 })).toBe('baja_disponibilidad');
+    expect(estadoEfectivo({ jornada_estado: 'abierta', disponibilidad: 'baja_disponibilidad', cantidad_restante: 4 })).toBe(
+      'baja_disponibilidad'
+    );
   });
 
   it('sin jornada iniciada avisa que aún no comienza, sin marcarlo como disponible', () => {
@@ -37,10 +46,7 @@ describe('estadoEfectivo', () => {
 
 describe('totales del combo', () => {
   it('suma las calorías cuando todos los componentes tienen información', () => {
-    const componentes = [
-      { informacion_nutricional: { calorias: 450 } },
-      { informacion_nutricional: { calorias: 120 } },
-    ];
+    const componentes = [{ informacion_nutricional: { calorias: 450 } }, { informacion_nutricional: { calorias: 120 } }];
     expect(calcularCaloriasTotales(componentes)).toBe(570);
   });
 
@@ -69,22 +75,22 @@ describe('colorTextoSobre', () => {
 
 const PREPARACIONES_DIA = [
   { componente: 'Plato Principal', informacion_nutricional: { calorias: 450 } },
-  { componente: 'Ensalada',        informacion_nutricional: { calorias: 80 } },
-  { componente: 'Sopa',            informacion_nutricional: { calorias: 120 } },
-  { componente: 'Pan',             informacion_nutricional: { calorias: 70 } },
-  { componente: 'Postre',          informacion_nutricional: { calorias: 250 } },
-  { componente: 'Fruta',           informacion_nutricional: { calorias: 80 } },
-  { componente: 'Bebida',          informacion_nutricional: { calorias: 110 } },
+  { componente: 'Ensalada', informacion_nutricional: { calorias: 80 } },
+  { componente: 'Sopa', informacion_nutricional: { calorias: 120 } },
+  { componente: 'Pan', informacion_nutricional: { calorias: 70 } },
+  { componente: 'Postre', informacion_nutricional: { calorias: 250 } },
+  { componente: 'Fruta', informacion_nutricional: { calorias: 80 } },
+  { componente: 'Bebida', informacion_nutricional: { calorias: 110 } },
 ];
 
 const COMPOSICION_PRINCIPAL = [
-  { tipo: 'Bebida',          grupo_opcion: null },
-  { tipo: 'Ensalada',        grupo_opcion: null },
-  { tipo: 'Fruta',           grupo_opcion: 1 },
-  { tipo: 'Pan',             grupo_opcion: null },
+  { tipo: 'Bebida', grupo_opcion: null },
+  { tipo: 'Ensalada', grupo_opcion: null },
+  { tipo: 'Fruta', grupo_opcion: 1 },
+  { tipo: 'Pan', grupo_opcion: null },
   { tipo: 'Plato Principal', grupo_opcion: null },
-  { tipo: 'Postre',          grupo_opcion: 1 },
-  { tipo: 'Sopa',            grupo_opcion: null },
+  { tipo: 'Postre', grupo_opcion: 1 },
+  { tipo: 'Sopa', grupo_opcion: null },
 ];
 
 describe('conGrupoOpcion', () => {
@@ -112,15 +118,15 @@ describe('agruparComponentes', () => {
   it('separa base y grupos mutuamente excluyentes', () => {
     const anotados = conGrupoOpcion(PREPARACIONES_DIA, COMPOSICION_PRINCIPAL);
     const { base, grupos } = agruparComponentes(anotados);
-    expect(base.map((c) => c.componente).sort()).toEqual(
-      ['Bebida', 'Ensalada', 'Pan', 'Plato Principal', 'Sopa']
-    );
+    expect(base.map((c) => c.componente).sort()).toEqual(['Bebida', 'Ensalada', 'Pan', 'Plato Principal', 'Sopa']);
     expect(grupos[1].map((c) => c.componente).sort()).toEqual(['Fruta', 'Postre']);
   });
 
   it('sin grupos devuelve todo en base', () => {
-    const soloBase = PREPARACIONES_DIA.filter((c) => c.componente !== 'Postre' && c.componente !== 'Fruta')
-      .map((c) => ({ ...c, grupo_opcion: null }));
+    const soloBase = PREPARACIONES_DIA.filter((c) => c.componente !== 'Postre' && c.componente !== 'Fruta').map((c) => ({
+      ...c,
+      grupo_opcion: null,
+    }));
     const { base, grupos } = agruparComponentes(soloBase);
     expect(base).toHaveLength(5);
     expect(Object.keys(grupos)).toHaveLength(0);
@@ -144,9 +150,7 @@ describe('calcularCaloriasConOpcion', () => {
   });
 
   it('devuelve null si algún componente no tiene info nutricional (regla todo o nada)', () => {
-    const conFaltante = PREPARACIONES_DIA.map((c) =>
-      c.componente === 'Sopa' ? { componente: 'Sopa', informacion_nutricional: null } : c
-    );
+    const conFaltante = PREPARACIONES_DIA.map((c) => (c.componente === 'Sopa' ? { componente: 'Sopa', informacion_nutricional: null } : c));
     const anotados = conGrupoOpcion(conFaltante, COMPOSICION_PRINCIPAL);
     expect(calcularCaloriasConOpcion(anotados, { 1: 'Postre' })).toBeNull();
   });
@@ -154,7 +158,7 @@ describe('calcularCaloriasConOpcion', () => {
   it('funciona con JUNAEB: sin grupos, solo base', () => {
     const junaeb = [
       { componente: 'Plato Principal', informacion_nutricional: { calorias: 450 } },
-      { componente: 'Bebida',          informacion_nutricional: { calorias: 110 } },
+      { componente: 'Bebida', informacion_nutricional: { calorias: 110 } },
     ].map((c) => ({ ...c, grupo_opcion: null }));
     expect(calcularCaloriasConOpcion(junaeb, {})).toBe(560);
   });
@@ -162,10 +166,10 @@ describe('calcularCaloriasConOpcion', () => {
   it('funciona con Hipocalórico: fruta como único del grupo', () => {
     const hipo = [
       { componente: 'Plato Principal', informacion_nutricional: { calorias: 350 }, grupo_opcion: null },
-      { componente: 'Ensalada',        informacion_nutricional: { calorias: 80 },  grupo_opcion: null },
-      { componente: 'Sopa',            informacion_nutricional: { calorias: 120 }, grupo_opcion: null },
-      { componente: 'Fruta',           informacion_nutricional: { calorias: 80 },  grupo_opcion: null },
-      { componente: 'Bebida',          informacion_nutricional: { calorias: 0 },   grupo_opcion: null },
+      { componente: 'Ensalada', informacion_nutricional: { calorias: 80 }, grupo_opcion: null },
+      { componente: 'Sopa', informacion_nutricional: { calorias: 120 }, grupo_opcion: null },
+      { componente: 'Fruta', informacion_nutricional: { calorias: 80 }, grupo_opcion: null },
+      { componente: 'Bebida', informacion_nutricional: { calorias: 0 }, grupo_opcion: null },
     ];
     expect(calcularCaloriasConOpcion(hipo, {})).toBe(630);
   });
@@ -191,4 +195,3 @@ describe('ordenarConVariaciones', () => {
     expect(r[0].esVariacion).toBe(false);
   });
 });
-

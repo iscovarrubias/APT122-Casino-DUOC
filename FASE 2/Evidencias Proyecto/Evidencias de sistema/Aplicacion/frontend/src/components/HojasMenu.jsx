@@ -1,6 +1,17 @@
 import {
-  categoriasDelPeriodo, estiloCategoria, principalesDe, acompDe, etiquetaAcomp, diasVisibles, combosDe, diasDelPeriodo, totalesDelPeriodo,
-  nombreLargo, encabezadoDia, rangoSemana, nombreTipo,
+  categoriasDelPeriodo,
+  estiloCategoria,
+  principalesDe,
+  acompDe,
+  etiquetaAcomp,
+  diasVisibles,
+  combosDe,
+  diasDelPeriodo,
+  totalesDelPeriodo,
+  nombreLargo,
+  encabezadoDia,
+  rangoSemana,
+  nombreTipo,
 } from '../utils/exportarMenu';
 
 const hex = (c) => `#${c}`;
@@ -9,7 +20,9 @@ const formatoPrecio = (n) => (n === null || n === undefined ? '' : `$${Number(n)
 function Cabecera({ periodo, titulo }) {
   return (
     <header className="hx-cabecera">
-      <div className="hx-logo"><img src="/logo.svg" alt="Casinos DuocUC" /></div>
+      <div className="hx-logo">
+        <img src="/logo.svg" alt="Casinos DuocUC" />
+      </div>
       <div className="hx-titulos">
         <div>
           <small>PLANIFICACIÓN</small>
@@ -17,7 +30,11 @@ function Cabecera({ periodo, titulo }) {
         </div>
         <span className="hx-mes">{periodo.etiquetaMes}</span>
       </div>
-      {titulo && <div className="hx-subtitulo">{titulo} - {periodo.subtitulo}</div>}
+      {titulo && (
+        <div className="hx-subtitulo">
+          {titulo} - {periodo.subtitulo}
+        </div>
+      )}
     </header>
   );
 }
@@ -31,8 +48,20 @@ export function HojaCalendario({ periodo }) {
         <table className="hx-cal" key={s.lunes}>
           <thead>
             <tr>
-              <th className="hx-cal-lateral">{periodo.modo === 'mes' ? <>Semana<br />{rangoSemana(s, periodo.conSabado)}</> : ''}</th>
-              {diasVisibles(periodo, s).map((d) => <th key={d.fecha}>{d.fuera ? '' : encabezadoDia(d.fecha)}</th>)}
+              <th className="hx-cal-lateral">
+                {periodo.modo === 'mes' ? (
+                  <>
+                    Semana
+                    <br />
+                    {rangoSemana(s, periodo.conSabado)}
+                  </>
+                ) : (
+                  ''
+                )}
+              </th>
+              {diasVisibles(periodo, s).map((d) => (
+                <th key={d.fecha}>{d.fuera ? '' : encabezadoDia(d.fecha)}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -40,21 +69,35 @@ export function HojaCalendario({ periodo }) {
               const est = estiloCategoria(cat);
               return (
                 <tr key={cat} style={{ background: hex(est.fila), borderBottom: `1.5px solid ${hex(est.texto)}` }}>
-                  <th className="hx-cal-cat" style={{ color: hex(est.texto) }}>{cat}</th>
+                  <th className="hx-cal-cat" style={{ color: hex(est.texto) }}>
+                    {cat}
+                  </th>
                   {diasVisibles(periodo, s).map((d) => {
                     const plato = d.fuera ? null : principalesDe(d).find((c) => c.categoria === cat);
-                    return <td key={d.fecha} className={plato ? '' : 'hx-vacio'}>{plato ? plato.preparacion : '—'}</td>;
+                    return (
+                      <td key={d.fecha} className={plato ? '' : 'hx-vacio'}>
+                        {plato ? plato.preparacion : '—'}
+                      </td>
+                    );
                   })}
                 </tr>
               );
             })}
             <tr className="hx-cal-incluye">
-              <th className="hx-cal-cat" style={{ color: '#EFA018' }}>Incluye</th>
+              <th className="hx-cal-cat" style={{ color: '#EFA018' }}>
+                Incluye
+              </th>
               {diasVisibles(periodo, s).map((d) => {
                 const extra = d.fuera ? [] : acompDe(d);
                 return (
                   <td key={d.fecha} className={extra.length ? '' : 'hx-vacio'}>
-                    {extra.length ? extra.map((c) => <div key={c.tipo + c.preparacion}><b>{c.tipo}:</b> {etiquetaAcomp(c)}</div>) : '—'}
+                    {extra.length
+                      ? extra.map((c) => (
+                          <div key={c.tipo + c.preparacion}>
+                            <b>{c.tipo}:</b> {etiquetaAcomp(c)}
+                          </div>
+                        ))
+                      : '—'}
                   </td>
                 );
               })}
@@ -81,13 +124,22 @@ export function HojaDetalle({ periodo }) {
         return (
           <section className="hx-dia" key={d.fecha}>
             <div className="hx-dia-cabeza">
-              <strong>{nombreLargo(d.fecha)}{!d.tiene && <em className="hx-nota-dia"> — sin menú programado</em>}</strong>
+              <strong>
+                {nombreLargo(d.fecha)}
+                {!d.tiene && <em className="hx-nota-dia"> — sin menú programado</em>}
+              </strong>
               <span className={`hx-chip hx-chip--${c.clase}`}>{c.texto}</span>
             </div>
             {d.tiene ? (
               <table className="hx-tabla">
                 <thead>
-                  <tr><th>Componente</th><th>Categoría</th><th>Preparación</th><th className="hx-centro">Cantidad</th><th className="hx-centro">Precio del combo</th></tr>
+                  <tr>
+                    <th>Componente</th>
+                    <th>Categoría</th>
+                    <th>Preparación</th>
+                    <th className="hx-centro">Cantidad</th>
+                    <th className="hx-centro">Precio del combo</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {d.comps.map((x) => {
@@ -96,17 +148,25 @@ export function HojaDetalle({ periodo }) {
                     return (
                       <tr key={x.tipo + x.categoria + x.preparacion}>
                         <td>{nombreTipo(x.tipo)}</td>
-                        <td style={principal ? { background: hex(est.etiqueta), color: hex(est.texto), fontWeight: 700 } : { color: '#6B7280' }}>
+                        <td
+                          style={
+                            principal ? { background: hex(est.etiqueta), color: hex(est.texto), fontWeight: 700 } : { color: '#6B7280' }
+                          }
+                        >
                           {principal ? x.categoria : 'Compartido'}
                         </td>
                         <td>{x.preparacion}</td>
                         <td className="hx-centro hx-fuerte">{x.cantidad}</td>
-                        <td className="hx-centro">{principal ? formatoPrecio(x.precio) : <i className="hx-incluido">Incluido en el combo</i>}</td>
+                        <td className="hx-centro">
+                          {principal ? formatoPrecio(x.precio) : <i className="hx-incluido">Incluido en el combo</i>}
+                        </td>
                       </tr>
                     );
                   })}
                   <tr className="hx-total">
-                    <td colSpan={3} className="hx-derecha">Combos planificados del día</td>
+                    <td colSpan={3} className="hx-derecha">
+                      Combos planificados del día
+                    </td>
                     <td className="hx-centro">{combosDe(d)}</td>
                     <td />
                   </tr>
@@ -130,7 +190,13 @@ export function HojaTotal({ periodo }) {
       ) : (
         <table className="hx-tabla hx-tabla--total">
           <thead>
-            <tr><th>Tipo</th><th>Preparación</th><th>Categoría</th><th className="hx-centro">Cantidad total</th><th>Días en que se sirve</th></tr>
+            <tr>
+              <th>Tipo</th>
+              <th>Preparación</th>
+              <th>Categoría</th>
+              <th className="hx-centro">Cantidad total</th>
+              <th>Días en que se sirve</th>
+            </tr>
           </thead>
           <tbody>
             {filas.map((t) => {

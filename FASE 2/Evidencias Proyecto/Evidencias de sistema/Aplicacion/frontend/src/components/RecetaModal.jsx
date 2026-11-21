@@ -22,6 +22,7 @@ export default function RecetaModal({ preparacion, puedeCrearVariacion, onCrearV
       textoCancelar="Cerrar"
       textoGuardar="Crear variación"
       mostrarGuardar={puedeCrearVariacion}
+      cuerpoDesplazable
     >
       <div className="receta-modal">
         <div className="receta-etiquetas">
@@ -35,14 +36,19 @@ export default function RecetaModal({ preparacion, puedeCrearVariacion, onCrearV
         <section className="form-card">
           <h3>
             Ingredientes
-            {preparacion.porciones_receta ? <span className="texto-suave"> (receta para {preparacion.porciones_receta} porciones)</span> : null}
+            {preparacion.porciones_receta ? (
+              <span className="texto-suave"> (receta para {preparacion.porciones_receta} porciones)</span>
+            ) : null}
           </h3>
           {ingredientes.length === 0 ? (
             <p className="texto-suave">Esta preparación no tiene ingredientes registrados.</p>
           ) : (
             <table className="tabla-nutricional receta-tabla">
               <thead>
-                <tr><th>Ingrediente</th><th>Cantidad</th></tr>
+                <tr>
+                  <th>Ingrediente</th>
+                  <th>Cantidad</th>
+                </tr>
               </thead>
               <tbody>
                 {ingredientes.map((i) => (
@@ -62,13 +68,16 @@ export default function RecetaModal({ preparacion, puedeCrearVariacion, onCrearV
         </section>
 
         <section className="form-card">
-          <h3>Información nutricional <span className="texto-suave">(por porción)</span></h3>
+          <h3>
+            Información nutricional <span className="texto-suave">(por porción)</span>
+          </h3>
           <TablaNutricional info={nutricion} />
         </section>
 
         {puedeCrearVariacion && (
           <p className="texto-suave">
-            Si este día el plato se prepara distinto, crea una variación: queda como una preparación aparte con sus propios ingredientes y alérgenos, y la receta original no cambia.
+            Si este día el plato se prepara distinto, crea una variación: queda como una preparación aparte con sus propios ingredientes y
+            alérgenos, y la receta original no cambia.
           </p>
         )}
       </div>

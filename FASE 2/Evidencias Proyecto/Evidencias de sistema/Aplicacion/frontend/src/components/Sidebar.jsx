@@ -20,7 +20,10 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
   const esEstudiante = usuario?.rol === 'Estudiante';
 
   const cerrarHoja = () => setAjustes(false);
-  const accion = (fn) => () => { cerrarHoja(); fn(); };
+  const accion = (fn) => () => {
+    cerrarHoja();
+    fn();
+  };
   const botonTema = (
     <div className="app-toggle-tema-pos">
       <button
@@ -47,12 +50,7 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
               <h2>{usuario ? `¡Hola, ${primerNombre}!` : 'Menú del casino'}</h2>
               <p>{esEstudiante || !usuario ? 'Sede Valparaíso' : usuario.rol}</p>
             </div>
-            <button
-              type="button"
-              className="avatar avatar-boton"
-              onClick={() => setAjustes(true)}
-              aria-label="Abrir configuración"
-            >
+            <button type="button" className="avatar avatar-boton" onClick={() => setAjustes(true)} aria-label="Abrir configuración">
               {inicial || <User size={20} />}
             </button>
           </div>
@@ -96,7 +94,6 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
         </nav>
 
         <div className="sidebar-bottom">
-
           {esEstudiante && (
             <>
               <button className="sidebar-link" onClick={onAbrirPerfil}>
@@ -110,11 +107,7 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
 
           {usuario && !esEstudiante && (
             <>
-              <button
-                type="button"
-                className="sidebar-panel-cta"
-                onClick={() => navegar(rutaInicial(usuario.rol, kiosco))}
-              >
+              <button type="button" className="sidebar-panel-cta" onClick={() => navegar(rutaInicial(usuario.rol, kiosco))}>
                 <LayoutPanelLeft size={20} aria-hidden="true" />
                 <span>Ir al panel</span>
               </button>
@@ -131,18 +124,10 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
           )}
 
           <div className="sidebar-legales">
-            <button
-              type="button"
-              className="sidebar-legal-link"
-              onClick={() => navegar('/terminos')}
-            >
+            <button type="button" className="sidebar-legal-link" onClick={() => navegar('/terminos')}>
               Términos y Condiciones
             </button>
-            <button
-              type="button"
-              className="sidebar-legal-link"
-              onClick={() => navegar('/privacidad')}
-            >
+            <button type="button" className="sidebar-legal-link" onClick={() => navegar('/privacidad')}>
               Política de Privacidad
             </button>
           </div>
@@ -150,14 +135,8 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
 
         {ajustes && (
           <div className="hoja-fondo" onClick={cerrarHoja}>
-            <div
-              className="hoja"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Configuración"
-              onClick={(e) => e.stopPropagation()}
-            > 
-            <span className="hoja-asa" aria-hidden="true" />
+            <div className="hoja" role="dialog" aria-modal="true" aria-label="Configuración" onClick={(e) => e.stopPropagation()}>
+              <span className="hoja-asa" aria-hidden="true" />
               <div className="hoja-titulo">
                 <h2>Configuración</h2>
                 <button
@@ -170,7 +149,7 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
                   <span className="interruptor-bola">{esOscuro ? <Moon size={16} /> : <Sun size={16} />}</span>
                 </button>
               </div>
-                            {usuario && !esEstudiante && (
+              {usuario && !esEstudiante && (
                 <button
                   type="button"
                   className="hoja-opcion hoja-panel-cta"
@@ -195,26 +174,22 @@ export default function Sidebar({ vistaActiva, onCambiarVista, onAbrirPerfil }) 
               </button>
 
               <div className="hoja-legales">
-                <button
-                  type="button"
-                  className="hoja-opcion hoja-opcion--legal"
-                  onClick={accion(() => navegar('/terminos'))}
-                >
+                <button type="button" className="hoja-opcion hoja-opcion--legal" onClick={accion(() => navegar('/terminos'))}>
                   Términos y Condiciones <span aria-hidden="true">›</span>
                 </button>
-                <button
-                  type="button"
-                  className="hoja-opcion hoja-opcion--legal"
-                  onClick={accion(() => navegar('/privacidad'))}
-                >
+                <button type="button" className="hoja-opcion hoja-opcion--legal" onClick={accion(() => navegar('/privacidad'))}>
                   Política de Privacidad <span aria-hidden="true">›</span>
                 </button>
               </div>
 
               {usuario ? (
-                <button className="hoja-salir" onClick={accion(cerrarSesion)}>Cerrar sesión</button>
+                <button className="hoja-salir" onClick={accion(cerrarSesion)}>
+                  Cerrar sesión
+                </button>
               ) : (
-                <button className="hoja-salir" onClick={accion(() => navegar('/login'))}>Iniciar sesión</button>
+                <button className="hoja-salir" onClick={accion(() => navegar('/login'))}>
+                  Iniciar sesión
+                </button>
               )}
             </div>
           </div>

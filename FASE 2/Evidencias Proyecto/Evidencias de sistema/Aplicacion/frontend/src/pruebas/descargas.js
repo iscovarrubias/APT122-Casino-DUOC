@@ -34,23 +34,31 @@ export async function abrirExcel(blob) {
 
 export function textosDeHoja(hoja) {
   const textos = [];
-  hoja.eachRow((fila) => fila.eachCell((celda) => {
-    const v = celda.value;
-    if (v && typeof v === 'object' && v.richText) textos.push(v.richText.map((r) => r.text).join(''));
-    else if (v !== null && v !== undefined) textos.push(String(v));
-  }));
+  hoja.eachRow((fila) =>
+    fila.eachCell((celda) => {
+      const v = celda.value;
+      if (v && typeof v === 'object' && v.richText) textos.push(v.richText.map((r) => r.text).join(''));
+      else if (v !== null && v !== undefined) textos.push(String(v));
+    })
+  );
   return textos;
 }
 
 export function simularCanvas() {
-  const contexto = new Proxy({}, {
-    get: (objetivo, prop) => {
-      if (prop === 'measureText') return (t) => ({ width: String(t).length * 7 });
-      if (prop in objetivo) return objetivo[prop];
-      return () => {};
-    },
-    set: (objetivo, prop, valor) => { objetivo[prop] = valor; return true; },
-  });
+  const contexto = new Proxy(
+    {},
+    {
+      get: (objetivo, prop) => {
+        if (prop === 'measureText') return (t) => ({ width: String(t).length * 7 });
+        if (prop in objetivo) return objetivo[prop];
+        return () => {};
+      },
+      set: (objetivo, prop, valor) => {
+        objetivo[prop] = valor;
+        return true;
+      },
+    }
+  );
   const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(contexto);
   vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => {

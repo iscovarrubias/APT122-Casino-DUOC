@@ -22,15 +22,21 @@ test.before(async () => {
     if (req.url.endsWith('/discovery/v2.0/keys')) return res.end(JSON.stringify({ keys: [jwk] }));
     if (req.url.endsWith('/oauth2/v2.0/token')) {
       let cuerpo = '';
-      req.on('data', (d) => { cuerpo += d; });
+      req.on('data', (d) => {
+        cuerpo += d;
+      });
       req.on('end', () => {
         const p = new URLSearchParams(cuerpo);
-        if (p.get('code') !== 'codigo-bueno' || !p.get('code_verifier')) { res.statusCode = 400; return res.end(JSON.stringify({ error_description: 'código inválido' })); }
+        if (p.get('code') !== 'codigo-bueno' || !p.get('code_verifier')) {
+          res.statusCode = 400;
+          return res.end(JSON.stringify({ error_description: 'código inválido' }));
+        }
         res.end(JSON.stringify({ id_token: emitir(p) }));
       });
       return;
     }
-    res.statusCode = 404; res.end('{}');
+    res.statusCode = 404;
+    res.end('{}');
   });
   await new Promise((r) => servidor.listen(0, r));
   process.env.ENTRA_AUTORIDAD = `http://127.0.0.1:${servidor.address().port}`;
@@ -38,9 +44,14 @@ test.before(async () => {
 test.after(() => servidor.close());
 
 const entra = require('../src/utils/entra');
-const firmar = (extra, opciones = {}) => jwt.sign(
-  { email: 'ana@duocuc.cl', name: 'Ana', ...extra }, privateKey,
-  { algorithm: 'RS256', keyid: 'k1', audience: 'cliente-prueba', issuer: `${process.env.ENTRA_AUTORIDAD}/tenant-prueba/v2.0`, ...opciones });
+const firmar = (extra, opciones = {}) =>
+  jwt.sign({ email: 'ana@duocuc.cl', name: 'Ana', ...extra }, privateKey, {
+    algorithm: 'RS256',
+    keyid: 'k1',
+    audience: 'cliente-prueba',
+    issuer: `${process.env.ENTRA_AUTORIDAD}/tenant-prueba/v2.0`,
+    ...opciones,
+  });
 
 test('flujo completo: devuelve el correo verificado', async () => {
   const { url, cookie } = entra.iniciar('ana@duocuc.cl');
@@ -68,7 +79,13 @@ test('rechaza un token firmado con otra clave', async () => {
   const otra = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey;
   const { url, cookie } = entra.iniciar();
   const q = new URL(url).searchParams;
-  emitir = () => jwt.sign({ email: 'x@duocuc.cl', nonce: q.get('nonce') }, otra, { algorithm: 'RS256', keyid: 'k1', audience: 'cliente-prueba', issuer: `${process.env.ENTRA_AUTORIDAD}/tenant-prueba/v2.0` });
+  emitir = () =>
+    jwt.sign({ email: 'x@duocuc.cl', nonce: q.get('nonce') }, otra, {
+      algorithm: 'RS256',
+      keyid: 'k1',
+      audience: 'cliente-prueba',
+      issuer: `${process.env.ENTRA_AUTORIDAD}/tenant-prueba/v2.0`,
+    });
   await assert.rejects(entra.completar({ code: 'codigo-bueno', state: q.get('state'), cookie }));
 });
 

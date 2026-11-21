@@ -94,6 +94,14 @@ describe('DocumentoLegal: Política de Privacidad', () => {
     expect(within(seccion).getByText(/son voluntarias/)).toBeInTheDocument();
   });
 
+  it('explica que los avisos por correo son opcionales y se pueden desactivar con un clic', () => {
+    render(<DocumentoLegal tipo="privacidad" />);
+    const seccion = screen.getByRole('region', { name: '6.1 Avisos por correo' });
+    expect(within(seccion).getByText(/vienen desactivados/)).toBeInTheDocument();
+    expect(within(seccion).getByText(/un solo correo semanal/)).toBeInTheDocument();
+    expect(within(seccion).getByText(/dejar de\s+recibirlos con un clic/)).toBeInTheDocument();
+  });
+
   it('informa que las opiniones editadas o eliminadas se conservan para moderación', () => {
     render(<DocumentoLegal tipo="privacidad" />);
     expect(screen.getByText(/el casino conserva la versión anterior para moderar/)).toBeInTheDocument();
@@ -108,7 +116,10 @@ describe('DocumentoLegal: Política de Privacidad', () => {
   it('declara todo lo que la aplicación guarda en el navegador', () => {
     render(<DocumentoLegal tipo="privacidad" />);
     const tabla = screen.getByRole('table');
-    const declaradas = within(tabla).getAllByRole('row').slice(1).map((fila) => within(fila).getAllByRole('cell')[0].textContent);
+    const declaradas = within(tabla)
+      .getAllByRole('row')
+      .slice(1)
+      .map((fila) => within(fila).getAllByRole('cell')[0].textContent);
     const usadas = clavesDelNavegador();
     expect(usadas.length).toBeGreaterThan(0);
     expect(declaradas.sort()).toEqual(usadas.sort());

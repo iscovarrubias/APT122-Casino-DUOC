@@ -6,7 +6,7 @@
   justify-content: center;
   padding: 40px 24px;
   text-align: center;
-  background-color: #F8F9FA;
+  background-color: #f8f9fa;
   position: relative;
   overflow: hidden;
   font-family: 'Poppins', 'Segoe UI', sans-serif;
@@ -21,7 +21,7 @@
 }
 .pe-fondo-decoracion {
   position: absolute;
-  color: #E5E7EB;
+  color: #e5e7eb;
   pointer-events: none;
   z-index: 0;
 }
@@ -49,7 +49,7 @@
   font-size: 4.5rem;
   font-weight: 800;
   line-height: 1.1;
-  color: #1F3864;
+  color: #1f3864;
   margin-bottom: 20px;
   letter-spacing: -1px;
 }
@@ -62,12 +62,12 @@
   margin: 0 0 10px 0;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1B1F27;
+  color: #1b1f27;
 }
 .pe-mensaje {
   margin: 0 0 24px 0;
   font-size: 0.95rem;
-  color: #5B6472;
+  color: #5b6472;
   line-height: 1.5;
   max-width: 45ch;
 }
@@ -92,27 +92,27 @@
   font-family: inherit;
 }
 .pe-boton-primario {
-  background-color: #F5A623;
+  background-color: #f5a623;
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(245, 166, 35, 0.3);
 }
 .pe-boton-primario:hover {
-  background-color: #E0951A;
+  background-color: #e0951a;
   transform: translateY(-2px);
 }
 .pe-boton-secundario {
   background-color: transparent;
-  color: #5B6472;
-  border: 1px solid #E6E8EC;
+  color: #5b6472;
+  border: 1px solid #e6e8ec;
 }
 .pe-boton-secundario:hover {
-  background-color: #F4F5F7;
-  color: #1B1F27;
+  background-color: #f4f5f7;
+  color: #1b1f27;
 }
 .pe-detalle {
   margin-top: 30px;
   font-size: 0.8rem;
-  color: #9CA3AF;
+  color: #9ca3af;
 }
 .pe-detalle summary {
   cursor: pointer;
@@ -122,17 +122,27 @@
   margin-top: 8px;
   padding: 10px;
   background: #ffffff;
-  border: 1px solid #E6E8EC;
+  border: 1px solid #e6e8ec;
   border-radius: 8px;
-  color: #EF4444;
+  color: #ef4444;
   text-align: left;
   overflow-wrap: anywhere;
 }
 @media (max-width: 600px) {
-  .pe-codigo-grande { font-size: 6rem; }
-  .pe-ilustracion { width: 160px; }
-  .pe-acciones { flex-direction: column; width: 100%; max-width: 280px; }
-  .pe-boton { width: 100%; }
+  .pe-codigo-grande {
+    font-size: 6rem;
+  }
+  .pe-ilustracion {
+    width: 160px;
+  }
+  .pe-acciones {
+    flex-direction: column;
+    width: 100%;
+    max-width: 280px;
+  }
+  .pe-boton {
+    width: 100%;
+  }
 }
 .pe-icono-superior {
   display: flex;
@@ -144,7 +154,7 @@
 .pe-exclamacion {
   font-size: 5rem;
   font-weight: 800;
-  color: #F5A623;
+  color: #f5a623;
   line-height: 0.8;
   margin-bottom: 10px;
 }
@@ -183,9 +193,9 @@
   color: var(--text-muted);
 }
 [data-theme='oscuro'] .pe-detalle code {
-  background-color: #0D0D26;
+  background-color: #0d0d26;
   border-color: var(--border);
-  color: #F87171;
+  color: #f87171;
 }
 [data-theme='oscuro'] .pe-fondo-decoracion {
   color: rgba(255, 255, 255, 0.04);

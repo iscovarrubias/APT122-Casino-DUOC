@@ -75,7 +75,11 @@ test.describe('Caché del menú', () => {
 
   test('UT-12 varias visitas simultáneas comparten una sola consulta', async () => {
     let llamadas = 0;
-    const cargar = async () => { llamadas += 1; await new Promise((r) => setTimeout(r, 20)); return { ok: true }; };
+    const cargar = async () => {
+      llamadas += 1;
+      await new Promise((r) => setTimeout(r, 20));
+      return { ok: true };
+    };
     const resultados = await Promise.all(Array.from({ length: 50 }, () => cache.con('menu', 1000, cargar)));
     assert.equal(llamadas, 1);
     assert.ok(resultados.every((r) => r.ok));
@@ -94,7 +98,11 @@ test.describe('Caché del menú', () => {
 
   test('UT-14 un error no queda guardado en la caché', async () => {
     let intento = 0;
-    const cargar = async () => { intento += 1; if (intento === 1) throw new Error('caída'); return 'bien'; };
+    const cargar = async () => {
+      intento += 1;
+      if (intento === 1) throw new Error('caída');
+      return 'bien';
+    };
     await assert.rejects(cache.con('fallo', 5000, cargar));
     assert.equal(await cache.con('fallo', 5000, cargar), 'bien');
   });
@@ -110,7 +118,11 @@ test.describe('Caché del menú', () => {
 test.describe('Eventos en tiempo real', () => {
   test('UT-16 emitir avisa a todos los suscritos y limpia la caché', async () => {
     let recibidos = 0;
-    const bajas = Array.from({ length: 5 }, (_, i) => eventos.suscribir(`10.0.0.${i}`, () => { recibidos += 1; }));
+    const bajas = Array.from({ length: 5 }, (_, i) =>
+      eventos.suscribir(`10.0.0.${i}`, () => {
+        recibidos += 1;
+      })
+    );
     let n = 0;
     await cache.con('menu', 60000, async () => ++n);
     eventos.emitir();
@@ -133,7 +145,10 @@ test.describe('Eventos en tiempo real', () => {
     const bajas = [];
     for (let i = 0; i < maximo; i += 1) bajas.push(eventos.suscribir('10.9.9.9', () => {}));
     assert.ok(bajas.every(Boolean));
-    assert.equal(eventos.suscribir('10.9.9.9', () => {}), null);
+    assert.equal(
+      eventos.suscribir('10.9.9.9', () => {}),
+      null
+    );
     const otra = eventos.suscribir('10.9.9.8', () => {});
     assert.ok(otra);
     otra();

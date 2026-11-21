@@ -29,16 +29,11 @@ function aMesISO(fecha) {
   return `${y}-${m}`;
 }
 
-export default function CampoFecha({
-  value, onChange, min, max,
-  modo = 'dia',
-  placeholder,
-  ariaLabel,
-}) {
+export default function CampoFecha({ value, onChange, min, max, modo = 'dia', placeholder, ariaLabel }) {
   const esMes = modo === 'mes';
   const seleccionada = esMes ? aFechaDesdeMes(value) : aFecha(value);
-  const minima = esMes ? aFechaDesdeMes(min) : (min ? aFecha(min) : undefined);
-  const maxima = esMes ? aFechaDesdeMes(max) : (max ? aFecha(max) : undefined);
+  const minima = esMes ? aFechaDesdeMes(min) : min ? aFecha(min) : undefined;
+  const maxima = esMes ? aFechaDesdeMes(max) : max ? aFecha(max) : undefined;
 
   const props = esMes
     ? {

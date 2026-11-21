@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  listarIngredientes, listarCategoriasIngrediente, listarCatalogoAlergenos,
-  crearIngrediente, actualizarIngrediente, eliminarIngrediente,
+  listarIngredientes,
+  listarCategoriasIngrediente,
+  listarCatalogoAlergenos,
+  crearIngrediente,
+  actualizarIngrediente,
+  eliminarIngrediente,
 } from '../api/gestion';
 import { Beef, Fish, Carrot, Wheat, Milk, Droplet, Package, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import Mensaje from '../components/Mensaje';
@@ -23,8 +27,14 @@ const ESTILO = {
 const ESTILO_OTROS = { Icono: Package, color: '#6B7280' };
 
 const VACIO = {
-  nombre: '', id_categoria_ingrediente: '', calorias_100g: '', proteinas_100g: '', carbohidratos_100g: '',
-  grasas_100g: '', sin_cuantificar: false, alergenos: [],
+  nombre: '',
+  id_categoria_ingrediente: '',
+  calorias_100g: '',
+  proteinas_100g: '',
+  carbohidratos_100g: '',
+  grasas_100g: '',
+  sin_cuantificar: false,
+  alergenos: [],
 };
 
 const aTexto = (v) => (v === null || v === undefined ? '' : String(Number(v)));
@@ -50,10 +60,11 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
 
   const poner = (campo) => (e) => setDatos({ ...datos, [campo]: e.target.value });
   const marcar = (campo) => (e) => setDatos({ ...datos, [campo]: e.target.checked });
-  const alternarAlergeno = (nombre) => setDatos({
-    ...datos,
-    alergenos: datos.alergenos.includes(nombre) ? datos.alergenos.filter((a) => a !== nombre) : [...datos.alergenos, nombre],
-  });
+  const alternarAlergeno = (nombre) =>
+    setDatos({
+      ...datos,
+      alergenos: datos.alergenos.includes(nombre) ? datos.alergenos.filter((a) => a !== nombre) : [...datos.alergenos, nombre],
+    });
 
   async function enviar(evento) {
     evento.preventDefault();
@@ -71,7 +82,9 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
       sin_cuantificar: datos.sin_cuantificar,
       alergenos: datos.alergenos,
     };
-    NUTRIENTES.forEach((c, i) => { payload[c] = numeros[i]; });
+    NUTRIENTES.forEach((c, i) => {
+      payload[c] = numeros[i];
+    });
 
     setGuardando(true);
     try {
@@ -104,14 +117,22 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
     >
       <div className="form-cols">
         <div className="form-col">
-          <label className="campo"><span>Nombre</span>
+          <label className="campo">
+            <span>Nombre</span>
             <input value={datos.nombre} onChange={poner('nombre')} required />
-            <span className="texto-suave">Sé específico: "Pechuga de pollo", no "Pollo".</span></label>
-          <label className="campo"><span>Categoría</span>
+            <span className="texto-suave">Sé específico: "Pechuga de pollo", no "Pollo".</span>
+          </label>
+          <label className="campo">
+            <span>Categoría</span>
             <select value={datos.id_categoria_ingrediente} onChange={poner('id_categoria_ingrediente')}>
               <option value="">Sin categoría</option>
-              {categorias.map((c) => <option key={c.id_categoria_ingrediente} value={c.id_categoria_ingrediente}>{c.nombre}</option>)}
-            </select></label>
+              {categorias.map((c) => (
+                <option key={c.id_categoria_ingrediente} value={c.id_categoria_ingrediente}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <section className="form-card">
             <h3>Alérgenos que aporta</h3>
@@ -123,22 +144,34 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
                 </label>
               ))}
             </div>
-            <span className="texto-suave">Se sugieren al armar una receta; siempre se confirman a mano. No cubre contaminación cruzada.</span>
+            <span className="texto-suave">
+              Se sugieren al armar una receta; siempre se confirman a mano. No cubre contaminación cruzada.
+            </span>
           </section>
         </div>
 
         <div className="form-col">
           <section className="form-card">
-            <h3>Composición por 100 g <span className="texto-suave">(en crudo)</span></h3>
+            <h3>
+              Composición por 100 g <span className="texto-suave">(en crudo)</span>
+            </h3>
             <div className="rejilla-4">
-              <label className="campo"><span>Calorías (kcal)</span>
-                <input type="number" min="0" step="0.1" value={datos.calorias_100g} onChange={poner('calorias_100g')} /></label>
-              <label className="campo"><span>Proteínas (g)</span>
-                <input type="number" min="0" step="0.1" value={datos.proteinas_100g} onChange={poner('proteinas_100g')} /></label>
-              <label className="campo"><span>Carbohidratos (g)</span>
-                <input type="number" min="0" step="0.1" value={datos.carbohidratos_100g} onChange={poner('carbohidratos_100g')} /></label>
-              <label className="campo"><span>Grasas (g)</span>
-                <input type="number" min="0" step="0.1" value={datos.grasas_100g} onChange={poner('grasas_100g')} /></label>
+              <label className="campo">
+                <span>Calorías (kcal)</span>
+                <input type="number" min="0" step="0.1" value={datos.calorias_100g} onChange={poner('calorias_100g')} />
+              </label>
+              <label className="campo">
+                <span>Proteínas (g)</span>
+                <input type="number" min="0" step="0.1" value={datos.proteinas_100g} onChange={poner('proteinas_100g')} />
+              </label>
+              <label className="campo">
+                <span>Carbohidratos (g)</span>
+                <input type="number" min="0" step="0.1" value={datos.carbohidratos_100g} onChange={poner('carbohidratos_100g')} />
+              </label>
+              <label className="campo">
+                <span>Grasas (g)</span>
+                <input type="number" min="0" step="0.1" value={datos.grasas_100g} onChange={poner('grasas_100g')} />
+              </label>
             </div>
             <label className="campo-check">
               <input type="checkbox" checked={datos.sin_cuantificar} onChange={marcar('sin_cuantificar')} />
@@ -151,7 +184,11 @@ function Formulario({ editando, categorias, catalogoAlergenos, onCancelar, onGua
   );
 }
 
-const idSeccion = (nombre) => `seccion-${String(nombre).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
+const idSeccion = (nombre) =>
+  `seccion-${String(nombre)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9_-]+/g, '-')}`;
 
 export default function IngredientesPage() {
   const confirmar = useConfirmar();
@@ -159,7 +196,7 @@ export default function IngredientesPage() {
   const [categorias, setCategorias] = useState([]);
   const [catalogoAlergenos, setCatalogoAlergenos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
-  const [formulario, setFormulario] = useState(null); 
+  const [formulario, setFormulario] = useState(null);
   const [error, setError] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [colapsadas, setColapsadas] = useState(() => new Set());
@@ -178,16 +215,13 @@ export default function IngredientesPage() {
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar, intento]);
+  useEffect(() => {
+    cargar();
+  }, [cargar, intento]);
   if (error && typeof error === 'object' && !lista) {
     return (
       <div className="v2">
-        <PaginaError 
-          compacta 
-          codigo={error.estado ?? 0} 
-          detalle={error.message} 
-          onReintentar={() => setIntento(i => i + 1)} 
-        />
+        <PaginaError compacta codigo={error.estado ?? 0} detalle={error.message} onReintentar={() => setIntento((i) => i + 1)} />
       </div>
     );
   }
@@ -207,7 +241,15 @@ export default function IngredientesPage() {
   };
 
   async function borrar(i) {
-    if (!(await confirmar({ titulo: 'Borrar ingrediente', mensaje: `¿Borrar "${i.nombre}" definitivamente?`, textoConfirmar: 'Borrar', peligro: true }))) return;
+    if (
+      !(await confirmar({
+        titulo: 'Borrar ingrediente',
+        mensaje: `¿Borrar "${i.nombre}" definitivamente?`,
+        textoConfirmar: 'Borrar',
+        peligro: true,
+      }))
+    )
+      return;
     try {
       await eliminarIngrediente(i.id_ingrediente);
       setAviso('Ingrediente borrado.');
@@ -236,21 +278,42 @@ export default function IngredientesPage() {
     <div className="v2">
       <div className="v2-barra">
         <div className="v2-filtros">
-          <input type="search" className="v2-buscar" placeholder="Buscar ingrediente" aria-label="Buscar ingrediente"
-            value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <input
+            type="search"
+            className="v2-buscar"
+            placeholder="Buscar ingrediente"
+            aria-label="Buscar ingrediente"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
           <label className="campo-check">
             <input type="checkbox" checked={soloIncompletos} onChange={(e) => setSoloIncompletos(e.target.checked)} />
             <span>Solo sin información nutricional{lista && sinInfo > 0 ? ` (${sinInfo})` : ''}</span>
           </label>
         </div>
-        <button className="boton boton-primario boton-con-icono" onClick={() => { setAviso(null); setFormulario('nuevo'); }}>
-          <Plus size={16} aria-hidden="true" />Nuevo ingrediente
+        <button
+          className="boton boton-primario boton-con-icono"
+          onClick={() => {
+            setAviso(null);
+            setFormulario('nuevo');
+          }}
+        >
+          <Plus size={16} aria-hidden="true" />
+          Nuevo ingrediente
         </button>
       </div>
 
-      {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
-      {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
-      
+      {error && typeof error === 'string' && (
+        <Mensaje tipo="error" onCerrar={() => setError(null)}>
+          {error}
+        </Mensaje>
+      )}
+      {aviso && (
+        <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>
+          {aviso}
+        </Mensaje>
+      )}
+
       {!lista && !error && <PantallaCarga compacta mensaje="Cargando ingredientes…" />}
       {lista && visibles.length === 0 && (
         <div className="estado-info">
@@ -262,61 +325,108 @@ export default function IngredientesPage() {
         </div>
       )}
 
-      {lista && grupos.filter((g) => g.items.length > 0).map((g) => {
-        const { Icono, color } = ESTILO[g.nombre] || ESTILO_OTROS;
-        return (
-          <section key={g.nombre} className="ing-seccion" style={{ '--acento': color }}>
-            <button
-              type="button"
-              className="ing-cabeza ing-cabeza-boton"
-              onClick={() => alternarCategoria(g.nombre)}
-              aria-expanded={!estaColapsada(g.nombre)}
-              aria-controls={idSeccion(g.nombre)}
-            >
-              <span className="ing-icono"><Icono size={18} strokeWidth={1.8} /></span>
-              <div className="ing-cabeza-info">
-                <h2>{g.nombre} <span>{g.items.length}</span></h2>
-              </div>
-              <span className="ing-chevron" aria-hidden="true">
-                {estaColapsada(g.nombre) ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
-              </span>
-            </button>
+      {lista &&
+        grupos
+          .filter((g) => g.items.length > 0)
+          .map((g) => {
+            const { Icono, color } = ESTILO[g.nombre] || ESTILO_OTROS;
+            return (
+              <section key={g.nombre} className="ing-seccion" style={{ '--acento': color }}>
+                <button
+                  type="button"
+                  className="ing-cabeza ing-cabeza-boton"
+                  onClick={() => alternarCategoria(g.nombre)}
+                  aria-expanded={!estaColapsada(g.nombre)}
+                  aria-controls={idSeccion(g.nombre)}
+                >
+                  <span className="ing-icono">
+                    <Icono size={18} strokeWidth={1.8} />
+                  </span>
+                  <div className="ing-cabeza-info">
+                    <h2>
+                      {g.nombre} <span>{g.items.length}</span>
+                    </h2>
+                  </div>
+                  <span className="ing-chevron" aria-hidden="true">
+                    {estaColapsada(g.nombre) ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
+                  </span>
+                </button>
 
-            {!estaColapsada(g.nombre) && (
-              <div className="tabla-contenedor ing-tabla" id={idSeccion(g.nombre)}>
-                <table className="tabla tabla-ingredientes">
-                <thead>
-                  <tr><th>Ingrediente</th><th className="col-num">kcal</th><th className="col-num">Prot. (g)</th><th className="col-num">Carb. (g)</th><th className="col-num">Grasas (g)</th><th>Alérgenos</th><th className="col-fin"><span className="v2-solo-lector">Acciones</span></th></tr>
-                </thead>
-                <tbody>
-                  {g.items.map((i) => (
-                    <tr key={i.id_ingrediente}>
-                      <td className="col-nombre">
-                        <div className="v2-persona">
-                          <strong>{i.nombre}{i.sin_cuantificar && <em className="ing-nota"> - sin cuantificar</em>}</strong>
-                          <span>{i.usos === 0 ? 'Sin uso en preparaciones' : `Usado en ${i.usos} ${i.usos === 1 ? 'preparación' : 'preparaciones'}`}</span>
-                        </div>
-                      </td>
-                      <td className="col-num" data-etiqueta="kcal">{num(i.calorias_100g)}</td>
-                      <td className="col-num" data-etiqueta="Prot.">{num(i.proteinas_100g)}</td>
-                      <td className="col-num" data-etiqueta="Carb.">{num(i.carbohidratos_100g)}</td>
-                      <td className="col-num" data-etiqueta="Grasas">{num(i.grasas_100g)}</td>
-                      <td className="col-alerg">{i.alergenos.length ? i.alergenos.join(', ') : <span className="texto-suave">—</span>}</td>
-                      <td className="col-fin">
-                        <div className="v2-acciones">
-                          <button type="button" className="boton-texto" onClick={() => { setAviso(null); setFormulario(i); }}>Editar</button>
-                          {i.usos === 0 && <button type="button" className="boton-texto peligro" onClick={() => borrar(i)}>Borrar</button>}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-        );
-      })}
+                {!estaColapsada(g.nombre) && (
+                  <div className="tabla-contenedor ing-tabla" id={idSeccion(g.nombre)}>
+                    <table className="tabla tabla-ingredientes">
+                      <thead>
+                        <tr>
+                          <th>Ingrediente</th>
+                          <th className="col-num">kcal</th>
+                          <th className="col-num">Prot. (g)</th>
+                          <th className="col-num">Carb. (g)</th>
+                          <th className="col-num">Grasas (g)</th>
+                          <th>Alérgenos</th>
+                          <th className="col-fin">
+                            <span className="v2-solo-lector">Acciones</span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {g.items.map((i) => (
+                          <tr key={i.id_ingrediente}>
+                            <td className="col-nombre">
+                              <div className="v2-persona">
+                                <strong>
+                                  {i.nombre}
+                                  {i.sin_cuantificar && <em className="ing-nota"> - sin cuantificar</em>}
+                                </strong>
+                                <span>
+                                  {i.usos === 0
+                                    ? 'Sin uso en preparaciones'
+                                    : `Usado en ${i.usos} ${i.usos === 1 ? 'preparación' : 'preparaciones'}`}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="col-num" data-etiqueta="kcal">
+                              {num(i.calorias_100g)}
+                            </td>
+                            <td className="col-num" data-etiqueta="Prot.">
+                              {num(i.proteinas_100g)}
+                            </td>
+                            <td className="col-num" data-etiqueta="Carb.">
+                              {num(i.carbohidratos_100g)}
+                            </td>
+                            <td className="col-num" data-etiqueta="Grasas">
+                              {num(i.grasas_100g)}
+                            </td>
+                            <td className="col-alerg">
+                              {i.alergenos.length ? i.alergenos.join(', ') : <span className="texto-suave">—</span>}
+                            </td>
+                            <td className="col-fin">
+                              <div className="v2-acciones">
+                                <button
+                                  type="button"
+                                  className="boton-texto"
+                                  onClick={() => {
+                                    setAviso(null);
+                                    setFormulario(i);
+                                  }}
+                                >
+                                  Editar
+                                </button>
+                                {i.usos === 0 && (
+                                  <button type="button" className="boton-texto peligro" onClick={() => borrar(i)}>
+                                    Borrar
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            );
+          })}
 
       {formulario && (
         <Formulario
@@ -324,7 +434,11 @@ export default function IngredientesPage() {
           categorias={categorias}
           catalogoAlergenos={catalogoAlergenos}
           onCancelar={() => setFormulario(null)}
-          onGuardado={(mensaje) => { setFormulario(null); setAviso(mensaje); cargar(); }}
+          onGuardado={(mensaje) => {
+            setFormulario(null);
+            setAviso(mensaje);
+            cargar();
+          }}
         />
       )}
     </div>

@@ -28,21 +28,53 @@ import PaginaError from './components/PaginaError';
 const NOMBRE_SITIO = 'Casinos DUOC UC';
 
 function useTitulo(titulo) {
-  useEffect(() => { document.title = titulo ? `${titulo} - ${NOMBRE_SITIO}` : NOMBRE_SITIO; }, [titulo]);
+  useEffect(() => {
+    document.title = titulo ? `${titulo} - ${NOMBRE_SITIO}` : NOMBRE_SITIO;
+  }, [titulo]);
 }
 
 const PAGINAS = {
-  '/panel/caja': { titulo: 'Caja', descripcion: 'Toca el combo que vendes. Cada toque descuenta una porción del plato y de los acompañamientos.', Pagina: CajaPage },
-  '/panel/kiosco': { titulo: 'Disponibilidad', ayuda: 'Controla la jornada: porciones que quedan, ventas del día y cierre con conteo de sobrantes.', Pagina: KioscoPage },
-  '/panel/menu': { titulo: 'Planificación', ayuda: 'Define qué se sirve cada día, en qué cantidad y a qué precio. El menú solo lo ven los estudiantes cuando lo publicas.', Pagina: PlanificacionPage },
-  '/panel/ingredientes': { titulo: 'Ingredientes', ayuda: 'Catálogo base con valores nutricionales por 100 g. De aquí se calculan las preparaciones.', Pagina: IngredientesPage },
-  '/panel/preparaciones': { titulo: 'Preparaciones', ayuda: 'Recetas del casino con su información nutricional y alérgenos. Lo que se desactiva deja de poder planificarse.', Pagina: PreparacionesPage },
-  '/panel/usuarios': { titulo: 'Usuarios', ayuda: 'Cuentas del personal del casino. Los estudiantes consultan el menú sin cuenta.', Pagina: UsuariosPage },
-  '/panel/analisis': { titulo: 'Análisis', ayuda: 'Qué se vende, qué se agota y qué opinan los estudiantes. Elige un período y compara por menú o por preparación.', Pagina: AnalisisPage },
+  '/panel/caja': {
+    titulo: 'Caja',
+    descripcion: 'Toca el combo que vendes. Cada toque descuenta una porción del plato y de los acompañamientos.',
+    Pagina: CajaPage,
+  },
+  '/panel/kiosco': {
+    titulo: 'Disponibilidad',
+    ayuda: 'Controla la jornada: porciones que quedan, ventas del día y cierre con conteo de sobrantes.',
+    Pagina: KioscoPage,
+  },
+  '/panel/menu': {
+    titulo: 'Planificación',
+    ayuda: 'Define qué se sirve cada día, en qué cantidad y a qué precio. El menú solo lo ven los estudiantes cuando lo publicas.',
+    Pagina: PlanificacionPage,
+  },
+  '/panel/ingredientes': {
+    titulo: 'Ingredientes',
+    ayuda: 'Catálogo base con valores nutricionales por 100 g. De aquí se calculan las preparaciones.',
+    Pagina: IngredientesPage,
+  },
+  '/panel/preparaciones': {
+    titulo: 'Preparaciones',
+    ayuda: 'Recetas del casino con su información nutricional y alérgenos. Lo que se desactiva deja de poder planificarse.',
+    Pagina: PreparacionesPage,
+  },
+  '/panel/usuarios': {
+    titulo: 'Usuarios',
+    ayuda: 'Cuentas del personal del casino. Los estudiantes consultan el menú sin cuenta.',
+    Pagina: UsuariosPage,
+  },
+  '/panel/analisis': {
+    titulo: 'Análisis',
+    ayuda: 'Qué se vende, qué se agota y qué opinan los estudiantes. Elige un período y compara por menú o por preparación.',
+    Pagina: AnalisisPage,
+  },
 };
 
 function Redirigir({ a }) {
-  useEffect(() => { navegar(a); }, [a]);
+  useEffect(() => {
+    navegar(a);
+  }, [a]);
   return null;
 }
 
@@ -51,11 +83,18 @@ function Enrutador() {
   const { usuario, kiosco, cargando } = useAuth();
   const [ocultarDesactivadas, setOcultarDesactivadas] = useState(false);
 
-  const tituloPagina = ruta === '/login' ? 'Iniciar sesión'
-    : ruta.startsWith('/panel') ? (PAGINAS[ruta]?.titulo || 'Panel')
-    : ruta.startsWith('/error') ? 'Error'
-    : ruta === '/' ? 'Menú del día'
-    : RUTAS_LEGALES[ruta] ? TITULOS_LEGALES[RUTAS_LEGALES[ruta]] : 'Página no encontrada';
+  const tituloPagina =
+    ruta === '/login'
+      ? 'Iniciar sesión'
+      : ruta.startsWith('/panel')
+        ? PAGINAS[ruta]?.titulo || 'Panel'
+        : ruta.startsWith('/error')
+          ? 'Error'
+          : ruta === '/'
+            ? 'Menú del día'
+            : RUTAS_LEGALES[ruta]
+              ? TITULOS_LEGALES[RUTAS_LEGALES[ruta]]
+              : 'Página no encontrada';
   useTitulo(tituloPagina);
 
   if (ruta.startsWith('/acceso')) return <AccesoPage />;
@@ -126,7 +165,10 @@ export default function App() {
     marcarSplashVisto();
     const t1 = setTimeout(() => setSplash('saliendo'), SPLASH_DURACION_MS);
     const t2 = setTimeout(() => setSplash(false), SPLASH_DURACION_MS + SPLASH_SALIDA_MS);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [mostrarInicial]);
 
   return (

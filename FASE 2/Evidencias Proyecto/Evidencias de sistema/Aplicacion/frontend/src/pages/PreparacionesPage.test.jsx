@@ -3,15 +3,28 @@ import { render, screen, within, waitFor, fireEvent } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../api/gestion', () => ({
-  listarPreparaciones: vi.fn(), listarCatalogoAlergenos: vi.fn(), crearPreparacion: vi.fn(), actualizarPreparacion: vi.fn(),
-  desactivarPreparacion: vi.fn(), reactivarPreparacion: vi.fn(), eliminarPreparacion: vi.fn(), asignarAlergenos: vi.fn(),
-  guardarNutricion: vi.fn(), subirImagen: vi.fn(), listarIngredientes: vi.fn(), calcularNutricionApi: vi.fn(),
+  listarPreparaciones: vi.fn(),
+  listarCatalogoAlergenos: vi.fn(),
+  crearPreparacion: vi.fn(),
+  actualizarPreparacion: vi.fn(),
+  desactivarPreparacion: vi.fn(),
+  reactivarPreparacion: vi.fn(),
+  eliminarPreparacion: vi.fn(),
+  asignarAlergenos: vi.fn(),
+  guardarNutricion: vi.fn(),
+  subirImagen: vi.fn(),
+  listarIngredientes: vi.fn(),
+  calcularNutricionApi: vi.fn(),
 }));
 vi.mock('../components/RecortarImagen', () => ({
   default: ({ archivo, onConfirmar, onCancelar }) => (
     <div role="dialog" aria-label="Recortar">
-      <button type="button" onClick={() => onConfirmar(archivo)}>Usar recorte</button>
-      <button type="button" onClick={onCancelar}>Cancelar recorte</button>
+      <button type="button" onClick={() => onConfirmar(archivo)}>
+        Usar recorte
+      </button>
+      <button type="button" onClick={onCancelar}>
+        Cancelar recorte
+      </button>
     </div>
   ),
 }));
@@ -22,9 +35,20 @@ import PreparacionesPage from './PreparacionesPage';
 
 const NUT = { calorias: 420, proteinas_g: 30, carbohidratos_g: 40, grasas_g: 12, origen: 'calculada' };
 const prep = (id, nombre, extra = {}) => ({
-  id_preparacion: id, nombre, tipo: 'Plato Principal', activa: true, descripcion: '', imagen_url: null, porciones_receta: 10,
-  ingredientes: ['Pollo'], ingredientes_detalle: [{ id_ingrediente: 1, nombre: 'Pollo', cantidad_g: 1500 }], alergenos: [], nutricion: NUT,
-  id_preparacion_base: null, base_nombre: null, ...extra,
+  id_preparacion: id,
+  nombre,
+  tipo: 'Plato Principal',
+  activa: true,
+  descripcion: '',
+  imagen_url: null,
+  porciones_receta: 10,
+  ingredientes: ['Pollo'],
+  ingredientes_detalle: [{ id_ingrediente: 1, nombre: 'Pollo', cantidad_g: 1500 }],
+  alergenos: [],
+  nutricion: NUT,
+  id_preparacion_base: null,
+  base_nombre: null,
+  ...extra,
 });
 const LISTA = [
   prep(1, 'Pollo arvejado'),
@@ -37,9 +61,18 @@ const INGREDIENTES = [
   { id_ingrediente: 2, nombre: 'Huevo', categoria: 'Lácteos y huevos', alergenos: ['Huevo'] },
   { id_ingrediente: 3, nombre: 'Sal', categoria: null, alergenos: [] },
 ];
-const ALERGENOS = [{ id_alergeno: 1, nombre: 'Huevo' }, { id_alergeno: 2, nombre: 'Lácteos' }, { id_alergeno: 3, nombre: 'Gluten' }];
+const ALERGENOS = [
+  { id_alergeno: 1, nombre: 'Huevo' },
+  { id_alergeno: 2, nombre: 'Lácteos' },
+  { id_alergeno: 3, nombre: 'Gluten' },
+];
 
-const montar = (props = {}) => render(<ConfirmacionProvider><PreparacionesPage {...props} /></ConfirmacionProvider>);
+const montar = (props = {}) =>
+  render(
+    <ConfirmacionProvider>
+      <PreparacionesPage {...props} />
+    </ConfirmacionProvider>
+  );
 const columna = (titulo) => screen.getByRole('heading', { name: new RegExp(`^${titulo}`) }).closest('section');
 const tarjeta = (nombre) => screen.getByText(nombre, { selector: 'strong' }).closest('article');
 const abrirMenu = async (usuario, nombre) => usuario.click(screen.getByRole('button', { name: `Más acciones de ${nombre}` }));
@@ -50,7 +83,9 @@ describe('PreparacionesPage: listado', () => {
     api.listarPreparaciones.mockResolvedValue(LISTA);
     api.listarCatalogoAlergenos.mockResolvedValue(ALERGENOS);
     api.listarIngredientes.mockResolvedValue(INGREDIENTES);
-    ['desactivarPreparacion', 'reactivarPreparacion', 'eliminarPreparacion', 'asignarAlergenos'].forEach((f) => api[f].mockResolvedValue({}));
+    ['desactivarPreparacion', 'reactivarPreparacion', 'eliminarPreparacion', 'asignarAlergenos'].forEach((f) =>
+      api[f].mockResolvedValue({})
+    );
     api.guardarNutricion.mockResolvedValue({});
   });
 
@@ -158,7 +193,11 @@ describe('PreparacionesPage: formulario de receta', () => {
   }
 
   it('crea un plato con ingredientes, calcula la nutrición y guarda todo', async () => {
-    api.calcularNutricionApi.mockResolvedValue({ completo: true, por_porcion: { calorias: 350.5, proteinas_g: 25, carbohidratos_g: 30, grasas_g: 10 }, omitidos: ['Sal'] });
+    api.calcularNutricionApi.mockResolvedValue({
+      completo: true,
+      por_porcion: { calorias: 350.5, proteinas_g: 25, carbohidratos_g: 30, grasas_g: 10 },
+      omitidos: ['Sal'],
+    });
     const usuario = userEvent.setup();
     montar();
     const d = await nuevoPlato(usuario);
@@ -174,21 +213,46 @@ describe('PreparacionesPage: formulario de receta', () => {
     await usuario.click(within(d).getByRole('button', { name: 'Agregar los sugeridos' }));
     expect(within(d).getByLabelText('Huevo')).toBeChecked();
     await usuario.click(within(d).getByRole('button', { name: /Calcular desde los ingredientes/ }));
-    expect(api.calcularNutricionApi).toHaveBeenCalledWith({ porciones_receta: 4, ingredientes: [{ id_ingrediente: 1, cantidad_g: 800 }, { id_ingrediente: 2, cantidad_g: 400 }] });
+    expect(api.calcularNutricionApi).toHaveBeenCalledWith({
+      porciones_receta: 4,
+      ingredientes: [
+        { id_ingrediente: 1, cantidad_g: 800 },
+        { id_ingrediente: 2, cantidad_g: 400 },
+      ],
+    });
     expect(await within(d).findByText(/No se contó: Sal/)).toBeInTheDocument();
     expect(within(d).getByLabelText('Calorías (kcal)')).toHaveValue(350.5);
     await usuario.click(within(d).getByRole('button', { name: 'Guardar plato' }));
-    await waitFor(() => expect(api.crearPreparacion).toHaveBeenCalledWith({
-      nombre: 'Tortilla de pollo', descripcion: '', imagen_url: '', porciones_receta: 4, tipo: undefined,
-      ingredientes: [{ id_ingrediente: 1, cantidad_g: 800 }, { id_ingrediente: 2, cantidad_g: 400 }],
-    }));
+    await waitFor(() =>
+      expect(api.crearPreparacion).toHaveBeenCalledWith({
+        nombre: 'Tortilla de pollo',
+        descripcion: '',
+        imagen_url: '',
+        porciones_receta: 4,
+        tipo: undefined,
+        ingredientes: [
+          { id_ingrediente: 1, cantidad_g: 800 },
+          { id_ingrediente: 2, cantidad_g: 400 },
+        ],
+      })
+    );
     expect(api.asignarAlergenos).toHaveBeenCalledWith(50, ['Huevo']);
-    expect(api.guardarNutricion).toHaveBeenCalledWith(50, { calorias: 350.5, proteinas_g: 25, carbohidratos_g: 30, grasas_g: 10, origen: 'calculada' });
+    expect(api.guardarNutricion).toHaveBeenCalledWith(50, {
+      calorias: 350.5,
+      proteinas_g: 25,
+      carbohidratos_g: 30,
+      grasas_g: 10,
+      origen: 'calculada',
+    });
     expect(await screen.findByText('Preparación creada.')).toBeInTheDocument();
   });
 
   it('si la receta cambia después de calcular, obliga a recalcular antes de guardar', async () => {
-    api.calcularNutricionApi.mockResolvedValue({ completo: true, por_porcion: { calorias: 300, proteinas_g: 20, carbohidratos_g: 20, grasas_g: 10 }, omitidos: [] });
+    api.calcularNutricionApi.mockResolvedValue({
+      completo: true,
+      por_porcion: { calorias: 300, proteinas_g: 20, carbohidratos_g: 20, grasas_g: 10 },
+      omitidos: [],
+    });
     const usuario = userEvent.setup();
     montar();
     const d = await nuevoPlato(usuario);
@@ -206,7 +270,11 @@ describe('PreparacionesPage: formulario de receta', () => {
   });
 
   it('explica por qué todavía no se puede calcular', async () => {
-    api.calcularNutricionApi.mockResolvedValue({ completo: false, problemas: ['porciones_invalidas'], sin_datos: [{ nombre: 'Huevo', motivo: 'sin_cantidad' }] });
+    api.calcularNutricionApi.mockResolvedValue({
+      completo: false,
+      problemas: ['porciones_invalidas'],
+      sin_datos: [{ nombre: 'Huevo', motivo: 'sin_cantidad' }],
+    });
     const usuario = userEvent.setup();
     montar();
     const d = await nuevoPlato(usuario);
@@ -290,6 +358,8 @@ describe('PreparacionesPage: formulario de receta', () => {
     await usuario.type(within(d).getAllByRole('textbox')[0], 'Con enlace');
     await usuario.type(within(d).getByLabelText('Enlace de la imagen'), 'https://ejemplo.cl/foto.jpg');
     await usuario.click(within(d).getByRole('button', { name: 'Guardar plato' }));
-    await waitFor(() => expect(api.crearPreparacion).toHaveBeenCalledWith(expect.objectContaining({ imagen_url: 'https://ejemplo.cl/foto.jpg' })));
+    await waitFor(() =>
+      expect(api.crearPreparacion).toHaveBeenCalledWith(expect.objectContaining({ imagen_url: 'https://ejemplo.cl/foto.jpg' }))
+    );
   });
 });

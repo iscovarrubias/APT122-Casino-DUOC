@@ -9,7 +9,8 @@ const LIMPIAR = process.argv.includes('--limpiar');
 function crearAzar(semilla) {
   let a = semilla;
   return () => {
-    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
     let t = Math.imul(a ^ (a >>> 15), 1 | a);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -57,9 +58,7 @@ const TIPOS_COMPARTIDOS = ['Ensalada', 'Sopa', 'Pan', 'Postre', 'Fruta', 'Bebida
 const OBLIGATORIOS = ['Ensalada', 'Sopa', 'Postre', 'Fruta', 'Bebida'];
 
 async function cargarPreparacionesPorTipo(client, tipos) {
-  const { rows: todas } = await client.query(
-    `SELECT id_preparacion, id_tipo_componente FROM preparacion WHERE activa = TRUE`
-  );
+  const { rows: todas } = await client.query(`SELECT id_preparacion, id_tipo_componente FROM preparacion WHERE activa = TRUE`);
 
   const principales = todas
     .filter((p) => p.id_tipo_componente === null || p.id_tipo_componente === tipos['Plato Principal'])
@@ -86,17 +85,10 @@ async function asegurarComponentes(client, id_menu, grupos, categorias, tipos) {
 
   const principalesBarajados = barajar(grupos.principales);
   if (principalesBarajados.length < categorias.length) {
-    throw new Error(
-      `Se necesitan al menos ${categorias.length} platos principales activos y hay ${principalesBarajados.length}.`
-    );
+    throw new Error(`Se necesitan al menos ${categorias.length} platos principales activos y hay ${principalesBarajados.length}.`);
   }
   for (let i = 0; i < categorias.length; i++) {
-    await insertar(
-      principalesBarajados[i],
-      categorias[i].id_categoria_menu,
-      tipos['Plato Principal'],
-      Math.round(entre(35, 75))
-    );
+    await insertar(principalesBarajados[i], categorias[i].id_categoria_menu, tipos['Plato Principal'], Math.round(entre(35, 75)));
   }
 
   for (const tipo of TIPOS_COMPARTIDOS) {
@@ -122,47 +114,39 @@ async function main() {
     }
 
     const tipos = Object.fromEntries(
-      (await client.query('SELECT id_tipo_componente, nombre FROM tipo_componente')).rows.map((r) => [
-        r.nombre,
-        r.id_tipo_componente,
-      ])
+      (await client.query('SELECT id_tipo_componente, nombre FROM tipo_componente')).rows.map((r) => [r.nombre, r.id_tipo_componente])
     );
     const grupos = await cargarPreparacionesPorTipo(client, tipos);
 
     const sinTipo = OBLIGATORIOS.filter((t) => grupos.compartidos[t].length === 0);
     if (sinTipo.length > 0) {
-      throw new Error(`Faltan preparaciones activas de tipo: ${sinTipo.join(', ')}. Carga el catálogo de demostración antes de simular ventas.`);
+      throw new Error(
+        `Faltan preparaciones activas de tipo: ${sinTipo.join(', ')}. Carga el catálogo de demostración antes de simular ventas.`
+      );
     }
 
     if (grupos.principales.length < 4) {
       throw new Error(
         `Se necesitan al menos 4 platos principales activos y hay ${grupos.principales.length}. ` +
-        `Créalos desde el panel de administración y vuelve a ejecutar.`
+          `Créalos desde el panel de administración y vuelve a ejecutar.`
       );
     }
 
-    const categorias = (
-      await client.query('SELECT id_categoria_menu, nombre FROM categoria_menu ORDER BY id_categoria_menu')
-    ).rows;
-    const id_sede = (
-      await client.query('SELECT id_sede FROM sede ORDER BY id_sede LIMIT 1')
-    ).rows[0].id_sede;
+    const categorias = (await client.query('SELECT id_categoria_menu, nombre FROM categoria_menu ORDER BY id_categoria_menu')).rows;
+    const id_sede = (await client.query('SELECT id_sede FROM sede ORDER BY id_sede LIMIT 1')).rows[0].id_sede;
 
-    let menus = 0, ventas = 0, agotamientos = 0;
+    let menus = 0,
+      ventas = 0,
+      agotamientos = 0;
 
     for (let atras = DIAS; atras >= 1; atras--) {
       const fecha = haceDiasChile(atras);
       if (!esDiaHabil(fecha)) continue;
 
-      let menu = (
-        await client.query('SELECT id_menu FROM menu WHERE fecha = $1 AND id_sede = $2', [fecha, id_sede])
-      ).rows[0];
+      let menu = (await client.query('SELECT id_menu FROM menu WHERE fecha = $1 AND id_sede = $2', [fecha, id_sede])).rows[0];
       if (!menu) {
         menu = (
-          await client.query(
-            'INSERT INTO menu (id_sede, fecha, publicado) VALUES ($1, $2, TRUE) RETURNING id_menu',
-            [id_sede, fecha]
-          )
+          await client.query('INSERT INTO menu (id_sede, fecha, publicado) VALUES ($1, $2, TRUE) RETURNING id_menu', [id_sede, fecha])
         ).rows[0];
         menus++;
       }
@@ -188,10 +172,11 @@ async function main() {
         const tramos = new Map();
         for (const m of minutos) tramos.set(m - (m % 5), (tramos.get(m - (m % 5)) || 0) + 1);
         for (const [minuto, cantidad] of tramos) {
-          await client.query(
-            `INSERT INTO venta (id_menu_preparacion, cantidad, fecha_hora, origen_dato) VALUES ($1, $2, $3, 'simulado')`,
-            [comp.id_menu_preparacion, cantidad, marcaTiempo(fecha, minuto)]
-          );
+          await client.query(`INSERT INTO venta (id_menu_preparacion, cantidad, fecha_hora, origen_dato) VALUES ($1, $2, $3, 'simulado')`, [
+            comp.id_menu_preparacion,
+            cantidad,
+            marcaTiempo(fecha, minuto),
+          ]);
           ventas++;
         }
 
@@ -212,9 +197,7 @@ async function main() {
     }
 
     await client.query('COMMIT');
-    console.log(
-      `Listo: ${menus} menús nuevos, ${ventas} registros de venta y ${agotamientos} agotamientos simulados.`
-    );
+    console.log(`Listo: ${menus} menús nuevos, ${ventas} registros de venta y ${agotamientos} agotamientos simulados.`);
     console.log('Para borrar lo simulado: node database/seed_ventas_simuladas.js --limpiar');
   } catch (err) {
     await client.query('ROLLBACK');

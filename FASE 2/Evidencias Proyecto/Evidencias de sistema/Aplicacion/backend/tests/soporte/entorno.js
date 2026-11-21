@@ -8,7 +8,9 @@ function salir(mensaje) {
 }
 
 if (!urlPruebas) {
-  salir('Define TEST_DATABASE_URL en el archivo .env con una base de datos exclusiva para pruebas. Las pruebas de integración crean y borran datos.');
+  salir(
+    'Define TEST_DATABASE_URL en el archivo .env con una base de datos exclusiva para pruebas. Las pruebas de integración crean y borran datos.'
+  );
 }
 
 if (urlPruebas === process.env.DATABASE_URL) {

@@ -38,12 +38,7 @@ export default function UsuariosPage() {
   if (error && typeof error === 'object' && !lista) {
     return (
       <div className="v2">
-        <PaginaError 
-          compacta 
-          codigo={error.estado ?? 0} 
-          detalle={error.message} 
-          onReintentar={() => setIntento(i => i + 1)} 
-        />
+        <PaginaError compacta codigo={error.estado ?? 0} detalle={error.message} onReintentar={() => setIntento((i) => i + 1)} />
       </div>
     );
   }
@@ -71,9 +66,12 @@ export default function UsuariosPage() {
     const ok = await ejecutar(
       () => crearUsuario({ ...nuevo, nombre: nuevo.nombre.trim(), email: nuevo.email.trim() }),
       'Usuario creado.',
-      setErrorForm,
+      setErrorForm
     );
-    if (ok) { setNuevo(VACIO); setCreando(false); }
+    if (ok) {
+      setNuevo(VACIO);
+      setCreando(false);
+    }
   }
 
   async function guardarClave(evento) {
@@ -94,33 +92,56 @@ export default function UsuariosPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
-          <select
-            className="v2-buscar"
-            aria-label="Filtrar por rol"
-            value={rolFiltro}
-            onChange={(e) => setRolFiltro(e.target.value)}
-          >
+          <select className="v2-buscar" aria-label="Filtrar por rol" value={rolFiltro} onChange={(e) => setRolFiltro(e.target.value)}>
             <option value="">Personal (sin estudiantes)</option>
-            {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+            {ROLES.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
           </select>
         </div>
-        <button type="button" className="boton boton-primario boton-con-icono" onClick={() => { setErrorForm(null); setCreando(true); }}>
+        <button
+          type="button"
+          className="boton boton-primario boton-con-icono"
+          onClick={() => {
+            setErrorForm(null);
+            setCreando(true);
+          }}
+        >
           <Plus size={16} aria-hidden="true" /> Nuevo usuario
         </button>
       </div>
-      {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
-      {aviso && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
-      
+      {error && typeof error === 'string' && (
+        <Mensaje tipo="error" onCerrar={() => setError(null)}>
+          {error}
+        </Mensaje>
+      )}
+      {aviso && (
+        <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>
+          {aviso}
+        </Mensaje>
+      )}
+
       {!lista && !error && <PantallaCarga compacta mensaje="Cargando usuarios…" />}
 
       {lista && lista.length === 0 && (
-        <div className="v2-vacio"><strong>Aún no hay usuarios</strong>Crea la primera cuenta con “Nuevo usuario”.</div>
+        <div className="v2-vacio">
+          <strong>Aún no hay usuarios</strong>Crea la primera cuenta con “Nuevo usuario”.
+        </div>
       )}
 
       {lista && lista.length > 0 && (
         <div className="tabla-contenedor">
           <table className="tabla tabla-usuarios">
-            <thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th className="col-fin">Acciones</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th className="col-fin">Acciones</th>
+              </tr>
+            </thead>
             <tbody>
               {lista.map((u) => {
                 const esYo = u.id_usuario === yo.id_usuario;
@@ -128,31 +149,66 @@ export default function UsuariosPage() {
                   <tr key={u.id_usuario} className={u.activo ? '' : 'fila-inactiva'}>
                     <td>
                       <div className="v2-persona">
-                        <strong>{u.nombre}{esYo && <span> (tú)</span>}</strong>
+                        <strong>
+                          {u.nombre}
+                          {esYo && <span> (tú)</span>}
+                        </strong>
                         <span>{u.email}</span>
                       </div>
                     </td>
                     <td>
-                      <select value={u.rol} disabled={ocupado || esYo} aria-label={`Rol de ${u.nombre}`}
-                        onChange={(e) => ejecutar(() => actualizarUsuario(u.id_usuario, { rol: e.target.value }), 'Rol actualizado.')}>
-                        {ROLES.map((r) => <option key={r}>{r}</option>)}
+                      <select
+                        value={u.rol}
+                        disabled={ocupado || esYo}
+                        aria-label={`Rol de ${u.nombre}`}
+                        onChange={(e) => ejecutar(() => actualizarUsuario(u.id_usuario, { rol: e.target.value }), 'Rol actualizado.')}
+                      >
+                        {ROLES.map((r) => (
+                          <option key={r}>{r}</option>
+                        ))}
                       </select>
                     </td>
-                    <td><span className={`v2-estado ${u.activo ? '' : 'inactivo'}`}>{u.activo ? 'Activo' : 'Desactivado'}</span></td>
+                    <td>
+                      <span className={`v2-estado ${u.activo ? '' : 'inactivo'}`}>{u.activo ? 'Activo' : 'Desactivado'}</span>
+                    </td>
                     <td className="col-fin">
                       {claveDe?.id === u.id_usuario ? (
                         <form className="v2-clave" onSubmit={guardarClave}>
-                          <input type="password" minLength="8" placeholder="Nueva contraseña (mín. 8)" aria-label={`Nueva contraseña de ${u.nombre}`} value={claveDe.valor}
-                            onChange={(e) => setClaveDe({ ...claveDe, valor: e.target.value })} autoComplete="new-password" required autoFocus />
-                          <button type="submit" className="boton boton-primario" disabled={ocupado}>Guardar</button>
-                          <button type="button" className="boton boton-secundario" onClick={() => setClaveDe(null)}>Cancelar</button>
+                          <input
+                            type="password"
+                            minLength="8"
+                            placeholder="Nueva contraseña (mín. 8)"
+                            aria-label={`Nueva contraseña de ${u.nombre}`}
+                            value={claveDe.valor}
+                            onChange={(e) => setClaveDe({ ...claveDe, valor: e.target.value })}
+                            autoComplete="new-password"
+                            required
+                            autoFocus
+                          />
+                          <button type="submit" className="boton boton-primario" disabled={ocupado}>
+                            Guardar
+                          </button>
+                          <button type="button" className="boton boton-secundario" onClick={() => setClaveDe(null)}>
+                            Cancelar
+                          </button>
                         </form>
                       ) : (
                         <div className="v2-acciones">
-                          <button type="button" className="boton-texto" onClick={() => setClaveDe({ id: u.id_usuario, valor: '' })}>Cambiar contraseña</button>
+                          <button type="button" className="boton-texto" onClick={() => setClaveDe({ id: u.id_usuario, valor: '' })}>
+                            Cambiar contraseña
+                          </button>
                           {!esYo && (
-                            <button type="button" className={`boton-texto ${u.activo ? 'peligro' : ''}`} disabled={ocupado}
-                              onClick={() => ejecutar(() => actualizarUsuario(u.id_usuario, { activo: !u.activo }), u.activo ? 'Usuario desactivado.' : 'Usuario reactivado.')}>
+                            <button
+                              type="button"
+                              className={`boton-texto ${u.activo ? 'peligro' : ''}`}
+                              disabled={ocupado}
+                              onClick={() =>
+                                ejecutar(
+                                  () => actualizarUsuario(u.id_usuario, { activo: !u.activo }),
+                                  u.activo ? 'Usuario desactivado.' : 'Usuario reactivado.'
+                                )
+                              }
+                            >
                               {u.activo ? 'Desactivar' : 'Reactivar'}
                             </button>
                           )}
@@ -172,24 +228,44 @@ export default function UsuariosPage() {
           titulo="Nuevo usuario"
           ancho="medio"
           onSubmit={crear}
-          onCancelar={() => { setCreando(false); setNuevo(VACIO); }}
+          onCancelar={() => {
+            setCreando(false);
+            setNuevo(VACIO);
+          }}
           guardando={ocupado}
           textoGuardar="Crear usuario"
           error={errorForm}
           onCerrarError={() => setErrorForm(null)}
         >
           <div className="v2 v2-formulario">
-            <label className="campo"><span>Nombre</span>
-              <input value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} required autoFocus /></label>
-            <label className="campo"><span>Correo</span>
-              <input type="email" value={nuevo.email} onChange={(e) => setNuevo({ ...nuevo, email: e.target.value })} required /></label>
-            <label className="campo"><span>Contraseña</span>
-              <input type="password" minLength="8" value={nuevo.password} onChange={(e) => setNuevo({ ...nuevo, password: e.target.value })} autoComplete="new-password" required />
-              <p className="campo-ayuda">Mínimo 8 caracteres.</p></label>
-            <label className="campo"><span>Rol</span>
+            <label className="campo">
+              <span>Nombre</span>
+              <input value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} required autoFocus />
+            </label>
+            <label className="campo">
+              <span>Correo</span>
+              <input type="email" value={nuevo.email} onChange={(e) => setNuevo({ ...nuevo, email: e.target.value })} required />
+            </label>
+            <label className="campo">
+              <span>Contraseña</span>
+              <input
+                type="password"
+                minLength="8"
+                value={nuevo.password}
+                onChange={(e) => setNuevo({ ...nuevo, password: e.target.value })}
+                autoComplete="new-password"
+                required
+              />
+              <p className="campo-ayuda">Mínimo 8 caracteres.</p>
+            </label>
+            <label className="campo">
+              <span>Rol</span>
               <select value={nuevo.rol} onChange={(e) => setNuevo({ ...nuevo, rol: e.target.value })}>
-                {ROLES.map((r) => <option key={r}>{r}</option>)}
-              </select></label>
+                {ROLES.map((r) => (
+                  <option key={r}>{r}</option>
+                ))}
+              </select>
+            </label>
           </div>
         </ModalFormulario>
       )}

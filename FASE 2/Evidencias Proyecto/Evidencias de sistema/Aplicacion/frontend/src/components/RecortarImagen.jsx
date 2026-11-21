@@ -68,9 +68,7 @@ export default function RecortarImagen({ archivo, aspecto = 16 / 9, onConfirmar,
           </button>
         </div>
 
-        <p className="recorte-ayuda">
-          Mueve la foto y usa el zoom para encuadrar cómo se verá en el menú.
-        </p>
+        <p className="recorte-ayuda">Mueve la foto y usa el zoom para encuadrar cómo se verá en el menú.</p>
 
         <div className="recorte-area">
           <Cropper

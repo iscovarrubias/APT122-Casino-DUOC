@@ -36,16 +36,16 @@ function calcularNutricion({ porciones, ingredientes }) {
       sin_datos.push({ nombre: ing.nombre, motivo: 'sin_datos_nutricionales' });
       continue;
     }
-    Object.keys(NUTRIENTES).forEach((k, i) => { total[k] += (gramos / 100) * valores[i]; });
+    Object.keys(NUTRIENTES).forEach((k, i) => {
+      total[k] += (gramos / 100) * valores[i];
+    });
     contados++;
   }
 
   if (lista.length > 0 && contados === 0 && sin_datos.length === 0) problemas.push('sin_ingredientes_cuantificables');
 
   const completo = problemas.length === 0 && sin_datos.length === 0;
-  const por_porcion = completo
-    ? Object.fromEntries(Object.keys(NUTRIENTES).map((k) => [k, redondear(total[k] / p)]))
-    : null;
+  const por_porcion = completo ? Object.fromEntries(Object.keys(NUTRIENTES).map((k) => [k, redondear(total[k] / p)])) : null;
 
   return { completo, problemas, sin_datos, omitidos, por_porcion };
 }

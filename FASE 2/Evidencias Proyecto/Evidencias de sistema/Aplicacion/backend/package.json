@@ -19,7 +19,9 @@
     "test:cov": "node --test --experimental-test-coverage --test-concurrency=1 --test-coverage-include=\"src/**\" --test-coverage-lines=80 \"tests/*.test.js\" \"tests/bd/*.test.js\" \"tests/integracion/*.js\"",
     "migrar": "node database/migrar.js",
     "respaldo": "node database/respaldo.js",
-    "respaldo:verificar": "node database/verificar_respaldo.js"
+    "respaldo:verificar": "node database/verificar_respaldo.js",
+    "formato": "prettier --write \"src/**/*.{js,json}\" \"tests/**/*.js\" \"database/**/*.js\" \"*.{js,json}\"",
+    "formato:revisar": "prettier --check \"src/**/*.{js,json}\" \"tests/**/*.js\" \"database/**/*.js\" \"*.{js,json}\""
   },
   "keywords": [],
   "author": "",
@@ -31,9 +33,13 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.4.0",
+    "nodemailer": "^10.6.1",
     "pg": "^8.23.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "prettier": "3.10.1"
   }
 }

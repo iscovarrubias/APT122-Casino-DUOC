@@ -14,8 +14,8 @@ export default function AvisoAlergias({ componentes }) {
 
   return (
     <Mensaje tipo="aviso" role="alert" titulo="Este menú contiene alérgenos de tu perfil" style={{ marginBottom: 16 }}>
-      Contiene {encontrados.length === 1 ? 'un alérgeno' : 'alérgenos'} que registraste: <strong>{encontrados.join(', ')}</strong>.
-      Si tienes dudas, confirma con el personal del casino.
+      Contiene {encontrados.length === 1 ? 'un alérgeno' : 'alérgenos'} que registraste: <strong>{encontrados.join(', ')}</strong>. Si
+      tienes dudas, confirma con el personal del casino.
     </Mensaje>
   );
 }

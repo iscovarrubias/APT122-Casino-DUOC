@@ -13,7 +13,10 @@ export default function TablaNutricional({ info }) {
   return (
     <table className="tabla-nutricional">
       <thead>
-        <tr><th>Nutriente</th><th>Cantidad</th></tr>
+        <tr>
+          <th>Nutriente</th>
+          <th>Cantidad</th>
+        </tr>
       </thead>
       <tbody>
         {filas.map(([nombre, valor, unidad, decimales = 1]) => (

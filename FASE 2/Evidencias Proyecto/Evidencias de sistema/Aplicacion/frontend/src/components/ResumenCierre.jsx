@@ -4,9 +4,8 @@ const etiqueta = (c) => (c.componente === 'Plato Principal' ? c.categoria : c.co
 
 function estadoDe(c) {
   if (c.restante <= 0) {
-    const hora = c.disponibilidad === 'agotado' && c.disponibilidad_actualizada_en
-      ? ` a las ${formatearHora(c.disponibilidad_actualizada_en)}`
-      : '';
+    const hora =
+      c.disponibilidad === 'agotado' && c.disponibilidad_actualizada_en ? ` a las ${formatearHora(c.disponibilidad_actualizada_en)}` : '';
     const exceso = c.restante < 0 ? ` (${-c.restante} sobre lo registrado)` : '';
     const origen = c.corregido && !hora ? ' (sin hora, por corrección manual)' : '';
     return { texto: `Se agotó${hora}${origen}${exceso}`, clase: 'agotado' };
@@ -29,7 +28,9 @@ function Bloque({ titulo, lista }) {
           const e = estadoDe(c);
           return (
             <li key={c.id_menu_preparacion} className={`resumen-cierre-${e.clase}`}>
-              <span><strong>{etiqueta(c)}</strong>: {c.preparacion}</span>
+              <span>
+                <strong>{etiqueta(c)}</strong>: {c.preparacion}
+              </span>
               <span>{e.texto}</span>
             </li>
           );

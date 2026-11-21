@@ -7,14 +7,29 @@ import { exportarExcel, descargarBlob } from '../utils/exportarExcel';
 import { HojaCalendario, HojaDetalle, HojaTotal } from './HojasMenu';
 
 const HOJAS = {
-  calendario: { etiqueta: 'Hoja de calendario', ayuda: 'Los almuerzos de cada día en una grilla', Icono: CalendarDays, Hoja: HojaCalendario, ancho: 1400 },
+  calendario: {
+    etiqueta: 'Hoja de calendario',
+    ayuda: 'Los almuerzos de cada día en una grilla',
+    Icono: CalendarDays,
+    Hoja: HojaCalendario,
+    ancho: 1400,
+  },
   detalle: { etiqueta: 'Detalle por día', ayuda: 'Cada día con cantidades y precios', Icono: ListChecks, Hoja: HojaDetalle, ancho: 960 },
-  total: { etiqueta: 'Total a preparar', ayuda: 'Suma de cada preparación del período', Icono: ClipboardList, Hoja: HojaTotal, ancho: 1100 },
+  total: {
+    etiqueta: 'Total a preparar',
+    ayuda: 'Suma de cada preparación del período',
+    Icono: ClipboardList,
+    Hoja: HojaTotal,
+    ancho: 1100,
+  },
 };
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const sumar = (f, n) => new Date(new Date(`${f}T12:00:00Z`).getTime() + n * 86400000).toISOString().slice(0, 10);
-const lunesDe = (f) => { const d = new Date(`${f}T12:00:00Z`).getUTCDay(); return sumar(f, d === 0 ? -6 : 1 - d); };
+const lunesDe = (f) => {
+  const d = new Date(`${f}T12:00:00Z`).getUTCDay();
+  return sumar(f, d === 0 ? -6 : 1 - d);
+};
 const etiquetaDia = (f) => `${Number(f.slice(8))} ${MESES[Number(f.slice(5, 7)) - 1].slice(0, 3)}`;
 
 export default function ExportarMenu({ fecha: fechaInicial, mes, vistaMes, onCerrar }) {
@@ -28,7 +43,8 @@ export default function ExportarMenu({ fecha: fechaInicial, mes, vistaMes, onCer
 
   const mesBase = fecha.slice(0, 7);
   const mover = (dias) => setFecha((f) => sumar(f, dias));
-  const moverMes = (n) => setFecha((f) => new Date(Date.UTC(Number(f.slice(0, 4)), Number(f.slice(5, 7)) - 1 + n, 1, 12)).toISOString().slice(0, 10));
+  const moverMes = (n) =>
+    setFecha((f) => new Date(Date.UTC(Number(f.slice(0, 4)), Number(f.slice(5, 7)) - 1 + n, 1, 12)).toISOString().slice(0, 10));
   const lunes = lunesDe(fecha);
   const mesTexto = `${MESES[Number(mesBase.slice(5, 7)) - 1]} de ${mesBase.slice(0, 4)}`;
   const nombreMes = mesTexto.charAt(0).toUpperCase() + mesTexto.slice(1);
@@ -71,30 +87,57 @@ export default function ExportarMenu({ fecha: fechaInicial, mes, vistaMes, onCer
         const escala = Math.max(0.6, Math.min(2, 14000 / alto));
         const url = await toPng(nodo, { pixelRatio: escala, backgroundColor: '#ffffff', skipFonts: true, cacheBust: false });
         const blob = await (await fetch(url)).blob();
-        if (activo) descargarBlob(blob, nombreArchivo(captura.periodo, captura.hoja === 'calendario' ? 'calendario' : captura.hoja === 'detalle' ? 'detalle_por_dia' : 'total_a_preparar', 'png'));
+        if (activo)
+          descargarBlob(
+            blob,
+            nombreArchivo(
+              captura.periodo,
+              captura.hoja === 'calendario' ? 'calendario' : captura.hoja === 'detalle' ? 'detalle_por_dia' : 'total_a_preparar',
+              'png'
+            )
+          );
       } catch (err) {
         if (activo) setError(err.message || 'No se pudo generar la imagen.');
       } finally {
-        if (activo) { setCaptura(null); setTrabajando(null); }
+        if (activo) {
+          setCaptura(null);
+          setTrabajando(null);
+        }
       }
     })();
-    return () => { activo = false; };
+    return () => {
+      activo = false;
+    };
   }, [captura]);
 
   const { Hoja, ancho } = HOJAS[captura?.hoja || hoja];
 
   const selector = (
     <>
-      <button type="button" className="exv-flecha" onClick={() => (modo === 'mes' ? moverMes(-1) : mover(-7))}
-        aria-label={modo === 'mes' ? 'Mes anterior' : 'Semana anterior'}>‹</button>
+      <button
+        type="button"
+        className="exv-flecha"
+        onClick={() => (modo === 'mes' ? moverMes(-1) : mover(-7))}
+        aria-label={modo === 'mes' ? 'Mes anterior' : 'Semana anterior'}
+      >
+        ‹
+      </button>
       {modo === 'semana' ? (
-        <label className="campo"><span>Semana del</span>
-          <CampoFecha value={fecha} onChange={(v) => v && setFecha(v)} ariaLabel="Día de la semana a exportar" /></label>
+        <label className="campo">
+          <span>Semana del</span>
+          <CampoFecha value={fecha} onChange={(v) => v && setFecha(v)} ariaLabel="Día de la semana a exportar" />
+        </label>
       ) : (
         <strong>{nombreMes}</strong>
       )}
-      <button type="button" className="exv-flecha" onClick={() => (modo === 'mes' ? moverMes(1) : mover(7))}
-        aria-label={modo === 'mes' ? 'Mes siguiente' : 'Semana siguiente'}>›</button>
+      <button
+        type="button"
+        className="exv-flecha"
+        onClick={() => (modo === 'mes' ? moverMes(1) : mover(7))}
+        aria-label={modo === 'mes' ? 'Mes siguiente' : 'Semana siguiente'}
+      >
+        ›
+      </button>
     </>
   );
 
@@ -106,7 +149,10 @@ export default function ExportarMenu({ fecha: fechaInicial, mes, vistaMes, onCer
         trabajando={trabajando}
         error={error}
         onErrorCerrar={() => setError(null)}
-        modos={[{ id: 'semana', texto: 'Semana' }, { id: 'mes', texto: 'Mes completo' }]}
+        modos={[
+          { id: 'semana', texto: 'Semana' },
+          { id: 'mes', texto: 'Mes completo' },
+        ]}
         modo={modo}
         onModo={setModo}
         selector={selector}

@@ -6,7 +6,11 @@ const { detectarFormato, TAMANO_MAXIMO } = require('../src/middleware/subida');
 const imagenModel = require('../src/models/imagen.model');
 
 let sharp = null;
-try { sharp = require('sharp'); } catch { sharp = null; }
+try {
+  sharp = require('sharp');
+} catch {
+  sharp = null;
+}
 
 const ANCHO_MAXIMO = 1000;
 const CALIDAD_WEBP = 78;
@@ -30,16 +34,16 @@ const PLATOS = {
   'hamburguesa-veggie': 'Hamburguesa Veggie con Papas Fritas y Arroz',
   'pollo-asado-ensaladas': 'Pollo Asado con Ensaladas',
   'charquican-huevo': 'Charquicán con huevo',
-  'charquican': 'Charquicán',
+  charquican: 'Charquicán',
   'ensalada-repollo-zanahoria': 'Ensalada de repollo y zanahoria',
   'ensalada-chilena': 'Ensalada chilena',
   'sopa-verduras': 'Sopa de verduras',
   'consome-ave': 'Consomé de ave',
   'crema-zapallo': 'Crema de zapallo',
   'pan-amasado': 'Pan amasado',
-  'manzana': 'Manzana',
-  'naranja': 'Naranja',
-  'platano': 'Plátano',
+  manzana: 'Manzana',
+  naranja: 'Naranja',
+  platano: 'Plátano',
   'fruta-estacion': 'Fruta de estación',
   'arroz-con-leche': 'Arroz con leche',
   'jalea-frutilla': 'Jalea de frutilla',
@@ -77,14 +81,26 @@ async function main() {
   const faltantes = [];
   for (const [slug, nombre] of Object.entries(PLATOS)) {
     const ruta = archivoDe(slug);
-    if (!ruta) { faltantes.push(slug); continue; }
+    if (!ruta) {
+      faltantes.push(slug);
+      continue;
+    }
     const original = fs.readFileSync(ruta);
     const formato = detectarFormato(original);
-    if (!formato) { console.warn(`Formato no reconocido: ${path.basename(ruta)}`); continue; }
+    if (!formato) {
+      console.warn(`Formato no reconocido: ${path.basename(ruta)}`);
+      continue;
+    }
     const { buffer, tipo } = await optimizar(original, formato);
-    if (buffer.length > TAMANO_MAXIMO) { console.warn(`Omitida por tamaño (máx. 3 MB): ${path.basename(ruta)}`); continue; }
+    if (buffer.length > TAMANO_MAXIMO) {
+      console.warn(`Omitida por tamaño (máx. 3 MB): ${path.basename(ruta)}`);
+      continue;
+    }
     const prep = (await pool.query('SELECT id_preparacion FROM preparacion WHERE nombre = $1', [nombre])).rows[0];
-    if (!prep) { console.warn(`No existe la preparación "${nombre}". Ejecuta antes seed_menu_campomar.sql.`); continue; }
+    if (!prep) {
+      console.warn(`No existe la preparación "${nombre}". Ejecuta antes seed_menu_campomar.sql.`);
+      continue;
+    }
     const id = await imagenModel.guardar(buffer, tipo);
     await pool.query('UPDATE preparacion SET imagen_url = $2 WHERE id_preparacion = $1', [prep.id_preparacion, `${imagenModel.RUTA}${id}`]);
     cargadas += 1;
@@ -95,4 +111,7 @@ async function main() {
   await pool.end();
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});

@@ -1,7 +1,10 @@
 import { consultarMes } from '../api/gestion';
 
 const sumar = (f, n) => new Date(new Date(`${f}T12:00:00Z`).getTime() + n * 86400000).toISOString().slice(0, 10);
-const lunesDe = (f) => { const d = new Date(`${f}T12:00:00Z`).getUTCDay(); return sumar(f, d === 0 ? -6 : 1 - d); };
+const lunesDe = (f) => {
+  const d = new Date(`${f}T12:00:00Z`).getUTCDay();
+  return sumar(f, d === 0 ? -6 : 1 - d);
+};
 const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const DIAS_CORTOS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
@@ -19,7 +22,10 @@ export const ESTILO_CATEGORIA = {
 const ESTILO_OTRA = { texto: '374151', fila: 'F3F4F6', etiqueta: 'E5E7EB' };
 export const estiloCategoria = (c) => ESTILO_CATEGORIA[c] || ESTILO_OTRA;
 const ORDEN_ACOMP = ['Entrada', 'Postre', 'Bebida'];
-const rangoCat = (c) => { const i = ORDEN_CATEGORIAS.indexOf(c); return i === -1 ? 99 : i; };
+const rangoCat = (c) => {
+  const i = ORDEN_CATEGORIAS.indexOf(c);
+  return i === -1 ? 99 : i;
+};
 
 export async function cargarPeriodo({ modo, fecha, mes }) {
   const lunes = lunesDe(fecha);
@@ -107,11 +113,13 @@ export function construirPeriodo({ modo, fecha, mes, dias }) {
 export const principalesDe = (d) => d.comps.filter((c) => c.tipo === 'Plato Principal');
 export const acompDe = (d) => {
   const mapa = new Map();
-  d.comps.filter((c) => c.tipo !== 'Plato Principal').forEach((c) => {
-    const clave = `${c.tipo}|${c.preparacion}`;
-    if (!mapa.has(clave)) mapa.set(clave, { ...c, categorias: [] });
-    if (c.categoria) mapa.get(clave).categorias.push(c.categoria);
-  });
+  d.comps
+    .filter((c) => c.tipo !== 'Plato Principal')
+    .forEach((c) => {
+      const clave = `${c.tipo}|${c.preparacion}`;
+      if (!mapa.has(clave)) mapa.set(clave, { ...c, categorias: [] });
+      if (c.categoria) mapa.get(clave).categorias.push(c.categoria);
+    });
   return [...mapa.values()];
 };
 export const etiquetaAcomp = (c) => `${c.preparacion}${c.categorias.length ? ` (${c.categorias.join(', ')})` : ''}`;
@@ -124,7 +132,8 @@ export function categoriasDelPeriodo(p) {
   return [...ORDEN_CATEGORIAS, ...extra];
 }
 
-export const nombreLargo = (f) => `${cap(DIAS[(new Date(`${f}T12:00:00Z`).getUTCDay() + 6) % 7])} ${dia(f)} de ${mesNombre(f)} de ${f.slice(0, 4)}`;
+export const nombreLargo = (f) =>
+  `${cap(DIAS[(new Date(`${f}T12:00:00Z`).getUTCDay() + 6) % 7])} ${dia(f)} de ${mesNombre(f)} de ${f.slice(0, 4)}`;
 export const encabezadoDia = (f) => `${DIAS[(new Date(`${f}T12:00:00Z`).getUTCDay() + 6) % 7].toUpperCase()} ${dia(f)}`;
 const etiquetaCorta = (f) => `${DIAS_CORTOS[(new Date(`${f}T12:00:00Z`).getUTCDay() + 6) % 7]} ${dia(f)}`;
 export const diasVisibles = (p, s) => (p.conSabado ? s.dias : s.dias.slice(0, 5));
@@ -147,7 +156,9 @@ export function totalesDelPeriodo(p) {
   const rango = (f) => (f.tipo === 'Plato Principal' ? 0 : 1 + ORDEN_ACOMP.indexOf(f.tipo));
   return [...mapa.values()]
     .map((f) => ({ ...f, textoDias: [...new Set(f.dias)].join(', ') }))
-    .sort((a, b) => rango(a) - rango(b) || rangoCat(a.categoria) - rangoCat(b.categoria) || a.preparacion.localeCompare(b.preparacion, 'es'));
+    .sort(
+      (a, b) => rango(a) - rango(b) || rangoCat(a.categoria) - rangoCat(b.categoria) || a.preparacion.localeCompare(b.preparacion, 'es')
+    );
 }
 
 export const nombreTipo = (t) => (t === 'Plato Principal' ? 'Plato Principal' : t);

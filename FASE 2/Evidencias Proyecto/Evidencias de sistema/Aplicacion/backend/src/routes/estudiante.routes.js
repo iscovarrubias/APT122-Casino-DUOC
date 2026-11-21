@@ -1,5 +1,6 @@
 const express = require('express');
 const controller = require('../controllers/estudiante.controller');
+const correos = require('../controllers/correos.controller');
 const { autenticar } = require('../middleware/auth');
 const { requiereRol } = require('../middleware/roles');
 const router = express.Router();
@@ -14,5 +15,7 @@ router.delete('/favoritos/:id', controller.quitarFavorito);
 router.put('/calificaciones/:id', controller.calificar);
 router.delete('/calificaciones/:id', controller.quitarCalificacion);
 router.get('/alertas', controller.alertas);
+router.get('/correos', correos.preferencias);
+router.put('/correos', correos.guardarPreferencias);
 
 module.exports = router;

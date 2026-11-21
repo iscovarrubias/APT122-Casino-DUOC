@@ -20,9 +20,18 @@ export default function RankingMensual() {
     setDatos(null);
     setError(null);
     consultarMensual({ desde, hasta })
-      .then((d) => { if (activo) { setDatos(d); setError(null); } })
-      .catch((err) => { if (activo) setError(err); }); 
-    return () => { activo = false; };
+      .then((d) => {
+        if (activo) {
+          setDatos(d);
+          setError(null);
+        }
+      })
+      .catch((err) => {
+        if (activo) setError(err);
+      });
+    return () => {
+      activo = false;
+    };
   }, [desde, hasta, intento]);
 
   if (error && typeof error === 'object') {
@@ -41,18 +50,23 @@ export default function RankingMensual() {
       <SelectorPeriodo
         desde={desde}
         hasta={hasta}
-        onCambio={(d, h) => { setDesde(d); setHasta(h); }}
-        accion={(
+        onCambio={(d, h) => {
+          setDesde(d);
+          setHasta(h);
+        }}
+        accion={
           <button type="button" className="boton boton-secundario boton-exportar" onClick={() => setExportando(true)}>
             <Download size={16} aria-hidden="true" /> Exportar
           </button>
-        )}
+        }
       />
       {exportando && <ExportarAnalisis tipo="general" desdeInicial={desde} hastaInicial={hasta} onCerrar={() => setExportando(false)} />}
-      
+
       {!datos && !error && <p className="texto-suave">Calculando…</p>}
       {datos && datos.resumen.jornadas_cerradas === 0 && (
-        <p className="texto-suave">No hay jornadas cerradas en este período. El informe se arma con las jornadas que la caja y la cocina registran.</p>
+        <p className="texto-suave">
+          No hay jornadas cerradas en este período. El informe se arma con las jornadas que la caja y la cocina registran.
+        </p>
       )}
       {datos && datos.resumen.jornadas_cerradas > 0 && (
         <>
@@ -61,12 +75,23 @@ export default function RankingMensual() {
             {datos.resumen.cierres_automaticos} con cierre automático, {datos.resumen.con_correccion || 0} con corrección manual.
           </p>
           <table className="tabla tabla-compacta">
-            <thead><tr><th>Preparación</th><th>Se agotó</th><th>Minutos hasta agotarse</th><th>Agotado sin hora</th><th>Vendidas por jornada</th><th>Sobrante promedio</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Preparación</th>
+                <th>Se agotó</th>
+                <th>Minutos hasta agotarse</th>
+                <th>Agotado sin hora</th>
+                <th>Vendidas por jornada</th>
+                <th>Sobrante promedio</th>
+              </tr>
+            </thead>
             <tbody>
               {datos.platos.map((p) => (
                 <tr key={p.id_preparacion}>
                   <td>{p.nombre}</td>
-                  <td>{p.dias_agotado} de {p.jornadas} ({p.porcentaje_agotado}%)</td>
+                  <td>
+                    {p.dias_agotado} de {p.jornadas} ({p.porcentaje_agotado}%)
+                  </td>
                   <td>{p.minutos_hasta_agotarse ?? '—'}</td>
                   <td>{p.agotado_sin_hora || '—'}</td>
                   <td>{p.vendidas_por_jornada}</td>
@@ -76,8 +101,10 @@ export default function RankingMensual() {
             </tbody>
           </table>
           <p className="texto-suave">
-            Son porciones registradas en caja, no ventas oficiales: si un día se olvida registrar, el consumo se subestima. Cuando un plato se agota
-            no se observa la demanda posterior. "Agotado sin hora" cuenta las jornadas en que el plato quedó en cero por una corrección manual después del cierre, sin un momento de agotamiento. El sobrante solo cuenta jornadas con conteo de la cocina en las que el plato no se agotó.
+            Son porciones registradas en caja, no ventas oficiales: si un día se olvida registrar, el consumo se subestima. Cuando un plato
+            se agota no se observa la demanda posterior. "Agotado sin hora" cuenta las jornadas en que el plato quedó en cero por una
+            corrección manual después del cierre, sin un momento de agotamiento. El sobrante solo cuenta jornadas con conteo de la cocina en
+            las que el plato no se agotó.
           </p>
         </>
       )}

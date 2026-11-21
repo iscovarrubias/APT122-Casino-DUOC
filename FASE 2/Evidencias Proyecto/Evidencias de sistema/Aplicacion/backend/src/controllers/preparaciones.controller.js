@@ -65,12 +65,22 @@ async function crear(req, res, next) {
       throw new ApiError(400, `tipo inválido. Debe ser uno de: ${TIPOS_VALIDOS.join(', ')}.`);
     }
 
-    if (id_preparacion_base !== undefined && id_preparacion_base !== null && !(Number.isInteger(Number(id_preparacion_base)) && Number(id_preparacion_base) > 0)) {
+    if (
+      id_preparacion_base !== undefined &&
+      id_preparacion_base !== null &&
+      !(Number.isInteger(Number(id_preparacion_base)) && Number(id_preparacion_base) > 0)
+    ) {
       throw new ApiError(400, 'id_preparacion_base debe ser un id de preparación válido.');
     }
 
     const preparacion = await preparacionModel.crear({
-      nombre: nombre.trim(), descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta,
+      nombre: nombre.trim(),
+      descripcion,
+      precio,
+      imagen_url,
+      ingredientes,
+      tipo,
+      porciones_receta,
       id_preparacion_base: id_preparacion_base ? Number(id_preparacion_base) : null,
     });
     res.status(201).json(preparacion);
@@ -97,7 +107,13 @@ async function actualizar(req, res, next) {
     }
 
     const preparacion = await preparacionModel.actualizar(req.params.id, {
-      nombre: nombre?.trim(), descripcion, precio, imagen_url, ingredientes, tipo, porciones_receta,
+      nombre: nombre?.trim(),
+      descripcion,
+      precio,
+      imagen_url,
+      ingredientes,
+      tipo,
+      porciones_receta,
     });
     if (!preparacion) throw new ApiError(404, 'Preparación no encontrada.');
     res.json(preparacion);
@@ -138,7 +154,7 @@ async function eliminar(req, res, next) {
       throw new ApiError(
         409,
         `No se puede borrar: ya aparece en ${resultado.usos} menú(s) histórico(s). ` +
-        'Déjala desactivada para conservar el registro de lo que se sirvió.'
+          'Déjala desactivada para conservar el registro de lo que se sirvió.'
       );
     }
 
@@ -187,7 +203,10 @@ async function actualizarNutricion(req, res, next) {
       }
     }
     const nutricion = await preparacionModel.actualizarNutricion(req.params.id, {
-      calorias, proteinas_g, carbohidratos_g, grasas_g,
+      calorias,
+      proteinas_g,
+      carbohidratos_g,
+      grasas_g,
       origen: origen === 'calculada' ? 'calculada' : 'manual',
     });
     res.json(nutricion);
@@ -231,7 +250,18 @@ async function opinionesDePreparacion(req, res, next) {
 }
 
 module.exports = {
-  listar, listarGestion, crear, actualizar, desactivar, reactivar, eliminar,
-  listarAlergenos, asignarAlergenos, actualizarNutricion, subirImagen, listarTipos,
-  calcularNutricion, opinionesDePreparacion,
+  listar,
+  listarGestion,
+  crear,
+  actualizar,
+  desactivar,
+  reactivar,
+  eliminar,
+  listarAlergenos,
+  asignarAlergenos,
+  actualizarNutricion,
+  subirImagen,
+  listarTipos,
+  calcularNutricion,
+  opinionesDePreparacion,
 };

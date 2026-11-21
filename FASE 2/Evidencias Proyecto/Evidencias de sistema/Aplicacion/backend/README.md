@@ -144,16 +144,17 @@ Para la demostración pública, `database/seed_menu_campomar.sql` carga el menú
 | `npm run seed:ventas` | Genera ventas simuladas de los últimos días para la predicción |
 | `npm test` | Pruebas unitarias y de seguridad, sin base de datos |
 | `npm run test:db` | Pruebas de integración de jornada, estudiante y acceso |
-| `npm run test:bd` | Seguridad, robustez, rendimiento y recetas contra una base real |
+| `npm run test:bd` | Seguridad, robustez, rendimiento, recetas, estimación pública y correos contra una base real |
 | `npm run test:rendimiento` | Solo la carga de hora punta, con la tabla de tiempos medidos |
 | `npm run test:todo` | Todas las pruebas, una tras otra |
 | `npm run test:cov` | Todas las pruebas con el informe de cobertura, falla si baja del 80 % de líneas |
 | `npm run respaldo` | Respaldo de la base con `pg_dump` |
 | `npm run respaldo:verificar` | Respalda la base, la restaura en la base de pruebas y compara tabla por tabla |
+| `npm run formato` / `npm run formato:revisar` | Ordena el código con Prettier / revisa el formato sin cambiar nada |
 
 ## Pruebas
 
-Son más de 180 casos en el backend, con un 88 % de líneas cubiertas. Las pruebas que usan base de datos levantan la API completa y le hablan por HTTP igual que lo haría el frontend, así que prueban el sistema de punta a punta y no piezas aisladas.
+Son 163 casos en el backend, con un 89 % de líneas cubiertas. Las pruebas que usan base de datos levantan la API completa y le hablan por HTTP igual que lo haría el frontend, así que prueban el sistema de punta a punta y no piezas aisladas.
 
 | Archivo | Tipo | Qué cubre |
 |---|---|---|

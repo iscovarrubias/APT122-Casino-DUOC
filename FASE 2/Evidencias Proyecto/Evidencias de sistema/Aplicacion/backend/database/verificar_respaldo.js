@@ -17,7 +17,8 @@ if (!origen) salir('Falta DATABASE_URL.');
 if (!destino) salir('Define TEST_DATABASE_URL: la verificación restaura el respaldo en esa base.');
 if (destino === origen) salir('TEST_DATABASE_URL no puede ser igual a DATABASE_URL.');
 const nombreDestino = new URL(destino).pathname.replace(/^\//, '');
-if (!/test|prueba/i.test(nombreDestino)) salir(`La base "${nombreDestino}" no parece de pruebas. Su nombre debe contener "test" o "prueba".`);
+if (!/test|prueba/i.test(nombreDestino))
+  salir(`La base "${nombreDestino}" no parece de pruebas. Su nombre debe contener "test" o "prueba".`);
 
 function ejecutar(programa, argumentos) {
   const r = spawnSync(programa, argumentos, { encoding: 'utf8' });
@@ -30,7 +31,9 @@ async function conteos(url) {
     const { rows } = await pool.query("SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename");
     const resultado = {};
     for (const { tablename } of rows) {
-      const { rows: [{ total }] } = await pool.query(`SELECT COUNT(*)::int AS total FROM "${tablename}"`);
+      const {
+        rows: [{ total }],
+      } = await pool.query(`SELECT COUNT(*)::int AS total FROM "${tablename}"`);
       resultado[tablename] = total;
     }
     return resultado;

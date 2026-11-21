@@ -1,14 +1,21 @@
 const model = require('../models/estudiante.model');
 const { ApiError } = require('../middleware/errorHandler');
+const eventos = require('../utils/eventos');
 
 const idDe = (req) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id <= 0) throw new ApiError(400, 'Identificador inválido.');
   return id;
 };
-const envolver = (fn, estado = 200) => async (req, res, next) => {
-  try { res.status(estado).json(await fn(req)); } catch (err) { next(err); }
-};
+const envolver =
+  (fn, estado = 200) =>
+  async (req, res, next) => {
+    try {
+      res.status(estado).json(await fn(req));
+    } catch (err) {
+      next(err);
+    }
+  };
 
 const perfil = envolver((req) => model.perfil(req.user.id_usuario));
 
@@ -20,12 +27,19 @@ const alergias = envolver(async (req) => {
   return { alergias: await model.fijarAlergias(req.user.id_usuario, alergenos) };
 });
 
-const marcarFavorito = envolver(async (req) => { await model.marcarFavorito(req.user.id_usuario, idDe(req)); return { favorito: true }; });
-const quitarFavorito = envolver(async (req) => { await model.quitarFavorito(req.user.id_usuario, idDe(req)); return { favorito: false }; });
+const marcarFavorito = envolver(async (req) => {
+  await model.marcarFavorito(req.user.id_usuario, idDe(req));
+  return { favorito: true };
+});
+const quitarFavorito = envolver(async (req) => {
+  await model.quitarFavorito(req.user.id_usuario, idDe(req));
+  return { favorito: false };
+});
 
 const calificar = envolver(async (req) => {
   const estrellas = Number(req.body.estrellas);
-  if (!Number.isInteger(estrellas) || estrellas < 1 || estrellas > 5) throw new ApiError(400, 'Las estrellas deben ser un entero entre 1 y 5.');
+  if (!Number.isInteger(estrellas) || estrellas < 1 || estrellas > 5)
+    throw new ApiError(400, 'Las estrellas deben ser un entero entre 1 y 5.');
   let comentario = req.body.comentario;
   if (comentario !== undefined && comentario !== null) {
     if (typeof comentario !== 'string') throw new ApiError(400, 'El comentario debe ser texto.');
@@ -33,9 +47,15 @@ const calificar = envolver(async (req) => {
     if (comentario.length > 300) throw new ApiError(400, 'El comentario no puede superar los 300 caracteres.');
   }
   const categoria = typeof req.body.categoria === 'string' ? req.body.categoria.slice(0, 50) : undefined;
-  return model.calificar(req.user.id_usuario, idDe(req), estrellas, comentario, categoria);
+  const resultado = await model.calificar(req.user.id_usuario, idDe(req), estrellas, comentario, categoria);
+  eventos.emitir();
+  return resultado;
 });
-const quitarCalificacion = envolver(async (req) => { await model.quitarCalificacion(req.user.id_usuario, idDe(req)); return { eliminada: true }; });
+const quitarCalificacion = envolver(async (req) => {
+  await model.quitarCalificacion(req.user.id_usuario, idDe(req));
+  eventos.emitir();
+  return { eliminada: true };
+});
 const alertas = envolver((req) => model.alertas(req.user.id_usuario, req.user.id_sede));
 const opiniones = envolver(() => model.resumenOpiniones());
 const opinionesDetalle = envolver((req) => {
@@ -52,9 +72,12 @@ const opinionesDetalle = envolver((req) => {
   if (estrellas && estrellas > 5) throw new ApiError(400, 'estrellas inválido.');
   if (q.estado && !['vigente', 'editada', 'eliminada'].includes(q.estado)) throw new ApiError(400, 'estado inválido.');
   return model.listarOpiniones({
-    desde: q.desde || undefined, hasta: q.hasta || undefined,
+    desde: q.desde || undefined,
+    hasta: q.hasta || undefined,
     id_preparacion: entero(q.id_preparacion, 'id_preparacion'),
-    categoria: q.categoria || undefined, estado: q.estado || undefined, estrellas,
+    categoria: q.categoria || undefined,
+    estado: q.estado || undefined,
+    estrellas,
     soloConComentario: q.con_comentario === '1',
     limite: Math.min(entero(q.limite, 'limite') || 500, 5000),
   });
@@ -77,4 +100,16 @@ const categoriaPreferida = envolver(async (req) => {
   return { categoria_preferida: await model.fijarCategoriaPreferida(req.user.id_usuario, categoria || null) };
 });
 
-module.exports = { perfil, alergias, categoriaPreferida, marcarFavorito, quitarFavorito, calificar, quitarCalificacion, alertas, opiniones, opinionesDetalle, favoritosDetalle };
+module.exports = {
+  perfil,
+  alergias,
+  categoriaPreferida,
+  marcarFavorito,
+  quitarFavorito,
+  calificar,
+  quitarCalificacion,
+  alertas,
+  opiniones,
+  opinionesDetalle,
+  favoritosDetalle,
+};

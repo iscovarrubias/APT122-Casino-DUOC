@@ -36,8 +36,13 @@ require.cache[require.resolve(path.join(src, 'models/jornada.model'))] = { expor
 const demo = require('../src/utils/demo');
 
 test.beforeEach(() => {
-  consultas.length = 0; iniciadas.length = 0; ventas.length = 0;
-  filasMenus = []; filasJornadas = []; filasPrincipales = []; fallarVentaCon = null;
+  consultas.length = 0;
+  iniciadas.length = 0;
+  ventas.length = 0;
+  filasMenus = [];
+  filasJornadas = [];
+  filasPrincipales = [];
+  fallarVentaCon = null;
   delete process.env.HORA_INICIO_AUTOMATICO;
   delete process.env.DEMO_VENTAS_SIMULADAS;
   delete process.env.DEMO_VENTAS_POR_MINUTO;
@@ -49,14 +54,28 @@ test.describe('Configuración de la automatización', () => {
   });
 
   test('UT-41 solo acepta horas válidas en formato HH:MM', () => {
-    for (const [valor, esperado] of [['12:00', '12:00'], ['07:30', '07:30'], ['23:59', '23:59'], ['24:00', null], ['12:60', null], ['9:00', null], ['mediodía', null]]) {
+    for (const [valor, esperado] of [
+      ['12:00', '12:00'],
+      ['07:30', '07:30'],
+      ['23:59', '23:59'],
+      ['24:00', null],
+      ['12:60', null],
+      ['9:00', null],
+      ['mediodía', null],
+    ]) {
       process.env.HORA_INICIO_AUTOMATICO = valor;
       assert.equal(demo.config().horaInicio, esperado, valor);
     }
   });
 
   test('UT-42 el ritmo de ventas simuladas ignora valores inválidos', () => {
-    for (const [valor, esperado] of [['2', 2], ['0.5', 0.5], ['0', 0.7], ['-3', 0.7], ['rapido', 0.7]]) {
+    for (const [valor, esperado] of [
+      ['2', 2],
+      ['0.5', 0.5],
+      ['0', 0.7],
+      ['-3', 0.7],
+      ['rapido', 0.7],
+    ]) {
       process.env.DEMO_VENTAS_POR_MINUTO = valor;
       assert.equal(demo.config().ritmo, esperado, valor);
     }
@@ -115,7 +134,10 @@ test.describe('Ventas simuladas para la demostración', () => {
 
   test('UT-51 no vende categorías agotadas', async () => {
     filasJornadas = [{ id_jornada: 1, id_menu: 1, id_sede: 1, minutos: 30, simuladas: 0 }];
-    filasPrincipales = [{ categoria: 'General', restante: 0 }, { categoria: 'JUNAEB', restante: 40 }];
+    filasPrincipales = [
+      { categoria: 'General', restante: 0 },
+      { categoria: 'JUNAEB', restante: 40 },
+    ];
     await demo.simularVentas(1);
     assert.ok(ventas.length > 0);
     assert.ok(ventas.every((v) => v.categoria === 'JUNAEB'));

@@ -79,7 +79,7 @@ async function listarActivas() {
 
 async function listarGestion() {
   const { rows } = await pool.query(
-     `SELECT p.id_preparacion, p.nombre, p.descripcion, p.precio, p.imagen_url, p.activa, p.porciones_receta,
+    `SELECT p.id_preparacion, p.nombre, p.descripcion, p.precio, p.imagen_url, p.activa, p.porciones_receta,
             p.id_preparacion_base, b.nombre AS base_nombre,
             t.nombre AS tipo,
             COALESCE(ing.lista, '[]') AS ingredientes,
@@ -131,7 +131,15 @@ async function crear({ nombre, descripcion, precio, imagen_url, tipo, ingredient
       `INSERT INTO preparacion (nombre, descripcion, precio, imagen_url, activa, id_tipo_componente, porciones_receta, id_preparacion_base)
        VALUES ($1, $2, $3, $4, TRUE, (SELECT id_tipo_componente FROM tipo_componente WHERE nombre = $5), $6, $7)
        RETURNING id_preparacion, nombre, descripcion, precio, imagen_url, activa, porciones_receta, id_preparacion_base`,
-      [nombre, descripcion || null, precio === undefined || precio === null || precio === '' ? 0 : precio, imagen_url || null, tipo || null, porciones_receta || null, id_preparacion_base || null]
+      [
+        nombre,
+        descripcion || null,
+        precio === undefined || precio === null || precio === '' ? 0 : precio,
+        imagen_url || null,
+        tipo || null,
+        porciones_receta || null,
+        id_preparacion_base || null,
+      ]
     );
     await reemplazarIngredientes(client, rows[0].id_preparacion, ingredientes);
     await client.query('COMMIT');
@@ -167,10 +175,7 @@ async function actualizar(id, datos) {
     const columnas = 'id_preparacion, nombre, descripcion, precio, imagen_url, activa, porciones_receta';
     let fila;
     if (sets.length) {
-      const res = await client.query(
-        `UPDATE preparacion SET ${sets.join(', ')} WHERE id_preparacion = $1 RETURNING ${columnas}`,
-        valores
-      );
+      const res = await client.query(`UPDATE preparacion SET ${sets.join(', ')} WHERE id_preparacion = $1 RETURNING ${columnas}`, valores);
       fila = res.rows[0];
     } else {
       const res = await client.query(`SELECT ${columnas} FROM preparacion WHERE id_preparacion = $1`, [id]);
@@ -254,8 +259,14 @@ async function actualizarNutricion(id_preparacion, { calorias, proteinas_g, carb
        validado = TRUE, actualizado_en = CURRENT_TIMESTAMP,
        origen = EXCLUDED.origen, calculado_en = EXCLUDED.calculado_en
      RETURNING id_preparacion, calorias, proteinas_g, carbohidratos_g, grasas_g, actualizado_en, origen, calculado_en`,
-    [id_preparacion, calorias ?? null, proteinas_g ?? null, carbohidratos_g ?? null, grasas_g ?? null,
-     origen === 'calculada' ? 'calculada' : 'manual']
+    [
+      id_preparacion,
+      calorias ?? null,
+      proteinas_g ?? null,
+      carbohidratos_g ?? null,
+      grasas_g ?? null,
+      origen === 'calculada' ? 'calculada' : 'manual',
+    ]
   );
   return rows[0];
 }
@@ -289,10 +300,7 @@ async function eliminar(id) {
     return rowCount ? { ok: true } : { error: 'no_encontrada' };
   } catch (err) {
     if (err.code === '23503') {
-      const ref = await pool.query(
-        'SELECT COUNT(*)::int AS usos FROM menu_preparacion WHERE id_preparacion = $1',
-        [id]
-      );
+      const ref = await pool.query('SELECT COUNT(*)::int AS usos FROM menu_preparacion WHERE id_preparacion = $1', [id]);
       return { error: 'en_uso', usos: ref.rows[0].usos };
     }
     throw err;
@@ -300,7 +308,15 @@ async function eliminar(id) {
 }
 
 module.exports = {
-  listarActivas, listarGestion, crear, actualizar, cambiarEstado, eliminar,
-  listarCatalogoAlergenos, asignarAlergenos, actualizarNutricion, listarTipos,
+  listarActivas,
+  listarGestion,
+  crear,
+  actualizar,
+  cambiarEstado,
+  eliminar,
+  listarCatalogoAlergenos,
+  asignarAlergenos,
+  actualizarNutricion,
+  listarTipos,
   calcularNutricion,
 };

@@ -25,7 +25,10 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.1s;
 }
 .opcion-boton:hover:not(:disabled) {
   border-color: var(--navy-solid);

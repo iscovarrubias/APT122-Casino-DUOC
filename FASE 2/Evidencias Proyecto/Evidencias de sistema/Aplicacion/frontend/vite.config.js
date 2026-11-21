@@ -1,5 +1,5 @@
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
@@ -16,4 +16,4 @@ export default defineConfig({
       thresholds: { lines: 90, statements: 88, functions: 85, branches: 80 },
     },
   },
-})
+});

@@ -16,8 +16,13 @@ const SELECT_BASE = `
   ) al ON TRUE`;
 
 const CAMPOS_EDITABLES = [
-  'nombre', 'id_categoria_ingrediente', 'calorias_100g', 'proteinas_100g', 'carbohidratos_100g',
-  'grasas_100g', 'sin_cuantificar',
+  'nombre',
+  'id_categoria_ingrediente',
+  'calorias_100g',
+  'proteinas_100g',
+  'carbohidratos_100g',
+  'grasas_100g',
+  'sin_cuantificar',
 ];
 
 const CAMPOS_QUE_RECALCULAN = ['calorias_100g', 'proteinas_100g', 'carbohidratos_100g', 'grasas_100g', 'sin_cuantificar'];
@@ -59,8 +64,15 @@ async function crear(datos) {
       `INSERT INTO ingrediente (nombre, id_categoria_ingrediente, calorias_100g, proteinas_100g,
                                 carbohidratos_100g, grasas_100g, sin_cuantificar)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id_ingrediente`,
-      [datos.nombre, datos.id_categoria_ingrediente ?? null, datos.calorias_100g ?? null, datos.proteinas_100g ?? null,
-       datos.carbohidratos_100g ?? null, datos.grasas_100g ?? null, datos.sin_cuantificar ?? false]
+      [
+        datos.nombre,
+        datos.id_categoria_ingrediente ?? null,
+        datos.calorias_100g ?? null,
+        datos.proteinas_100g ?? null,
+        datos.carbohidratos_100g ?? null,
+        datos.grasas_100g ?? null,
+        datos.sin_cuantificar ?? false,
+      ]
     );
     await reemplazarAlergenos(client, rows[0].id_ingrediente, datos.alergenos);
     await client.query('COMMIT');

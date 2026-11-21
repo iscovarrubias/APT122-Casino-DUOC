@@ -1,9 +1,15 @@
 const model = require('../models/prediccion.model');
 const { ApiError } = require('../middleware/errorHandler');
 const { hoyChile, esFechaISO } = require('../utils/fecha');
+const cache = require('../utils/cache');
+const { resumenPublico } = require('../utils/prediccionPublica');
 
 const envolver = (fn) => async (req, res, next) => {
-  try { res.json(await fn(req)); } catch (err) { next(err); }
+  try {
+    res.json(await fn(req));
+  } catch (err) {
+    next(err);
+  }
 };
 
 const sugerencias = envolver((req) => {
@@ -13,5 +19,6 @@ const sugerencias = envolver((req) => {
 });
 const hoy = envolver((req) => model.hoy(req.user.id_sede));
 const confiabilidad = envolver((req) => model.confiabilidad(req.user.id_sede));
+const publica = envolver(() => cache.con(`prediccion-publica|${hoyChile()}`, 30000, async () => resumenPublico(await model.hoy(1))));
 
-module.exports = { sugerencias, hoy, confiabilidad };
+module.exports = { sugerencias, hoy, confiabilidad, publica };

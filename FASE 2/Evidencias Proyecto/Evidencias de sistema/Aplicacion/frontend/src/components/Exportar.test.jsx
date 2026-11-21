@@ -5,8 +5,12 @@ import userEvent from '@testing-library/user-event';
 vi.mock('html-to-image', () => ({ toPng: vi.fn(async () => 'data:image/png;base64,iVBORw0KGgo=') }));
 vi.mock('../utils/exportarAnalisis', async (original) => ({
   ...(await original()),
-  cargarVentas: vi.fn(), cargarGeneral: vi.fn(), cargarOpinionesExport: vi.fn(),
-  excelVentas: vi.fn(), excelGeneral: vi.fn(), excelOpiniones: vi.fn(),
+  cargarVentas: vi.fn(),
+  cargarGeneral: vi.fn(),
+  cargarOpinionesExport: vi.fn(),
+  excelVentas: vi.fn(),
+  excelGeneral: vi.fn(),
+  excelOpiniones: vi.fn(),
 }));
 vi.mock('../utils/exportarMenu', async (original) => ({ ...(await original()), cargarPeriodo: vi.fn() }));
 vi.mock('../utils/exportarExcel', () => ({ exportarExcel: vi.fn(), descargarBlob: vi.fn() }));
@@ -17,28 +21,110 @@ import * as menu from '../utils/exportarMenu';
 import { exportarExcel, descargarBlob } from '../utils/exportarExcel';
 import ExportarAnalisis from './ExportarAnalisis';
 import ExportarMenu from './ExportarMenu';
-import { HojaVentasResumen, HojaVentasHora, HojaPreparaciones, HojaGeneral, HojaOpinionesResumen, HojaOpinionesLista, HojaFavoritos } from './HojasAnalisis';
+import {
+  HojaVentasResumen,
+  HojaVentasHora,
+  HojaPreparaciones,
+  HojaGeneral,
+  HojaOpinionesResumen,
+  HojaOpinionesLista,
+  HojaFavoritos,
+} from './HojasAnalisis';
 import { HojaCalendario, HojaDetalle, HojaTotal } from './HojasMenu';
 
-const cat = (categoria, extra = {}) => ({ categoria, es_principal: true, dias: 5, precio_promedio: 3500, vendidas: 400, planificadas: 500, porcentaje_consumo: 80, dias_agotado: 1, porcentaje_agotado: 20, hora_agotamiento: '13:40', ritmo_hora: 100, ...extra });
+const cat = (categoria, extra = {}) => ({
+  categoria,
+  es_principal: true,
+  dias: 5,
+  precio_promedio: 3500,
+  vendidas: 400,
+  planificadas: 500,
+  porcentaje_consumo: 80,
+  dias_agotado: 1,
+  porcentaje_agotado: 20,
+  hora_agotamiento: '13:40',
+  ritmo_hora: 100,
+  ...extra,
+});
 const VENTAS = {
-  desde: '2026-11-16', hasta: '2026-11-20', etiqueta: '16 al 20 de noviembre',
+  desde: '2026-11-16',
+  hasta: '2026-11-20',
+  etiqueta: '16 al 20 de noviembre',
   detalle: {
-    por_categoria: [cat('General'), cat('JUNAEB', { vendidas: 300, planificadas: 300, porcentaje_consumo: 100 }), { categoria: 'Compartido', es_principal: false, vendidas: 5, planificadas: 5 }],
-    preparaciones: [{ id_preparacion: 1, nombre: 'Pollo arvejado', componente: 'Plato Principal', dias: 2, vendidas: 220, planificadas: 230, porcentaje_consumo: 95, dias_agotado: 1, hora_agotamiento: '13:50', ritmo_hora: 120 }],
-    ventas_por_hora: [{ hora: 12, unidades: 300 }, { hora: 13, unidades: 420 }],
+    por_categoria: [
+      cat('General'),
+      cat('JUNAEB', { vendidas: 300, planificadas: 300, porcentaje_consumo: 100 }),
+      { categoria: 'Compartido', es_principal: false, vendidas: 5, planificadas: 5 },
+    ],
+    preparaciones: [
+      {
+        id_preparacion: 1,
+        nombre: 'Pollo arvejado',
+        componente: 'Plato Principal',
+        dias: 2,
+        vendidas: 220,
+        planificadas: 230,
+        porcentaje_consumo: 95,
+        dias_agotado: 1,
+        hora_agotamiento: '13:50',
+        ritmo_hora: 120,
+      },
+    ],
+    ventas_por_hora: [
+      { hora: 12, unidades: 300 },
+      { hora: 13, unidades: 420 },
+    ],
     por_dia: [],
   },
-  general: { resumen: { jornadas_cerradas: 5, con_conteo_de_cocina: 4 }, platos: [{ id_preparacion: 4, nombre: 'Arroz con pollo', jornadas: 5, dias_agotado: 4, porcentaje_agotado: 80, minutos_hasta_agotarse: 65, vendidas_por_jornada: 60, sobrante_promedio: 2 }] },
+  general: {
+    resumen: { jornadas_cerradas: 5, con_conteo_de_cocina: 4 },
+    platos: [
+      {
+        id_preparacion: 4,
+        nombre: 'Arroz con pollo',
+        jornadas: 5,
+        dias_agotado: 4,
+        porcentaje_agotado: 80,
+        minutos_hasta_agotarse: 65,
+        vendidas_por_jornada: 60,
+        sobrante_promedio: 2,
+      },
+    ],
+  },
 };
 const OPINIONES = {
-  desde: '2026-11-01', hasta: '2026-11-30', etiqueta: 'Noviembre de 2026',
+  desde: '2026-11-01',
+  hasta: '2026-11-30',
+  etiqueta: 'Noviembre de 2026',
   opiniones: [
-    { id_opinion: 1, id_preparacion: 1, preparacion: 'Pollo arvejado', estrellas: 5, estado: 'vigente', comentario: 'Muy rico', autor: 'Ana P.', creado_en: '2026-11-16T13:00:00', categoria: 'General' },
-    { id_opinion: 2, id_preparacion: 2, preparacion: 'Flan', estrellas: 2, estado: 'eliminada', comentario: '', autor: 'Beto R.', creado_en: '2026-11-17T13:00:00' },
+    {
+      id_opinion: 1,
+      id_preparacion: 1,
+      preparacion: 'Pollo arvejado',
+      estrellas: 5,
+      estado: 'vigente',
+      comentario: 'Muy rico',
+      autor: 'Ana P.',
+      creado_en: '2026-11-16T13:00:00',
+      categoria: 'General',
+    },
+    {
+      id_opinion: 2,
+      id_preparacion: 2,
+      preparacion: 'Flan',
+      estrellas: 2,
+      estado: 'eliminada',
+      comentario: '',
+      autor: 'Beto R.',
+      creado_en: '2026-11-17T13:00:00',
+    },
   ],
   resumen: { total: 2, con_comentario: 1, promedio_vigentes: 5, eliminadas: 1, editadas: 0 },
-  favoritos: { resumen: { total: 3, estudiantes: 2, preparaciones: 2 }, por_preparacion: [{ id_preparacion: 2, nombre: 'Flan', total: 2 }], favoritos: [{ preparacion: 'Flan', autor: 'Ana P.', correo: 'an@duocuc.cl', creado_en: '2026-11-16T12:00:00' }] },
+  favoritos: {
+    resumen: { total: 3, estudiantes: 2, preparaciones: 2 },
+    por_preparacion: [{ id_preparacion: 2, nombre: 'Flan', total: 2 }],
+    favoritos: [{ preparacion: 'Flan', autor: 'Ana P.', correo: 'an@duocuc.cl', creado_en: '2026-11-16T12:00:00' }],
+  },
 };
 
 describe('Hojas que se convierten en imagen', () => {
@@ -65,10 +151,25 @@ describe('Hojas que se convierten en imagen', () => {
   });
 
   it('las hojas del menú muestran el calendario, el detalle y el total', () => {
-    const periodo = menu.construirPeriodo({ modo: 'semana', fecha: '2026-11-18', dias: [
-      { fecha: '2026-11-16', publicado: true, componentes: [{ componente: 'Plato Principal', categoria: 'General', preparacion: 'Pollo arvejado', cantidad: 120, precio: 3500 }, { componente: 'Postre', categoria: null, preparacion: 'Flan', cantidad: 100, precio: null }] },
-      { fecha: '2026-11-17', publicado: false, componentes: [{ componente: 'Plato Principal', categoria: 'JUNAEB', preparacion: 'Cazuela', cantidad: 80, precio: null }] },
-    ] });
+    const periodo = menu.construirPeriodo({
+      modo: 'semana',
+      fecha: '2026-11-18',
+      dias: [
+        {
+          fecha: '2026-11-16',
+          publicado: true,
+          componentes: [
+            { componente: 'Plato Principal', categoria: 'General', preparacion: 'Pollo arvejado', cantidad: 120, precio: 3500 },
+            { componente: 'Postre', categoria: null, preparacion: 'Flan', cantidad: 100, precio: null },
+          ],
+        },
+        {
+          fecha: '2026-11-17',
+          publicado: false,
+          componentes: [{ componente: 'Plato Principal', categoria: 'JUNAEB', preparacion: 'Cazuela', cantidad: 80, precio: null }],
+        },
+      ],
+    });
     const { container, rerender } = render(<HojaCalendario periodo={periodo} />);
     expect(container).toHaveTextContent('Pollo arvejado');
     expect(container).toHaveTextContent('Cazuela');
@@ -122,7 +223,9 @@ describe('ExportarAnalisis', () => {
     await usuario.click(screen.getByLabelText('Incluir eliminadas y editadas'));
     await usuario.click(screen.getByLabelText('Solo con comentario'));
     await usuario.click(screen.getByRole('button', { name: 'Descargar Excel' }));
-    await waitFor(() => expect(analisis.cargarOpinionesExport).toHaveBeenCalledWith('2026-11-01', '2026-11-30', { estado: 'vigente', soloComentario: true }));
+    await waitFor(() =>
+      expect(analisis.cargarOpinionesExport).toHaveBeenCalledWith('2026-11-01', '2026-11-30', { estado: 'vigente', soloComentario: true })
+    );
     expect(analisis.excelOpiniones).toHaveBeenCalledWith(OPINIONES);
   });
 
@@ -132,7 +235,9 @@ describe('ExportarAnalisis', () => {
     await usuario.click(screen.getByRole('button', { name: 'Imagen (PNG)' }));
     await usuario.click(screen.getByRole('radio', { name: /Ventas por hora/ }));
     await usuario.click(screen.getByRole('button', { name: 'Descargar imagen' }));
-    await waitFor(() => expect(descargarBlob).toHaveBeenCalledWith(expect.any(Blob), 'ventas_y_agotamiento_hora_2026-11-16_a_2026-11-20.png'));
+    await waitFor(() =>
+      expect(descargarBlob).toHaveBeenCalledWith(expect.any(Blob), 'ventas_y_agotamiento_hora_2026-11-16_a_2026-11-20.png')
+    );
     expect(toPng).toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Descargar imagen' })).toBeEnabled();
   });
@@ -198,7 +303,9 @@ describe('ExportarMenu', () => {
     await usuario.click(screen.getByRole('button', { name: 'Imagen (PNG)' }));
     await usuario.click(screen.getByRole('radio', { name: /Total a preparar/ }));
     await usuario.click(screen.getByRole('button', { name: 'Descargar imagen' }));
-    await waitFor(() => expect(descargarBlob).toHaveBeenCalledWith(expect.any(Blob), 'Planificacion_semana_2026-11-16_total_a_preparar.png'));
+    await waitFor(() =>
+      expect(descargarBlob).toHaveBeenCalledWith(expect.any(Blob), 'Planificacion_semana_2026-11-16_total_a_preparar.png')
+    );
   });
 
   it('si no se puede cargar el período muestra el error', async () => {

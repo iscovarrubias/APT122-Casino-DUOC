@@ -6,7 +6,11 @@ const ESTADO_MS = 10 * 60 * 1000;
 const TICKET_MS = 60 * 1000;
 let cacheClaves = { claves: null, hasta: 0 };
 
-const lista = (texto) => texto.split(',').map((d) => d.trim().toLowerCase()).filter(Boolean);
+const lista = (texto) =>
+  texto
+    .split(',')
+    .map((d) => d.trim().toLowerCase())
+    .filter(Boolean);
 
 const config = () => ({
   tenant: process.env.ENTRA_TENANT_ID || '',
@@ -27,7 +31,8 @@ function problemaDeConfiguracion() {
   const c = config();
   const definidas = [c.tenant, c.clientId, c.redirectUri].filter(Boolean).length;
   if (definidas === 0) return null;
-  if (definidas < 3) return 'La configuración de Microsoft está incompleta: se necesitan ENTRA_TENANT_ID, ENTRA_CLIENT_ID y ENTRA_REDIRECT_URI.';
+  if (definidas < 3)
+    return 'La configuración de Microsoft está incompleta: se necesitan ENTRA_TENANT_ID, ENTRA_CLIENT_ID y ENTRA_REDIRECT_URI.';
   if (process.env.NODE_ENV === 'production' && !process.env.ENTRA_AUTORIDAD && !c.redirectUri.startsWith('https://')) {
     return 'ENTRA_REDIRECT_URI debe usar https en producción.';
   }
@@ -55,7 +60,8 @@ function iniciar(loginHint) {
     redirect_uri: c.redirectUri,
     response_mode: 'query',
     scope: 'openid profile email',
-    state, nonce,
+    state,
+    nonce,
     code_challenge: desafio,
     code_challenge_method: 'S256',
     prompt: 'select_account',
@@ -91,7 +97,11 @@ async function validarIdToken(idToken, nonce, c) {
 async function completar({ code, state, cookie }) {
   const c = config();
   let guardado;
-  try { guardado = jwt.verify(cookie || '', process.env.JWT_SECRET); } catch { throw new Error('La sesión de acceso expiró.'); }
+  try {
+    guardado = jwt.verify(cookie || '', process.env.JWT_SECRET);
+  } catch {
+    throw new Error('La sesión de acceso expiró.');
+  }
   if (!state || state !== guardado.s) throw new Error('El estado no coincide.');
 
   const cuerpo = new URLSearchParams({
@@ -111,7 +121,9 @@ async function completar({ code, state, cookie }) {
   if (!r.ok || !datos.id_token) throw new Error(datos.error_description || 'Microsoft rechazó el código.');
 
   const claims = await validarIdToken(datos.id_token, guardado.n, c);
-  const email = String(claims.email || claims.preferred_username || claims.upn || '').trim().toLowerCase();
+  const email = String(claims.email || claims.preferred_username || claims.upn || '')
+    .trim()
+    .toLowerCase();
   if (!email.includes('@')) throw new Error('Microsoft no entregó un correo.');
   return { email, nombre: claims.name || '' };
 }
@@ -119,19 +131,28 @@ async function completar({ code, state, cookie }) {
 async function crearTicket(sesion) {
   const id = b64url(crypto.randomBytes(24));
   await pool.query('DELETE FROM ticket_acceso WHERE expira_en < NOW()');
-  await pool.query(
-    "INSERT INTO ticket_acceso (id, sesion, expira_en) VALUES ($1, $2, NOW() + ($3 || ' milliseconds')::interval)",
-    [id, JSON.stringify(sesion), String(TICKET_MS)]
-  );
+  await pool.query("INSERT INTO ticket_acceso (id, sesion, expira_en) VALUES ($1, $2, NOW() + ($3 || ' milliseconds')::interval)", [
+    id,
+    JSON.stringify(sesion),
+    String(TICKET_MS),
+  ]);
   return id;
 }
 
 async function canjearTicket(id) {
-  const { rows } = await pool.query(
-    'DELETE FROM ticket_acceso WHERE id = $1 RETURNING sesion, expira_en > NOW() AS vigente',
-    [id]
-  );
+  const { rows } = await pool.query('DELETE FROM ticket_acceso WHERE id = $1 RETURNING sesion, expira_en > NOW() AS vigente', [id]);
   return rows[0] && rows[0].vigente ? rows[0].sesion : null;
 }
 
-module.exports = { config, habilitado, problemaDeConfiguracion, iniciar, completar, esDominioPermitido, esDominioEstudiante, esDominioPersonal, crearTicket, canjearTicket };
+module.exports = {
+  config,
+  habilitado,
+  problemaDeConfiguracion,
+  iniciar,
+  completar,
+  esDominioPermitido,
+  esDominioEstudiante,
+  esDominioPersonal,
+  crearTicket,
+  canjearTicket,
+};

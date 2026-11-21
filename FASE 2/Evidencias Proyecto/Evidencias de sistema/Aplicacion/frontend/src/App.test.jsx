@@ -4,7 +4,12 @@ import { render, screen, waitFor } from '@testing-library/react';
 vi.mock('./context/auth-context', () => ({ useAuth: vi.fn() }));
 vi.mock('./context/AuthProvider', () => ({ default: ({ children }) => children }));
 vi.mock('./utils/estudiante', () => ({ EstudianteProvider: ({ children }) => children }));
-vi.mock('./utils/splash', () => ({ debeMostrarSplash: () => false, marcarSplashVisto: vi.fn(), SPLASH_DURACION_MS: 0, SPLASH_SALIDA_MS: 0 }));
+vi.mock('./utils/splash', () => ({
+  debeMostrarSplash: () => false,
+  marcarSplashVisto: vi.fn(),
+  SPLASH_DURACION_MS: 0,
+  SPLASH_SALIDA_MS: 0,
+}));
 vi.mock('./components/PanelSidebar', () => ({ default: () => <nav>menú lateral</nav> }));
 vi.mock('./pages/VistaPublica', () => ({ default: ({ legal }) => <p>{legal ? `Documento ${legal}` : 'Página menú público'}</p> }));
 vi.mock('./pages/LoginPage', () => ({ default: () => <p>Página login</p> }));
@@ -20,11 +25,17 @@ vi.mock('./pages/AnalisisPage', () => ({ default: () => <p>Página análisis</p>
 import { useAuth } from './context/auth-context';
 import App from './App';
 
-const sesion = (rol, extra = {}) => useAuth.mockReturnValue({ usuario: rol ? { nombre: 'Prueba', rol } : null, kiosco: false, cargando: false, ...extra });
-const ir = (ruta) => { window.location.hash = ruta; };
+const sesion = (rol, extra = {}) =>
+  useAuth.mockReturnValue({ usuario: rol ? { nombre: 'Prueba', rol } : null, kiosco: false, cargando: false, ...extra });
+const ir = (ruta) => {
+  window.location.hash = ruta;
+};
 
 describe('App: guardias de ruta del panel', () => {
-  beforeEach(() => { vi.clearAllMocks(); ir('/'); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    ir('/');
+  });
 
   it('sin sesión, cualquier ruta del panel lleva al login', async () => {
     sesion(null);

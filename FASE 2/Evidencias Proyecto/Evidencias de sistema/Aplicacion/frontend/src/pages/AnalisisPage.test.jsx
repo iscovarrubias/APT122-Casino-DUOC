@@ -3,37 +3,96 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../api/gestion', () => ({
-  consultarAnalisisDetalle: vi.fn(), consultarPrediccionHoy: vi.fn(), consultarConfiabilidad: vi.fn(), consultarMensual: vi.fn(),
-  consultarOpiniones: vi.fn(), consultarOpinionesDetalle: vi.fn(), consultarFavoritosDetalle: vi.fn(),
+  consultarAnalisisDetalle: vi.fn(),
+  consultarPrediccionHoy: vi.fn(),
+  consultarConfiabilidad: vi.fn(),
+  consultarMensual: vi.fn(),
+  consultarOpiniones: vi.fn(),
+  consultarOpinionesDetalle: vi.fn(),
+  consultarFavoritosDetalle: vi.fn(),
 }));
 vi.mock('../utils/eventos', () => ({ suscribirCambios: vi.fn(() => () => {}) }));
 vi.mock('../components/ExportarAnalisis', () => ({
   default: ({ tipo, desdeInicial, hastaInicial, onCerrar }) => (
-    <div role="dialog" aria-label="Exportar">{`exportar ${tipo} ${desdeInicial} ${hastaInicial}`}<button type="button" onClick={onCerrar}>Cerrar exportar</button></div>
+    <div role="dialog" aria-label="Exportar">
+      {`exportar ${tipo} ${desdeInicial} ${hastaInicial}`}
+      <button type="button" onClick={onCerrar}>
+        Cerrar exportar
+      </button>
+    </div>
   ),
 }));
 
 import * as api from '../api/gestion';
 import AnalisisPage from './AnalisisPage';
 
-const cat = (categoria, extra) => ({ categoria, es_principal: true, dias: 5, precio_promedio: 3500, vendidas: 400, planificadas: 500, porcentaje_consumo: 80, dias_agotado: 1, porcentaje_agotado: 20, hora_agotamiento: '13:40', ritmo_hora: 100, ...extra });
+const cat = (categoria, extra) => ({
+  categoria,
+  es_principal: true,
+  dias: 5,
+  precio_promedio: 3500,
+  vendidas: 400,
+  planificadas: 500,
+  porcentaje_consumo: 80,
+  dias_agotado: 1,
+  porcentaje_agotado: 20,
+  hora_agotamiento: '13:40',
+  ritmo_hora: 100,
+  ...extra,
+});
 const DETALLE = {
-  por_categoria: [cat('General', { ritmo_hora: 180, precio_promedio: 3000 }), cat('JUNAEB', { ritmo_hora: 90, precio_promedio: 3500, porcentaje_agotado: 95 }), { categoria: 'Postre', es_principal: false, vendidas: 10, planificadas: 20 }],
-  preparaciones: [
-    { id_preparacion: 7, nombre: 'Pollo arvejado', componente: 'Plato Principal', dias: 3, vendidas: 300, planificadas: 320, porcentaje_consumo: 94, dias_agotado: 2, hora_agotamiento: '13:20', ritmo_hora: 150 },
-    { id_preparacion: 8, nombre: 'Flan', componente: 'Postre', dias: 5, vendidas: 200, planificadas: 250, porcentaje_consumo: 80, dias_agotado: 0, hora_agotamiento: null, ritmo_hora: 60 },
+  por_categoria: [
+    cat('General', { ritmo_hora: 180, precio_promedio: 3000 }),
+    cat('JUNAEB', { ritmo_hora: 90, precio_promedio: 3500, porcentaje_agotado: 95 }),
+    { categoria: 'Postre', es_principal: false, vendidas: 10, planificadas: 20 },
   ],
-  ventas_por_hora: [{ hora: 12, unidades: 300 }, { hora: 13, unidades: 500 }],
+  preparaciones: [
+    {
+      id_preparacion: 7,
+      nombre: 'Pollo arvejado',
+      componente: 'Plato Principal',
+      dias: 3,
+      vendidas: 300,
+      planificadas: 320,
+      porcentaje_consumo: 94,
+      dias_agotado: 2,
+      hora_agotamiento: '13:20',
+      ritmo_hora: 150,
+    },
+    {
+      id_preparacion: 8,
+      nombre: 'Flan',
+      componente: 'Postre',
+      dias: 5,
+      vendidas: 200,
+      planificadas: 250,
+      porcentaje_consumo: 80,
+      dias_agotado: 0,
+      hora_agotamiento: null,
+      ritmo_hora: 60,
+    },
+  ],
+  ventas_por_hora: [
+    { hora: 12, unidades: 300 },
+    { hora: 13, unidades: 500 },
+  ],
   por_dia: [{ fecha: '2026-11-16', categoria: 'General', vendidas: 100, planificadas: 110, precio: 3000, hora_agotado: '13:30' }],
 };
-const SIN_DATOS = { por_categoria: [], preparaciones: [{ id_preparacion: 1, nombre: 'X', vendidas: 0, dias_agotado: 0 }], ventas_por_hora: [], por_dia: [] };
+const SIN_DATOS = {
+  por_categoria: [],
+  preparaciones: [{ id_preparacion: 1, nombre: 'X', vendidas: 0, dias_agotado: 0 }],
+  ventas_por_hora: [],
+  por_dia: [],
+};
 
 describe('AnalisisPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    api.consultarAnalisisDetalle.mockImplementation(async (d, h, filtro) => (filtro?.id_preparacion
-      ? { ...DETALLE, por_categoria: [cat('General', { ritmo_hora: 200 }), cat('Vegetariano', { ritmo_hora: 100 })] }
-      : DETALLE));
+    api.consultarAnalisisDetalle.mockImplementation(async (d, h, filtro) =>
+      filtro?.id_preparacion
+        ? { ...DETALLE, por_categoria: [cat('General', { ritmo_hora: 200 }), cat('Vegetariano', { ritmo_hora: 100 })] }
+        : DETALLE
+    );
   });
 
   it('muestra los indicadores del período, el hallazgo y la tabla de menús', async () => {
@@ -52,13 +111,19 @@ describe('AnalisisPage', () => {
     render(<AnalisisPage />);
     await screen.findByText('Comparación entre menús');
     await usuario.click(within(screen.getByRole('group', { name: 'Categoría' })).getByRole('button', { name: /Vegetariano/ }));
-    await waitFor(() => expect(api.consultarAnalisisDetalle).toHaveBeenCalledWith(expect.any(String), expect.any(String), { categoria: 'Vegetariano' }));
+    await waitFor(() =>
+      expect(api.consultarAnalisisDetalle).toHaveBeenCalledWith(expect.any(String), expect.any(String), { categoria: 'Vegetariano' })
+    );
     expect(await screen.findByText('Ventas por hora - Vegetariano')).toBeInTheDocument();
   });
 
   it('tocar una preparación la analiza por categoría y permite ir a sus opiniones', async () => {
     api.consultarOpiniones.mockResolvedValue({ promedios: [], favoritos: [] });
-    api.consultarOpinionesDetalle.mockResolvedValue({ opiniones: [], preparaciones: [{ id_preparacion: 7, nombre: 'Pollo arvejado', total: 2 }], resumen: { total: 0, con_comentario: 0, promedio_vigentes: null, eliminadas: 0, editadas: 0 } });
+    api.consultarOpinionesDetalle.mockResolvedValue({
+      opiniones: [],
+      preparaciones: [{ id_preparacion: 7, nombre: 'Pollo arvejado', total: 2 }],
+      resumen: { total: 0, con_comentario: 0, promedio_vigentes: null, eliminadas: 0, editadas: 0 },
+    });
     const usuario = userEvent.setup();
     render(<AnalisisPage />);
     await usuario.click(await screen.findByRole('button', { name: 'Pollo arvejado' }));
@@ -117,15 +182,36 @@ describe('AnalisisPage', () => {
   });
 
   it('la pestaña de predicción muestra la hora estimada y qué tan confiable es', async () => {
-    api.consultarPrediccionHoy.mockResolvedValue({ categorias: [
-      { categoria: 'General', restante: 40, vendidas: 160, estimacion: { agotaria: true, hora: '13:45', minutos_restantes: 35 } },
-      { categoria: 'JUNAEB', restante: -1, vendidas: 80, estimacion: { estado: 'agotado' } },
-      { categoria: 'Vegetariano', restante: 30, vendidas: 10, estimacion: { agotaria: false } },
-      { categoria: 'Hipocalórico', restante: 20, vendidas: 0, estimacion: null },
-    ] });
+    api.consultarPrediccionHoy.mockResolvedValue({
+      categorias: [
+        { categoria: 'General', restante: 40, vendidas: 160, estimacion: { agotaria: true, hora: '13:45', minutos_restantes: 35 } },
+        { categoria: 'JUNAEB', restante: -1, vendidas: 80, estimacion: { estado: 'agotado' } },
+        { categoria: 'Vegetariano', restante: 30, vendidas: 10, estimacion: { agotaria: false } },
+        { categoria: 'Hipocalórico', restante: 20, vendidas: 0, estimacion: null },
+      ],
+    });
     api.consultarConfiabilidad.mockResolvedValue({
-      global: { demanda: { dias: 20, cobertura_sugerencia: 90, cobertura_planificado: 70, sobrante_sugerencia: 8, sobrante_planificado: 15, mae_modelo: 6, mae_base: 11, mejora_pct: 45 }, agotamiento: { dias: 15, mae_modelo_min: 12, mae_simple_min: 25, dentro_15_min_pct: 73 } },
-      categorias: [{ categoria: 'General', dias_con_datos: 20, demanda: { mae_modelo: 6, mae_base: 11, cobertura_sugerencia: 90, cobertura_planificado: 70 }, agotamiento: { mae_modelo_min: 12 } }],
+      global: {
+        demanda: {
+          dias: 20,
+          cobertura_sugerencia: 90,
+          cobertura_planificado: 70,
+          sobrante_sugerencia: 8,
+          sobrante_planificado: 15,
+          mae_modelo: 6,
+          mae_base: 11,
+          mejora_pct: 45,
+        },
+        agotamiento: { dias: 15, mae_modelo_min: 12, mae_simple_min: 25, dentro_15_min_pct: 73 },
+      },
+      categorias: [
+        {
+          categoria: 'General',
+          dias_con_datos: 20,
+          demanda: { mae_modelo: 6, mae_base: 11, cobertura_sugerencia: 90, cobertura_planificado: 70 },
+          agotamiento: { mae_modelo_min: 12 },
+        },
+      ],
     });
     const usuario = userEvent.setup();
     render(<AnalisisPage />);
@@ -140,7 +226,10 @@ describe('AnalisisPage', () => {
 
   it('la predicción avisa cuando todavía no hay jornada ni historia', async () => {
     api.consultarPrediccionHoy.mockResolvedValue({ categorias: [] });
-    api.consultarConfiabilidad.mockResolvedValue({ global: { demanda: { dias: 0, mejora_pct: -10 }, agotamiento: { mae_modelo_min: 30, mae_simple_min: 20 } }, categorias: [] });
+    api.consultarConfiabilidad.mockResolvedValue({
+      global: { demanda: { dias: 0, mejora_pct: -10 }, agotamiento: { mae_modelo_min: 30, mae_simple_min: 20 } },
+      categorias: [],
+    });
     const usuario = userEvent.setup();
     render(<AnalisisPage />);
     await usuario.click(screen.getByRole('tab', { name: 'Predicción' }));
@@ -151,7 +240,19 @@ describe('AnalisisPage', () => {
   it('el informe general lista lo que se agota más rápido', async () => {
     api.consultarMensual.mockResolvedValue({
       resumen: { jornadas_cerradas: 6, con_conteo_de_cocina: 5, cierres_automaticos: 1, con_correccion: 0 },
-      platos: [{ id_preparacion: 4, nombre: 'Arroz con pollo', dias_agotado: 5, jornadas: 6, porcentaje_agotado: 83, minutos_hasta_agotarse: 62, agotado_sin_hora: 0, vendidas_por_jornada: 70, sobrante_promedio: null }],
+      platos: [
+        {
+          id_preparacion: 4,
+          nombre: 'Arroz con pollo',
+          dias_agotado: 5,
+          jornadas: 6,
+          porcentaje_agotado: 83,
+          minutos_hasta_agotarse: 62,
+          agotado_sin_hora: 0,
+          vendidas_por_jornada: 70,
+          sobrante_promedio: null,
+        },
+      ],
     });
     const usuario = userEvent.setup();
     render(<AnalisisPage />);

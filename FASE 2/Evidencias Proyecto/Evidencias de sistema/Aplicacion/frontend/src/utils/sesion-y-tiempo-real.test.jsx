@@ -18,9 +18,16 @@ class EventSourceFalso {
     this.cerrado = false;
     EventSourceFalso.instancias.push(this);
   }
-  addEventListener(tipo, fn) { (this.oyentes[tipo] = this.oyentes[tipo] || []).push(fn); }
-  emitir(tipo) { (this.oyentes[tipo] || []).forEach((fn) => fn()); }
-  close() { this.cerrado = true; this.readyState = 2; }
+  addEventListener(tipo, fn) {
+    (this.oyentes[tipo] = this.oyentes[tipo] || []).push(fn);
+  }
+  emitir(tipo) {
+    (this.oyentes[tipo] || []).forEach((fn) => fn());
+  }
+  close() {
+    this.cerrado = true;
+    this.readyState = 2;
+  }
 }
 
 describe('eventos en tiempo real', () => {
@@ -32,14 +39,18 @@ describe('eventos en tiempo real', () => {
     globalThis.EventSource = EventSourceFalso;
     ({ suscribirCambios } = await import('./eventos'));
   });
-  afterEach(() => { vi.useRealTimers(); delete globalThis.EventSource; });
+  afterEach(() => {
+    vi.useRealTimers();
+    delete globalThis.EventSource;
+  });
 
   it('abre una sola conexión aunque haya varias pantallas suscritas', () => {
     const a = suscribirCambios(() => {});
     const b = suscribirCambios(() => {});
     expect(EventSourceFalso.instancias).toHaveLength(1);
     expect(EventSourceFalso.instancias[0].url).toMatch(/\/api\/menu\/eventos$/);
-    a(); b();
+    a();
+    b();
   });
 
   it('cada aviso de cambio llega a todos los suscritos', () => {
@@ -67,7 +78,12 @@ describe('eventos en tiempo real', () => {
 
   it('un suscriptor que falla no impide avisar a los demás', () => {
     const sano = vi.fn();
-    const bajas = [suscribirCambios(() => { throw new Error('roto'); }), suscribirCambios(sano)];
+    const bajas = [
+      suscribirCambios(() => {
+        throw new Error('roto');
+      }),
+      suscribirCambios(sano),
+    ];
     EventSourceFalso.instancias[0].emitir('cambio');
     vi.runAllTimers();
     expect(sano).toHaveBeenCalled();
@@ -132,8 +148,12 @@ describe('pantalla de bienvenida', () => {
   });
 
   it('si el navegador bloquea el almacenamiento no rompe la página', () => {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('bloqueado'); });
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('bloqueado'); });
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('bloqueado');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('bloqueado');
+    });
     expect(splash.debeMostrarSplash()).toBe(false);
     expect(() => splash.marcarSplashVisto()).not.toThrow();
     vi.restoreAllMocks();
@@ -152,7 +172,11 @@ describe('tema claro y oscuro', () => {
 
   function Boton() {
     const { esOscuro, alternar } = tema.useTema();
-    return <button type="button" onClick={alternar}>{esOscuro ? 'oscuro' : 'claro'}</button>;
+    return (
+      <button type="button" onClick={alternar}>
+        {esOscuro ? 'oscuro' : 'claro'}
+      </button>
+    );
   }
 
   it('parte en claro y recuerda el oscuro entre visitas', async () => {
@@ -179,7 +203,12 @@ describe('tema claro y oscuro', () => {
   });
 
   it('aplicarTema actualiza todas las pantallas abiertas', () => {
-    render(<><Boton /><Boton /></>);
+    render(
+      <>
+        <Boton />
+        <Boton />
+      </>
+    );
     act(() => tema.aplicarTema('oscuro'));
     expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['oscuro', 'oscuro']);
   });

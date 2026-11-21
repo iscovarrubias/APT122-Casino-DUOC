@@ -1,8 +1,24 @@
 import { hoyChile } from './formato';
 
-export const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+export const MESES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+];
 export const sumarDias = (f, n) => new Date(new Date(`${f}T12:00:00Z`).getTime() + n * 86400000).toISOString().slice(0, 10);
-export const lunesDe = (f) => { const d = new Date(`${f}T12:00:00Z`).getUTCDay(); return sumarDias(f, d === 0 ? -6 : 1 - d); };
+export const lunesDe = (f) => {
+  const d = new Date(`${f}T12:00:00Z`).getUTCDay();
+  return sumarDias(f, d === 0 ? -6 : 1 - d);
+};
 export const ultimoDiaMes = (mes) => {
   const [a, m] = mes.split('-').map(Number);
   return `${mes}-${String(new Date(Date.UTC(a, m, 0)).getUTCDate()).padStart(2, '0')}`;
@@ -19,7 +35,8 @@ export const fechaLarga = (f) => `${Number(f.slice(8))} de ${MESES[Number(f.slic
 export const fechaCorta = (f) => `${f.slice(8, 10)}/${f.slice(5, 7)}/${f.slice(0, 4)}`;
 
 export function etiquetaRango(desde, hasta) {
-  if (desde.slice(0, 7) === hasta.slice(0, 7) && desde.slice(8) === '01' && hasta === ultimoDiaMes(desde.slice(0, 7))) return nombreMes(desde.slice(0, 7));
+  if (desde.slice(0, 7) === hasta.slice(0, 7) && desde.slice(8) === '01' && hasta === ultimoDiaMes(desde.slice(0, 7)))
+    return nombreMes(desde.slice(0, 7));
   if (desde === hasta) return fechaLarga(desde);
   return `${fechaLarga(desde)} al ${fechaLarga(hasta)}`;
 }

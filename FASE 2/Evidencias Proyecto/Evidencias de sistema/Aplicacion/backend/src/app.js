@@ -13,6 +13,7 @@ const analisisRoutes = require('./routes/analisis.routes');
 const estudianteRoutes = require('./routes/estudiante.routes');
 const opinionesRoutes = require('./routes/opiniones.routes');
 const prediccionRoutes = require('./routes/prediccion.routes');
+const correosRoutes = require('./routes/correos.routes');
 const imagenesRoutes = require('./routes/imagenes.routes');
 const entra = require('./utils/entra');
 
@@ -25,10 +26,12 @@ function problemaDeConfiguracion() {
   const problemaEntra = entra.problemaDeConfiguracion();
   if (problemaEntra) return problemaEntra;
   if (ES_PRODUCCION) {
-    if (/^(cambiar|cambia_esto)/i.test(secreto)) return 'JWT_SECRET sigue con el valor de ejemplo. Define un secreto propio antes de desplegar.';
+    if (/^(cambiar|cambia_esto)/i.test(secreto))
+      return 'JWT_SECRET sigue con el valor de ejemplo. Define un secreto propio antes de desplegar.';
     if (secreto.length < 32) return 'JWT_SECRET debe tener al menos 32 caracteres en producción.';
     if (!process.env.CORS_ORIGIN) return 'CORS_ORIGIN es obligatorio en producción: indica la URL del frontend.';
-    if (process.env.SSO_SIMULADO === 'true') return 'SSO_SIMULADO=true está prohibido en producción: permite entrar sin contraseña real. Desactívalo antes de desplegar.';
+    if (process.env.SSO_SIMULADO === 'true')
+      return 'SSO_SIMULADO=true está prohibido en producción: permite entrar sin contraseña real. Desactívalo antes de desplegar.';
   }
   return null;
 }
@@ -56,19 +59,25 @@ app.use((req, res, next) => {
   next();
 });
 
-const origenes = (process.env.CORS_ORIGIN || '').split(',').map((o) => o.trim()).filter(Boolean);
+const origenes = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
 app.use(cors(origenes.length ? { origin: origenes } : undefined));
 
 app.use(express.json({ limit: '100kb' }));
 
-app.use('/uploads', express.static(RUTA_UPLOADS, {
-  index: false,
-  dotfiles: 'deny',
-  setHeaders: (res) => {
-    res.set('Content-Security-Policy', "default-src 'none'; img-src 'self'; sandbox");
-    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-  },
-}));
+app.use(
+  '/uploads',
+  express.static(RUTA_UPLOADS, {
+    index: false,
+    dotfiles: 'deny',
+    setHeaders: (res) => {
+      res.set('Content-Security-Policy', "default-src 'none'; img-src 'self'; sandbox");
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
+  })
+);
 
 app.get('/api/health', (req, res) => {
   res.json({ estado: 'ok', proyecto: 'APT122 - Casino DUOC UC' });
@@ -84,6 +93,7 @@ app.use('/api/analisis', analisisRoutes);
 app.use('/api/estudiante', estudianteRoutes);
 app.use('/api/opiniones', opinionesRoutes);
 app.use('/api/prediccion', prediccionRoutes);
+app.use('/api/correos', correosRoutes);
 app.use('/api/imagenes', imagenesRoutes);
 
 app.use((req, res) => {

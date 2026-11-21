@@ -1,6 +1,17 @@
 import {
-  categoriasDelPeriodo, estiloCategoria, principalesDe, combosDe, diasDelPeriodo, totalesDelPeriodo,
-  nombreLargo, encabezadoDia, rangoSemana, diasVisibles, nombreTipo, lineasIncluye, nombreArchivo,
+  categoriasDelPeriodo,
+  estiloCategoria,
+  principalesDe,
+  combosDe,
+  diasDelPeriodo,
+  totalesDelPeriodo,
+  nombreLargo,
+  encabezadoDia,
+  rangoSemana,
+  diasVisibles,
+  nombreTipo,
+  lineasIncluye,
+  nombreArchivo,
 } from './exportarMenu';
 
 const NARANJA = 'FFEA7A12';
@@ -49,7 +60,13 @@ function banner(ws, { ultimaCol, colMes, mes, filaAlta, filaLogo, anchoTexto }) 
 }
 
 function configurarPagina(ws, pie) {
-  ws.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 } };
+  ws.pageSetup = {
+    orientation: 'landscape',
+    fitToPage: true,
+    fitToWidth: 1,
+    fitToHeight: 0,
+    margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+  };
   ws.headerFooter = { oddFooter: `&L${pie}&RPágina &P de &N` };
   ws.views = [{ showGridLines: false }];
 }
@@ -58,7 +75,9 @@ function hojaCalendario(wb, p, logo) {
   const ws = wb.addWorksheet('Calendario');
   const anchos = [3, 19.6, 35.9, 35.7, 33.9, 32.4, 32.4, 33, 3];
   if (!p.conSabado) anchos[7] = 3;
-  anchos.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+  anchos.forEach((w, i) => {
+    ws.getColumn(i + 1).width = w;
+  });
   const fondoBanner = relleno(GRIS_FONDO);
 
   banner(ws, { ultimaCol: 8, colMes: 6, mes: p.etiquetaMes, filaAlta: 64, filaLogo: 49.5, anchoTexto: [2, 5] });
@@ -80,7 +99,13 @@ function hojaCalendario(wb, p, logo) {
       c.font = { name: FUENTE, size: 11, bold: true, color: { argb: OSCURO } };
       c.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true, indent: 1 };
     });
-    for (let c = 2; c <= 8; c++) ws.getCell(fila, c).border = { top: lado(LINEA_CAL), bottom: lado(LINEA_CAL), ...(c === 2 ? { left: lado(LINEA_CAL) } : {}), ...(c === 8 ? { right: lado(LINEA_CAL) } : {}) };
+    for (let c = 2; c <= 8; c++)
+      ws.getCell(fila, c).border = {
+        top: lado(LINEA_CAL),
+        bottom: lado(LINEA_CAL),
+        ...(c === 2 ? { left: lado(LINEA_CAL) } : {}),
+        ...(c === 8 ? { right: lado(LINEA_CAL) } : {}),
+      };
     fila += 1;
 
     cats.forEach((cat) => {
@@ -94,13 +119,19 @@ function hojaCalendario(wb, p, logo) {
         const c = ws.getCell(fila, 3 + i);
         const plato = d.fuera ? null : principalesDe(d).find((x) => x.categoria === cat);
         c.value = plato ? plato.preparacion : '—';
-        c.font = plato ? { name: FUENTE, size: 11, bold: true, color: { argb: OSCURO } } : { name: FUENTE, size: 11, color: { argb: 'FFC4C4C4' } };
+        c.font = plato
+          ? { name: FUENTE, size: 11, bold: true, color: { argb: OSCURO } }
+          : { name: FUENTE, size: 11, color: { argb: 'FFC4C4C4' } };
         c.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true, indent: 1 };
       });
       for (let c = 2; c <= 8; c++) {
         const celda = ws.getCell(fila, c);
         celda.fill = relleno(rgb(est.fila));
-        celda.border = { bottom: lado(rgb(est.texto)), ...(c === 2 ? { left: lado(LINEA_CAL) } : {}), ...(c === 8 ? { right: lado(LINEA_CAL) } : {}) };
+        celda.border = {
+          bottom: lado(rgb(est.texto)),
+          ...(c === 2 ? { left: lado(LINEA_CAL) } : {}),
+          ...(c === 8 ? { right: lado(LINEA_CAL) } : {}),
+        };
       }
       fila += 1;
     });
@@ -123,7 +154,10 @@ function hojaCalendario(wb, p, logo) {
             const [rotulo, ...resto] = l.split(': ');
             return [
               { text: `${rotulo}: `, font: { name: FUENTE, size: 11, bold: true, color: { argb: OSCURO } } },
-              { text: `${resto.join(': ')}${k < lineas.length - 1 ? '\n' : ''}`, font: { name: FUENTE, size: 11, color: { argb: OSCURO } } },
+              {
+                text: `${resto.join(': ')}${k < lineas.length - 1 ? '\n' : ''}`,
+                font: { name: FUENTE, size: 11, color: { argb: OSCURO } },
+              },
             ];
           }),
         };
@@ -131,7 +165,11 @@ function hojaCalendario(wb, p, logo) {
       c.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true, indent: 1 };
     });
     for (let c = 2; c <= 8; c++) {
-      ws.getCell(fila, c).border = { bottom: lado(LINEA_CAL), ...(c === 2 ? { left: lado(LINEA_CAL) } : {}), ...(c === 8 ? { right: lado(LINEA_CAL) } : {}) };
+      ws.getCell(fila, c).border = {
+        bottom: lado(LINEA_CAL),
+        ...(c === 2 ? { left: lado(LINEA_CAL) } : {}),
+        ...(c === 8 ? { right: lado(LINEA_CAL) } : {}),
+      };
     }
     fila += 1;
     ws.getRow(fila).height = 14;
@@ -157,7 +195,9 @@ function chipEstado(d) {
 }
 
 function encabezadoHoja(ws, p, logo, titulo, anchos, colLogo) {
-  anchos.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+  anchos.forEach((w, i) => {
+    ws.getColumn(i + 1).width = w;
+  });
   banner(ws, { ultimaCol: 5, colMes: 4, mes: p.etiquetaMes, filaAlta: 66.75, filaLogo: 45.75, anchoTexto: [1, 3] });
   ws.getCell(2, 4).font = { name: FUENTE, size: 18, bold: true, color: { argb: NARANJA } };
   ws.getRow(3).height = 26;
@@ -166,7 +206,10 @@ function encabezadoHoja(ws, p, logo, titulo, anchos, colLogo) {
   sub.value = `${titulo} - ${p.subtitulo}`;
   sub.font = { name: FUENTE, size: 12, bold: true, color: { argb: OSCURO } };
   sub.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-  for (let c = 1; c <= 5; c++) { ws.getCell(3, c).fill = relleno(GRIS_FONDO); ws.getCell(3, c).border = caja(LINEA); }
+  for (let c = 1; c <= 5; c++) {
+    ws.getCell(3, c).fill = relleno(GRIS_FONDO);
+    ws.getCell(3, c).border = caja(LINEA);
+  }
   ws.getRow(4).height = 8;
   if (logo !== null) ws.addImage(logo, { tl: { col: colLogo, row: 0.1 }, ext: { width: 170, height: 58 } });
 }
@@ -222,7 +265,13 @@ function hojaDetalle(wb, p, logo) {
     d.comps.forEach((c) => {
       const esPrincipal = c.tipo === 'Plato Principal';
       ws.getRow(f).height = 21;
-      const vals = [nombreTipo(c.tipo), esPrincipal ? c.categoria : 'Compartido', c.preparacion, c.cantidad, esPrincipal ? c.precio : 'Incluido en el combo'];
+      const vals = [
+        nombreTipo(c.tipo),
+        esPrincipal ? c.categoria : 'Compartido',
+        c.preparacion,
+        c.cantidad,
+        esPrincipal ? c.precio : 'Incluido en el combo',
+      ];
       vals.forEach((v, i) => {
         const cel = ws.getCell(f, i + 1);
         cel.value = v;
@@ -241,7 +290,11 @@ function hojaDetalle(wb, p, logo) {
       }
       ws.getCell(f, 4).font = { name: FUENTE, size: 11, bold: true, color: { argb: 'FF1F2937' } };
       const precio = ws.getCell(f, 5);
-      if (esPrincipal) { precio.numFmt = fmtPrecio; } else { precio.font = { name: FUENTE, size: 9, italic: true, color: { argb: GRIS_TEXTO } }; }
+      if (esPrincipal) {
+        precio.numFmt = fmtPrecio;
+      } else {
+        precio.font = { name: FUENTE, size: 9, italic: true, color: { argb: GRIS_TEXTO } };
+      }
       f += 1;
     });
 
@@ -255,7 +308,10 @@ function hojaDetalle(wb, p, logo) {
     suma.value = finPrincipales >= inicio ? { formula: `SUM(D${inicio}:D${finPrincipales})`, result: combosDe(d) } : 0;
     suma.font = { name: FUENTE, size: 11, bold: true, color: { argb: OSCURO } };
     suma.alignment = { vertical: 'middle', horizontal: 'center' };
-    for (let c = 1; c <= 5; c++) { ws.getCell(f, c).fill = relleno(DURAZNO); ws.getCell(f, c).border = caja(LINEA); }
+    for (let c = 1; c <= 5; c++) {
+      ws.getCell(f, c).fill = relleno(DURAZNO);
+      ws.getCell(f, c).border = caja(LINEA);
+    }
     f += 2;
   });
   configurarPagina(ws, 'Detalle de preparaciones por día');
@@ -326,6 +382,6 @@ export async function exportarExcel(periodo) {
   const buffer = await wb.xlsx.writeBuffer();
   descargarBlob(
     new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-    nombreArchivo(periodo, '', 'xlsx'),
+    nombreArchivo(periodo, '', 'xlsx')
   );
 }

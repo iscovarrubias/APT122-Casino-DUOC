@@ -13,10 +13,11 @@ async function limpiarHuerfanas() {
 
 async function guardar(buffer, tipo) {
   await limpiarHuerfanas();
-  const { rows } = await pool.query(
-    'INSERT INTO imagen (tipo_mime, datos, tamano) VALUES ($1, $2, $3) RETURNING id_imagen',
-    [tipo, buffer, buffer.length]
-  );
+  const { rows } = await pool.query('INSERT INTO imagen (tipo_mime, datos, tamano) VALUES ($1, $2, $3) RETURNING id_imagen', [
+    tipo,
+    buffer,
+    buffer.length,
+  ]);
   return rows[0].id_imagen;
 }
 

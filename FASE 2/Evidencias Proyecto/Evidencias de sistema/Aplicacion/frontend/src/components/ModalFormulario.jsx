@@ -13,6 +13,7 @@ export default function ModalFormulario({
   mostrarGuardar = true,
   error = null,
   onCerrarError,
+  cuerpoDesplazable = false,
   children,
 }) {
   return (
@@ -20,22 +21,24 @@ export default function ModalFormulario({
       <form className={`modal modal-form modal-form--${ancho}`} onSubmit={onSubmit}>
         <div className="modal-form-cabeza">
           <h2>{titulo}</h2>
-          <button
-            type="button"
-            className="prep-icono"
-            onClick={onCancelar}
-            disabled={guardando}
-            title="Cerrar"
-            aria-label="Cerrar"
-          >
+          <button type="button" className="prep-icono" onClick={onCancelar} disabled={guardando} title="Cerrar" aria-label="Cerrar">
             <X size={20} />
           </button>
         </div>
 
-        <div className="modal-form-cuerpo">{children}</div>
+        <div
+          className="modal-form-cuerpo"
+          {...(cuerpoDesplazable ? { tabIndex: 0, role: 'region', 'aria-label': `Contenido de ${etiqueta || titulo}` } : {})}
+        >
+          {children}
+        </div>
 
         <div className="modal-form-pie">
-          {error && <Mensaje tipo="error" onCerrar={onCerrarError}>{error}</Mensaje>}
+          {error && (
+            <Mensaje tipo="error" onCerrar={onCerrarError}>
+              {error}
+            </Mensaje>
+          )}
           <div className="modal-acciones">
             <button type="button" className="boton boton-secundario" onClick={onCancelar} disabled={guardando}>
               {textoCancelar}

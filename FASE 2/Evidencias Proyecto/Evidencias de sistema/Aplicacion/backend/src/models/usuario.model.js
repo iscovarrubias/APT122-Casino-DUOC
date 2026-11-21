@@ -25,9 +25,14 @@ async function buscarPorId(id) {
 async function listar({ q, rol, limite = 200 } = {}) {
   const cond = ['TRUE'];
   const par = [];
-  if (q) { par.push(`%${q}%`); cond.push(`(u.nombre ILIKE $${par.length} OR u.email ILIKE $${par.length})`); }
-  if (rol) { par.push(rol); cond.push(`r.nombre = $${par.length}`); }
-  else cond.push(`r.nombre <> 'Estudiante'`);
+  if (q) {
+    par.push(`%${q}%`);
+    cond.push(`(u.nombre ILIKE $${par.length} OR u.email ILIKE $${par.length})`);
+  }
+  if (rol) {
+    par.push(rol);
+    cond.push(`r.nombre = $${par.length}`);
+  } else cond.push(`r.nombre <> 'Estudiante'`);
   par.push(Math.min(Math.max(Math.trunc(Number(limite)) || 200, 1), 500));
   const { rows } = await pool.query(
     `SELECT ${COLUMNAS_PUBLICAS} FROM usuario u JOIN rol r ON r.id_rol = u.id_rol

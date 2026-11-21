@@ -3,11 +3,27 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../api/gestion', () => ({
-  consultarPlanificacion: vi.fn(), listarPreparaciones: vi.fn(), agregarComponente: vi.fn(), actualizarComponente: vi.fn(),
-  quitarComponente: vi.fn(), publicarMenu: vi.fn(), despublicarMenu: vi.fn(), consultarMes: vi.fn(), copiarMenus: vi.fn(),
-  consultarSugerencias: vi.fn(), listarCatalogoAlergenos: vi.fn(), listarIngredientes: vi.fn(),
-  crearPreparacion: vi.fn(), actualizarPreparacion: vi.fn(), asignarAlergenos: vi.fn(), guardarNutricion: vi.fn(),
-  subirImagen: vi.fn(), calcularNutricionApi: vi.fn(), desactivarPreparacion: vi.fn(), reactivarPreparacion: vi.fn(), eliminarPreparacion: vi.fn(),
+  consultarPlanificacion: vi.fn(),
+  listarPreparaciones: vi.fn(),
+  agregarComponente: vi.fn(),
+  actualizarComponente: vi.fn(),
+  quitarComponente: vi.fn(),
+  publicarMenu: vi.fn(),
+  despublicarMenu: vi.fn(),
+  consultarMes: vi.fn(),
+  copiarMenus: vi.fn(),
+  consultarSugerencias: vi.fn(),
+  listarCatalogoAlergenos: vi.fn(),
+  listarIngredientes: vi.fn(),
+  crearPreparacion: vi.fn(),
+  actualizarPreparacion: vi.fn(),
+  asignarAlergenos: vi.fn(),
+  guardarNutricion: vi.fn(),
+  subirImagen: vi.fn(),
+  calcularNutricionApi: vi.fn(),
+  desactivarPreparacion: vi.fn(),
+  reactivarPreparacion: vi.fn(),
+  eliminarPreparacion: vi.fn(),
 }));
 vi.mock('../context/auth-context', () => ({ useAuth: vi.fn() }));
 
@@ -17,8 +33,15 @@ import ConfirmacionProvider from '../context/ConfirmacionProvider';
 import PlanificacionPage from './PlanificacionPage';
 
 const BUDIN = {
-  id_preparacion: 7, nombre: 'Budín de Zapallitos', tipo: 'Plato Principal', activa: true, porciones_receta: 10,
-  descripcion: '', imagen_url: null, id_preparacion_base: null, base_nombre: null,
+  id_preparacion: 7,
+  nombre: 'Budín de Zapallitos',
+  tipo: 'Plato Principal',
+  activa: true,
+  porciones_receta: 10,
+  descripcion: '',
+  imagen_url: null,
+  id_preparacion_base: null,
+  base_nombre: null,
   ingredientes: ['Queso', 'Zapallito italiano'],
   ingredientes_detalle: [
     { id_ingrediente: 1, nombre: 'Zapallito italiano', cantidad_g: 2500 },
@@ -27,9 +50,21 @@ const BUDIN = {
   alergenos: ['Lácteos'],
   nutricion: { calorias: 380, proteinas_g: 18, carbohidratos_g: 35, grasas_g: 18, origen: 'manual' },
 };
-const VARIACION = { ...BUDIN, id_preparacion: 8, nombre: 'Budín de Zapallitos (sin queso)', id_preparacion_base: 7, base_nombre: 'Budín de Zapallitos', alergenos: [] };
+const VARIACION = {
+  ...BUDIN,
+  id_preparacion: 8,
+  nombre: 'Budín de Zapallitos (sin queso)',
+  id_preparacion_base: 7,
+  base_nombre: 'Budín de Zapallitos',
+  alergenos: [],
+};
 
-const montar = () => render(<ConfirmacionProvider><PlanificacionPage /></ConfirmacionProvider>);
+const montar = () =>
+  render(
+    <ConfirmacionProvider>
+      <PlanificacionPage />
+    </ConfirmacionProvider>
+  );
 
 describe('PlanificacionPage - receta y variaciones', () => {
   beforeEach(() => {
@@ -37,7 +72,10 @@ describe('PlanificacionPage - receta y variaciones', () => {
     api.consultarPlanificacion.mockResolvedValue({ menu: { id_menu: 1, publicado: false }, componentes: [], precios_recientes: {} });
     api.consultarSugerencias.mockResolvedValue(null);
     api.listarPreparaciones.mockResolvedValue([BUDIN]);
-    api.listarCatalogoAlergenos.mockResolvedValue([{ id_alergeno: 1, nombre: 'Lácteos' }, { id_alergeno: 2, nombre: 'Huevo' }]);
+    api.listarCatalogoAlergenos.mockResolvedValue([
+      { id_alergeno: 1, nombre: 'Lácteos' },
+      { id_alergeno: 2, nombre: 'Huevo' },
+    ]);
     api.listarIngredientes.mockResolvedValue([
       { id_ingrediente: 1, nombre: 'Zapallito italiano', alergenos: [] },
       { id_ingrediente: 2, nombre: 'Queso', alergenos: ['Lácteos'] },
@@ -81,10 +119,14 @@ describe('PlanificacionPage - receta y variaciones', () => {
 
     await waitFor(() => expect(api.crearPreparacion).toHaveBeenCalled());
     expect(api.crearPreparacion.mock.calls[0][0]).toMatchObject({
-      nombre: 'Budín de Zapallitos (sin queso)', id_preparacion_base: 7, tipo: 'Plato Principal',
+      nombre: 'Budín de Zapallitos (sin queso)',
+      id_preparacion_base: 7,
+      tipo: 'Plato Principal',
     });
     await waitFor(() => expect(screen.getByLabelText('Preparación para General')).toHaveValue('8'));
-    expect(within(screen.getByLabelText('Preparación para General')).getByRole('option', { name: '↳ Budín de Zapallitos (sin queso)' })).toBeInTheDocument();
+    expect(
+      within(screen.getByLabelText('Preparación para General')).getByRole('option', { name: '↳ Budín de Zapallitos (sin queso)' })
+    ).toBeInTheDocument();
     expect(await screen.findByText(/Variación creada/)).toBeInTheDocument();
   });
 });

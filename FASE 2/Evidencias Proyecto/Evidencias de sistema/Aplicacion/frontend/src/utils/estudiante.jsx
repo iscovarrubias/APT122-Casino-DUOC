@@ -23,7 +23,9 @@ export function EstudianteProvider({ children }) {
     }
   }, [esEstudiante]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
   useEffect(() => {
     const handler = () => cargar();
@@ -31,35 +33,47 @@ export function EstudianteProvider({ children }) {
     return () => window.removeEventListener('estudiante-perfil-actualizado', handler);
   }, [cargar]);
 
-  const calificacionDe = useCallback(
-    (id) => perfil.calificaciones.find((c) => c.id_preparacion === id) || null,
-    [perfil]
+  const calificacionDe = useCallback((id) => perfil.calificaciones.find((c) => c.id_preparacion === id) || null, [perfil]);
+
+  const guardarCalificacion = useCallback(
+    async (id, estrellas, comentario, categoria) => {
+      await pedir(`/api/estudiante/calificaciones/${id}`, { metodo: 'PUT', cuerpo: { estrellas, comentario, categoria } });
+      await cargar();
+    },
+    [cargar]
   );
 
-  const guardarCalificacion = useCallback(async (id, estrellas, comentario, categoria) => {
-    await pedir(`/api/estudiante/calificaciones/${id}`, { metodo: 'PUT', cuerpo: { estrellas, comentario, categoria } });
-    await cargar();
-  }, [cargar]);
+  const quitarCalificacion = useCallback(
+    async (id) => {
+      await pedir(`/api/estudiante/calificaciones/${id}`, { metodo: 'DELETE' });
+      await cargar();
+    },
+    [cargar]
+  );
 
-  const quitarCalificacion = useCallback(async (id) => {
-    await pedir(`/api/estudiante/calificaciones/${id}`, { metodo: 'DELETE' });
-    await cargar();
-  }, [cargar]);
+  const marcarFavorito = useCallback(
+    async (id) => {
+      await pedir(`/api/estudiante/favoritos/${id}`, { metodo: 'PUT' });
+      await cargar();
+    },
+    [cargar]
+  );
 
-  const marcarFavorito = useCallback(async (id) => {
-    await pedir(`/api/estudiante/favoritos/${id}`, { metodo: 'PUT' });
-    await cargar();
-  }, [cargar]);
+  const quitarFavorito = useCallback(
+    async (id) => {
+      await pedir(`/api/estudiante/favoritos/${id}`, { metodo: 'DELETE' });
+      await cargar();
+    },
+    [cargar]
+  );
 
-  const quitarFavorito = useCallback(async (id) => {
-    await pedir(`/api/estudiante/favoritos/${id}`, { metodo: 'DELETE' });
-    await cargar();
-  }, [cargar]);
-
-  const guardarCategoriaPreferida = useCallback(async (categoria) => {
-    await pedir('/api/estudiante/categoria-preferida', { metodo: 'PUT', cuerpo: { categoria } });
-    await cargar();
-  }, [cargar]);
+  const guardarCategoriaPreferida = useCallback(
+    async (categoria) => {
+      await pedir('/api/estudiante/categoria-preferida', { metodo: 'PUT', cuerpo: { categoria } });
+      await cargar();
+    },
+    [cargar]
+  );
 
   const valor = {
     usuario,

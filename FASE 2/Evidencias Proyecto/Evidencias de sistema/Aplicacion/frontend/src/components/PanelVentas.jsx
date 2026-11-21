@@ -8,47 +8,63 @@ function textoEstimacion(e) {
 }
 
 export function BotonesVenta({ componentes, onVender, deshabilitado, estimaciones = {} }) {
-  const COLOR_FONDO = { General: '#B8730D' };
-
   return (
     <div className="caja-botones">
       {CATEGORIAS.map((cat) => {
         const principal = componentes.find((c) => c.categoria === cat && c.componente === 'Plato Principal');
-        const color = COLOR_FONDO[cat] || colorDeCategoria(cat).color;
+        const color = colorDeCategoria(cat).texto;
         const precio = principal?.precio != null ? Number(principal.precio) : null;
         const conOpciones = principal && cat !== 'JUNAEB';
         return (
           <div key={cat} className="caja-tarjeta" style={{ '--color': color }}>
-          <button type="button" className={`caja-boton ${principal?.disponibilidad || ''}`} style={{ '--color': color }}
-            disabled={!principal || deshabilitado} onClick={() => onVender(cat, 'combo')}>
-            <span className="caja-categoria">
-              <span>{cat}</span>
-              {precio != null && <span className="caja-precio">{formatearPrecio(precio)}</span>}
-            </span>
-            <span className="caja-plato">{principal ? principal.preparacion : 'Sin Plato Principal'}</span>
-            {principal && (
-              <>
-                <span className="caja-restante" aria-label="Porciones que quedan">{Math.max(principal.restante, 0)}</span>
-                <span className="caja-estado">{ESTADO_TEXTO[principal.disponibilidad]}</span>
-                {textoEstimacion(estimaciones[cat]) && <span className="caja-estimacion">{textoEstimacion(estimaciones[cat])}</span>}
-              </>
-            )}
-          </button>
-          {conOpciones && (
-            <div className="caja-mas" role="group" aria-label={`Más opciones de ${cat}`}>
-              <span className="caja-mas-titulo">Más opciones</span>
-              <div className="caja-mas-botones">
-                <button type="button" className="caja-mas-boton" disabled={deshabilitado}
-                  aria-label={`Solo plato de ${cat}`} onClick={() => onVender(cat, 'solo_plato')}>
-                  Solo plato
-                </button>
-                <button type="button" className="caja-mas-boton" disabled={deshabilitado}
-                  aria-label={`Completo con bebida de máquina de ${cat}`} onClick={() => onVender(cat, 'completo_maquina')}>
-                  Completo + máquina
-                </button>
+            <button
+              type="button"
+              className={`caja-boton ${principal?.disponibilidad || ''}`}
+              style={{ '--color': color }}
+              disabled={!principal || deshabilitado}
+              onClick={() => onVender(cat, 'combo')}
+            >
+              <span className="caja-categoria">
+                <span>{cat}</span>
+                {precio != null && <span className="caja-precio">{formatearPrecio(precio)}</span>}
+              </span>
+              <span className="caja-plato">{principal ? principal.preparacion : 'Sin Plato Principal'}</span>
+              {principal && (
+                <>
+                  <span className="caja-restante" aria-label="Porciones que quedan">
+                    {Math.max(principal.restante, 0)}
+                  </span>
+                  <span className="caja-estado">{ESTADO_TEXTO[principal.disponibilidad]}</span>
+                  {textoEstimacion(estimaciones[cat]) && <span className="caja-estimacion">{textoEstimacion(estimaciones[cat])}</span>}
+                </>
+              )}
+            </button>
+            {conOpciones && (
+              <div className="caja-mas" role="group" aria-label={`Más opciones de ${cat}`}>
+                <span className="caja-mas-titulo">Más opciones</span>
+                <div className="caja-mas-botones">
+                  <button
+                    type="button"
+                    className="caja-mas-boton"
+                    disabled={deshabilitado}
+                    aria-label={`Solo plato de ${cat}`}
+                    onClick={() => onVender(cat, 'solo_plato')}
+                  >
+                    Solo plato
+                  </button>
+                  <button
+                    type="button"
+                    className="caja-mas-boton"
+                    disabled={deshabilitado}
+                    aria-label={`Completo + máquina de ${cat}`}
+                    title="Combo completo con bebida de la máquina, sin descontar la bebida preparada"
+                    onClick={() => onVender(cat, 'completo_maquina')}
+                  >
+                    Completo + máquina
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </div>
         );
       })}
@@ -111,7 +127,7 @@ export function ComposicionDelDia({ componentes, composicion = {} }) {
   return (
     <details className="tarjeta composicion-details">
       <summary>Ver qué incluye cada menú hoy</summary>
-      <div className="semanal-tabla-scroll" style={{ marginTop: 12 }}>
+      <div className="semanal-tabla-scroll" style={{ marginTop: 12 }} tabIndex={0} role="region" aria-label="Lo que incluye cada menú hoy">
         <table className="semanal-tabla">
           <thead>
             <tr>
@@ -120,7 +136,9 @@ export function ComposicionDelDia({ componentes, composicion = {} }) {
                 const { color, light } = colorDeCategoria(cat);
                 return (
                   <th key={cat}>
-                    <span className="semanal-tipo" style={{ color, background: light }}>{cat}</span>
+                    <span className="semanal-tipo" style={{ color, background: light }}>
+                      {cat}
+                    </span>
                   </th>
                 );
               })}
@@ -168,7 +186,9 @@ export function CompartidosDelDia({ componentes, composicion = {} }) {
           <div key={c.id_menu_preparacion} className={`chip-comp ${c.disponibilidad}`}>
             <strong>{c.componente}</strong>
             <span>{c.preparacion}</span>
-            <span className="texto-suave">Quedan {Math.max(c.restante, 0)} - {ESTADO_TEXTO[c.disponibilidad]}</span>
+            <span className="texto-suave">
+              Quedan {Math.max(c.restante, 0)} - {ESTADO_TEXTO[c.disponibilidad]}
+            </span>
             {cats.length > 0 && (
               <span className="chip-comp-cats">
                 {especial ? 'Especial para' : 'Para'}: {cats.join(', ')}
@@ -191,11 +211,18 @@ export function UltimasVentas({ ventas, ocupado, onAnular }) {
           {ventas.map((v) => (
             <li key={v.id_venta_combo} className={v.anulada ? 'anulada' : ''}>
               <span className="ultimas-hora">{formatearHora(v.registrada_en)}</span>
-              <span className="ultimas-cat"><i style={{ background: colorDeCategoria(v.categoria).color }} aria-hidden="true" />{v.categoria}</span>
+              <span className="ultimas-cat">
+                <i style={{ background: colorDeCategoria(v.categoria).color }} aria-hidden="true" />
+                {v.categoria}
+              </span>
               {v.tipo_venta && v.tipo_venta !== 'combo' && <span className="ultimas-nota">{ETIQUETA_VENTA[v.tipo_venta]}</span>}
-              {v.anulada
-                ? <span className="ultimas-nota">Anulada</span>
-                : <button type="button" className="boton-texto peligro" disabled={ocupado} onClick={() => onAnular(v.id_venta_combo)}>Deshacer</button>}
+              {v.anulada ? (
+                <span className="ultimas-nota">Anulada</span>
+              ) : (
+                <button type="button" className="boton-texto peligro" disabled={ocupado} onClick={() => onAnular(v.id_venta_combo)}>
+                  Deshacer
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -217,8 +244,9 @@ export function MenuDelDia({ componentes, composicion = {} }) {
           const acompanamientos = reglas
             .filter((r) => r.tipo !== 'Plato Principal')
             .map((r) => {
-              const comp = componentes.find((c) => c.componente === r.tipo && c.categoria === cat)
-                || componentes.find((c) => c.componente === r.tipo && !c.categoria);
+              const comp =
+                componentes.find((c) => c.componente === r.tipo && c.categoria === cat) ||
+                componentes.find((c) => c.componente === r.tipo && !c.categoria);
               if (!comp) return null;
               return { tipo: r.tipo, preparacion: comp.preparacion, grupo: r.grupo_opcion };
             })
@@ -236,9 +264,10 @@ export function MenuDelDia({ componentes, composicion = {} }) {
             const grupo = gruposVistos.get(a.grupo);
             grupo.opciones.push(a.preparacion);
             grupo.tipos.push(a.tipo);
-            grupo.etiqueta = grupo.opciones.length > 1
-              ? grupo.opciones.map((_, i) => acompanamientos.filter((x) => x.grupo === a.grupo)[i].tipo).join(' o ')
-              : a.tipo;
+            grupo.etiqueta =
+              grupo.opciones.length > 1
+                ? grupo.opciones.map((_, i) => acompanamientos.filter((x) => x.grupo === a.grupo)[i].tipo).join(' o ')
+                : a.tipo;
           });
           gruposVistos.forEach((g) => {
             items.push({ tipos: g.tipos, etiqueta: g.etiqueta, texto: g.opciones.join(' o ') });

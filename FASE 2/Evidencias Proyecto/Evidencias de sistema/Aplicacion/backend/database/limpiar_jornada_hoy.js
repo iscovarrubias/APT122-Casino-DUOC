@@ -20,7 +20,9 @@ async function main() {
 
   console.log(`Base: ${base}`);
   console.log(`Fecha: ${fecha}`);
-  console.log(`Jornadas: ${resumen.jornadas} | ventas de caja: ${resumen.ventas} | movimientos de stock: ${resumen.movimientos} | cambios de disponibilidad: ${resumen.disponibilidad}`);
+  console.log(
+    `Jornadas: ${resumen.jornadas} | ventas de caja: ${resumen.ventas} | movimientos de stock: ${resumen.movimientos} | cambios de disponibilidad: ${resumen.disponibilidad}`
+  );
 
   if (!process.argv.includes('--confirmar')) {
     console.log('No se borró nada. Para borrar, ejecuta de nuevo con --confirmar.');

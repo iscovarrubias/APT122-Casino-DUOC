@@ -5,7 +5,9 @@ export default function AlergenoPills({ alergenos }) {
   return (
     <div className="alergenos-pills">
       {alergenos.map((a) => (
-        <span key={a} className="pill-alergeno">{a}</span>
+        <span key={a} className="pill-alergeno">
+          {a}
+        </span>
       ))}
     </div>
   );

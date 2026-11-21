@@ -3,7 +3,13 @@ const assert = require('node:assert/strict');
 const { calcularNutricion } = require('../src/utils/nutricion');
 
 const ing = (nombre, cantidad_g, kcal, p, c, g, extra = {}) => ({
-  nombre, cantidad_g, calorias_100g: kcal, proteinas_100g: p, carbohidratos_100g: c, grasas_100g: g, ...extra,
+  nombre,
+  cantidad_g,
+  calorias_100g: kcal,
+  proteinas_100g: p,
+  carbohidratos_100g: c,
+  grasas_100g: g,
+  ...extra,
 });
 
 test('CP-15 calcula la suma por porción (RF-22)', () => {

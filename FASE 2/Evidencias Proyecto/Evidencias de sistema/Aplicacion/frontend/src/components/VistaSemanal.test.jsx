@@ -112,4 +112,3 @@ describe('VistaSemanal', () => {
     expect(obtenerHistorialMenu).toHaveBeenCalledWith('2026-11-02', '2026-11-07');
   });
 });
-

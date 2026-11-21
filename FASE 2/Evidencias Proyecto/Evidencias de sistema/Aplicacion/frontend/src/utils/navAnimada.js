@@ -11,7 +11,10 @@ export function useNavAnimada(actual, cambiar, cantidad) {
     const item = itemsRef.current[activa];
     const ind = indicadorRef.current;
     if (!ind) return;
-    if (!item) { ind.style.opacity = '0'; return; }
+    if (!item) {
+      ind.style.opacity = '0';
+      return;
+    }
     ind.style.transition = yaPosicionado.current ? '' : 'none';
     ind.style.height = `${item.offsetHeight}px`;
     ind.style.transform = `translateY(${item.offsetTop}px)`;
@@ -23,12 +26,17 @@ export function useNavAnimada(actual, cambiar, cantidad) {
     if (nueva === activa) return;
     const reducido = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const pagina = document.querySelector('.pagina');
-    if (reducido || !pagina) { cambiar(nueva); return; }
+    if (reducido || !pagina) {
+      cambiar(nueva);
+      return;
+    }
     setDestino({ clave: nueva, desde: actual });
     pagina.classList.add('saliendo');
     setTimeout(() => cambiar(nueva), 150);
   };
 
-  const ref = (clave) => (el) => { itemsRef.current[clave] = el; };
+  const ref = (clave) => (el) => {
+    itemsRef.current[clave] = el;
+  };
   return { activa, ir, ref, indicadorRef };
 }

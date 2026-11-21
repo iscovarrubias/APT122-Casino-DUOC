@@ -9,7 +9,11 @@ import { useVentas } from './useVentas';
 import { resolverOpcionVenta } from './opciones';
 
 const COMPOSICION = {
-  General: [{ tipo: 'Postre', grupo_opcion: 1 }, { tipo: 'Fruta', grupo_opcion: 1 }, { tipo: 'Bebida', grupo_opcion: null }],
+  General: [
+    { tipo: 'Postre', grupo_opcion: 1 },
+    { tipo: 'Fruta', grupo_opcion: 1 },
+    { tipo: 'Bebida', grupo_opcion: null },
+  ],
   JUNAEB: [{ tipo: 'Bebida', grupo_opcion: null }],
 };
 const COMPONENTES = [
@@ -21,10 +25,18 @@ function Caja({ estado, cargar, setError, setAviso }) {
   const { vender, modales } = useVentas({ estado, cargar, setError, setAviso });
   return (
     <>
-      <button type="button" onClick={() => vender('General')}>General</button>
-      <button type="button" onClick={() => vender('General', 'solo_plato')}>General solo plato</button>
-      <button type="button" onClick={() => vender('JUNAEB')}>JUNAEB</button>
-      <button type="button" onClick={() => vender('JUNAEB', 'solo_plato')}>JUNAEB solo plato</button>
+      <button type="button" onClick={() => vender('General')}>
+        General
+      </button>
+      <button type="button" onClick={() => vender('General', 'solo_plato')}>
+        General solo plato
+      </button>
+      <button type="button" onClick={() => vender('JUNAEB')}>
+        JUNAEB
+      </button>
+      <button type="button" onClick={() => vender('JUNAEB', 'solo_plato')}>
+        JUNAEB solo plato
+      </button>
       {modales}
     </>
   );
@@ -113,7 +125,10 @@ describe('resolverOpcionVenta', () => {
   });
 
   it('una opción agotada por estado o por stock se descarta', () => {
-    expect(resolverOpcionVenta(COMPOSICION.General, [comp('Postre', 5, 'agotado'), comp('Fruta')])).toEqual({ opcion: 'Fruta', auto: true });
+    expect(resolverOpcionVenta(COMPOSICION.General, [comp('Postre', 5, 'agotado'), comp('Fruta')])).toEqual({
+      opcion: 'Fruta',
+      auto: true,
+    });
     expect(resolverOpcionVenta(COMPOSICION.General, [comp('Postre', -1), comp('Fruta')])).toEqual({ opcion: 'Fruta', auto: true });
   });
 

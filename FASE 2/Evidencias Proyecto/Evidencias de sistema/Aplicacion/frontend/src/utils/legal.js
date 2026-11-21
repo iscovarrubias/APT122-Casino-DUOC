@@ -1,4 +1,4 @@
-export const ACTUALIZACION_LEGAL = '20 de noviembre de 2026';
+export const ACTUALIZACION_LEGAL = '21 de noviembre de 2026';
 export const URL_PRIVACIDAD_DUOC = 'https://www.duoc.cl/politica-privacidad/';
 export const URL_REPOSITORIO = 'https://github.com/iscovarrubias/APT122-Casino-DUOC';
 

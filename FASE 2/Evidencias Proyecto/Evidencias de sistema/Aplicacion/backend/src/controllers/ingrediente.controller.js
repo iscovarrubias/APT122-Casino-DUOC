@@ -49,8 +49,8 @@ function limpiar(body) {
   }
   if (body.nombre !== undefined) datos.nombre = String(body.nombre).trim();
   if (body.id_categoria_ingrediente !== undefined) {
-    datos.id_categoria_ingrediente = body.id_categoria_ingrediente === '' || body.id_categoria_ingrediente === null
-      ? null : Number(body.id_categoria_ingrediente);
+    datos.id_categoria_ingrediente =
+      body.id_categoria_ingrediente === '' || body.id_categoria_ingrediente === null ? null : Number(body.id_categoria_ingrediente);
   }
   if (body.sin_cuantificar !== undefined) datos.sin_cuantificar = !!body.sin_cuantificar;
   if (body.alergenos !== undefined) datos.alergenos = body.alergenos;

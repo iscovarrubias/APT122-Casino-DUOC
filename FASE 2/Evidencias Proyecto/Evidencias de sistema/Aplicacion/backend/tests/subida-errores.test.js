@@ -22,7 +22,13 @@ test.describe('Detección de imágenes por su contenido', () => {
   });
 
   test('UT-21 rechaza archivos que no son imágenes aunque se llamen .png', () => {
-    for (const contenido of ['<?php system($_GET["c"]); ?>', '<svg onload=alert(1)></svg>', 'MZ\x90\x00ejecutable...', '%PDF-1.7 documento', 'texto plano cualquiera']) {
+    for (const contenido of [
+      '<?php system($_GET["c"]); ?>',
+      '<svg onload=alert(1)></svg>',
+      'MZ\x90\x00ejecutable...',
+      '%PDF-1.7 documento',
+      'texto plano cualquiera',
+    ]) {
       assert.equal(detectarFormato(Buffer.from(contenido, 'latin1')), null, contenido);
     }
   });
@@ -60,10 +66,25 @@ test.describe('Detección de imágenes por su contenido', () => {
 });
 
 function responder(err) {
-  const res = { codigo: null, cuerpo: null, status(c) { this.codigo = c; return this; }, json(b) { this.cuerpo = b; return this; } };
+  const res = {
+    codigo: null,
+    cuerpo: null,
+    status(c) {
+      this.codigo = c;
+      return this;
+    },
+    json(b) {
+      this.cuerpo = b;
+      return this;
+    },
+  };
   const original = console.error;
   console.error = () => {};
-  try { errorHandler(err, {}, res, () => {}); } finally { console.error = original; }
+  try {
+    errorHandler(err, {}, res, () => {});
+  } finally {
+    console.error = original;
+  }
   return res;
 }
 

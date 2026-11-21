@@ -6,10 +6,18 @@ import { useEstudiante } from '../utils/useEstudiante';
 import TablaNutricional from './TablaNutricional';
 import AlergenoPills from './AlergenoPills';
 import ImagenOIcono from './ImagenOIcono';
+import PrediccionAgotamiento from './PrediccionAgotamiento';
 import {
-  formatearPrecio, calcularPrecioTotal, colorDeCategoria, formatearHora,
-  estadoEfectivo, NO_DISPONIBLE,
-  conGrupoOpcion, agruparComponentes, calcularCaloriasConOpcion,
+  formatearPrecio,
+  calcularPrecioTotal,
+  colorDeCategoria,
+  formatearHora,
+  estadoEfectivo,
+  NO_DISPONIBLE,
+  conGrupoOpcion,
+  agruparComponentes,
+  calcularCaloriasConOpcion,
+  colorTextoSobre,
 } from '../utils/formato';
 import { useState } from 'react';
 import './flipCard.css';
@@ -52,9 +60,7 @@ function CardCompartida({ item, comboAgotado, alergias, categoria }) {
 
         <h4 className="subtitulo">Ingredientes</h4>
         <p className="ingredientes-texto">
-          {item.ingredientes && item.ingredientes.length > 0
-            ? item.ingredientes.join(', ') + '.'
-            : 'Sin ingredientes registrados.'}
+          {item.ingredientes && item.ingredientes.length > 0 ? item.ingredientes.join(', ') + '.' : 'Sin ingredientes registrados.'}
         </p>
 
         <h4 className="subtitulo">Información nutricional</h4>
@@ -82,10 +88,10 @@ function CardOpcionFlip({ items, activo, onCambiar, comboAgotado, alergias, cate
   return (
     <div className="flip-card">
       <div className={`flip-card-inner ${volteada ? 'flipped' : ''}`}>
-        <div className="flip-card-face flip-card-face--front" aria-hidden={volteada}>
+        <div className="flip-card-face flip-card-face--front" aria-hidden={volteada} inert={volteada}>
           <CardCompartida item={frente} comboAgotado={comboAgotado} alergias={alergias} categoria={categoria} />
         </div>
-        <div className="flip-card-face flip-card-face--back" aria-hidden={!volteada}>
+        <div className="flip-card-face flip-card-face--back" aria-hidden={!volteada} inert={!volteada}>
           <CardCompartida item={reverso} comboAgotado={comboAgotado} alergias={alergias} categoria={categoria} />
         </div>
       </div>
@@ -101,34 +107,24 @@ function CardOpcionFlip({ items, activo, onCambiar, comboAgotado, alergias, cate
   );
 }
 
-export default function MenuPrincipal({ categoria, componentes, composicionDeCategoria = [] }) {
+export default function MenuPrincipal({ categoria, componentes, composicionDeCategoria = [], prediccion = null }) {
   const { alergias } = useEstudiante();
   const [detalleAbierto, setDetalleAbierto] = useState(false);
   const [opciones, setOpciones] = useState({});
 
   const tiposIncluidos = new Set(['Plato Principal', ...composicionDeCategoria.map((r) => r.tipo)]);
-  const incluidos = composicionDeCategoria.length > 0
-    ? componentes.filter((c) => tiposIncluidos.has(c.componente))
-    : componentes;
+  const incluidos = composicionDeCategoria.length > 0 ? componentes.filter((c) => tiposIncluidos.has(c.componente)) : componentes;
   const anotados = conGrupoOpcion(incluidos, composicionDeCategoria);
   const { base, grupos } = agruparComponentes(anotados);
 
   const principal = anotados.find((c) => c.componente === 'Plato Principal');
   if (!principal) {
-    return (
-      <div className="estado-info">
-        No hay un Plato Principal planificado para "{categoria}" todavía.
-      </div>
-    );
+    return <div className="estado-info">No hay un Plato Principal planificado para "{categoria}" todavía.</div>;
   }
 
   const tiposDeCategoria = new Set(composicionDeCategoria.map((r) => r.tipo));
-  const compartidosFijos = base.filter(
-    (c) => c.componente !== 'Plato Principal' && tiposDeCategoria.has(c.componente)
-  );
-  const gruposLista = Object.entries(grupos).filter(([, items]) =>
-    items.some((x) => tiposDeCategoria.has(x.componente))
-  );
+  const compartidosFijos = base.filter((c) => c.componente !== 'Plato Principal' && tiposDeCategoria.has(c.componente));
+  const gruposLista = Object.entries(grupos).filter(([, items]) => items.some((x) => tiposDeCategoria.has(x.componente)));
 
   const ORDEN_COMPARTIDOS = ['Ensalada', 'Sopa', 'Pan', 'Postre', 'Fruta', 'Bebida'];
   const tiposVisibles = (() => {
@@ -151,16 +147,24 @@ export default function MenuPrincipal({ categoria, componentes, composicionDeCat
   const caloriasTotales = calcularCaloriasConOpcion(anotados, opciones);
   const precioTotal = calcularPrecioTotal(incluidos);
   const nombresCompartidos = tiposVisibles.map((t) => t.toLowerCase()).join(', ');
-  const { color, light } = colorDeCategoria(categoria);
+  const { color, light, texto } = colorDeCategoria(categoria);
 
-  const cambiarOpcion = (tipo) => setOpciones((prev) => {
-    const grupo = gruposLista.find(([, items]) => items.some((x) => x.componente === tipo));
-    if (!grupo) return prev;
-    return { ...prev, [grupo[0]]: tipo };
-  });
+  const cambiarOpcion = (tipo) =>
+    setOpciones((prev) => {
+      const grupo = gruposLista.find(([, items]) => items.some((x) => x.componente === tipo));
+      if (!grupo) return prev;
+      return { ...prev, [grupo[0]]: tipo };
+    });
 
   return (
-    <div style={{ '--accent-categoria': color, '--accent-categoria-light': light }}>
+    <div
+      style={{
+        '--accent-categoria': color,
+        '--accent-categoria-light': light,
+        '--accent-categoria-texto': texto,
+        '--accent-categoria-sobre': colorTextoSobre(color),
+      }}
+    >
       <AvisoAlergias componentes={incluidos} />
       <div className="contenido-principal">
         <div className={`card-principal ${comboAgotado ? 'no-disponible' : ''}`}>
@@ -182,9 +186,7 @@ export default function MenuPrincipal({ categoria, componentes, composicionDeCat
               <h2>{principal.nombre}</h2>
               <BotonFavorito idPreparacion={principal.id_preparacion} nombre={principal.nombre} />
             </div>
-            {(compartidosFijos.length > 0 || gruposLista.length > 0) && (
-              <p className="incluye">Incluye: {nombresCompartidos}.</p>
-            )}
+            {(compartidosFijos.length > 0 || gruposLista.length > 0) && <p className="incluye">Incluye: {nombresCompartidos}.</p>}
             <div className="stats-row">
               <div className="stat">
                 <span className="valor" aria-live="polite">
@@ -194,7 +196,10 @@ export default function MenuPrincipal({ categoria, componentes, composicionDeCat
               </div>
               <div className="stat-divider" />
               <div className="stat">
-                <EstadoBadge estado={comboAgotado ? 'agotado' : estadoPrincipal} />
+                <span className="estado-con-prediccion">
+                  <EstadoBadge estado={comboAgotado ? 'agotado' : estadoPrincipal} />
+                  {!comboAgotado && <PrediccionAgotamiento categoria={categoria} estimacion={prediccion} />}
+                </span>
                 {!comboAgotado && <Restante item={principal} />}
               </div>
             </div>
@@ -232,13 +237,7 @@ export default function MenuPrincipal({ categoria, componentes, composicionDeCat
           <h2>Incluye en el combo</h2>
           <div className="grid-incluye">
             {compartidosFijos.map((c) => (
-              <CardCompartida
-                key={c.id_menu_preparacion}
-                item={c}
-                comboAgotado={comboAgotado}
-                alergias={alergias}
-                categoria={categoria}
-              />
+              <CardCompartida key={c.id_menu_preparacion} item={c} comboAgotado={comboAgotado} alergias={alergias} categoria={categoria} />
             ))}
             {gruposLista.map(([numero, items]) => (
               <CardOpcionFlip

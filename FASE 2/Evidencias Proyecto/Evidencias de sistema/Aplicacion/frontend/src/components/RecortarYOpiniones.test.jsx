@@ -4,11 +4,19 @@ import userEvent from '@testing-library/user-event';
 
 vi.mock('react-easy-crop', () => ({
   default: ({ onCropComplete, image }) => (
-    <button type="button" onClick={() => onCropComplete({}, { x: 10, y: 20, width: 3200, height: 1800 })}>encuadrar {image ? 'con imagen' : 'sin imagen'}</button>
+    <button type="button" onClick={() => onCropComplete({}, { x: 10, y: 20, width: 3200, height: 1800 })}>
+      encuadrar {image ? 'con imagen' : 'sin imagen'}
+    </button>
   ),
 }));
 vi.mock('../api/gestion', () => ({ consultarOpiniones: vi.fn(), consultarOpinionesDetalle: vi.fn(), consultarFavoritosDetalle: vi.fn() }));
-vi.mock('./ExportarAnalisis', () => ({ default: ({ tipo }) => <div role="dialog" aria-label="Exportar">{tipo}</div> }));
+vi.mock('./ExportarAnalisis', () => ({
+  default: ({ tipo }) => (
+    <div role="dialog" aria-label="Exportar">
+      {tipo}
+    </div>
+  ),
+}));
 
 import * as api from '../api/gestion';
 import RecortarImagen from './RecortarImagen';
@@ -20,12 +28,23 @@ describe('RecortarImagen', () => {
     dibujado = null;
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:foto');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: (...args) => { dibujado = args; } });
-    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function entregar(cb) { cb(new Blob(['jpg'], { type: 'image/jpeg' })); });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      drawImage: (...args) => {
+        dibujado = args;
+      },
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function entregar(cb) {
+      cb(new Blob(['jpg'], { type: 'image/jpeg' }));
+    });
     Object.defineProperty(globalThis.Image.prototype, 'src', {
       configurable: true,
-      set(valor) { this._src = valor; setTimeout(() => this.dispatchEvent(new Event(valor === 'blob:rota' ? 'error' : 'load'))); },
-      get() { return this._src; },
+      set(valor) {
+        this._src = valor;
+        setTimeout(() => this.dispatchEvent(new Event(valor === 'blob:rota' ? 'error' : 'load')));
+      },
+      get() {
+        return this._src;
+      },
     });
   });
   afterEach(() => vi.restoreAllMocks());
@@ -69,17 +88,44 @@ describe('RecortarImagen', () => {
 });
 
 describe('OpinionesPanel', () => {
-  const op = (id, extra) => ({ id_opinion: id, id_preparacion: 1, preparacion: 'Pollo arvejado', estrellas: 4, estado: 'vigente', comentario: 'Rico', autor: 'Ana P.', correo: 'an.p@duocuc.cl', categoria: 'General', fecha_menu: '2026-11-16', creado_en: '2026-11-16T13:05:00', ...extra });
+  const op = (id, extra) => ({
+    id_opinion: id,
+    id_preparacion: 1,
+    preparacion: 'Pollo arvejado',
+    estrellas: 4,
+    estado: 'vigente',
+    comentario: 'Rico',
+    autor: 'Ana P.',
+    correo: 'an.p@duocuc.cl',
+    categoria: 'General',
+    fecha_menu: '2026-11-16',
+    creado_en: '2026-11-16T13:05:00',
+    ...extra,
+  });
   const DETALLE = {
-    opiniones: [op(1), op(2, { estado: 'eliminada', comentario: '', cerrada_en: '2026-11-17T09:00:00', categoria: null, fecha_menu: null }), op(3, { estado: 'editada', cerrada_en: '2026-11-18T10:00:00', id_preparacion: 2, preparacion: 'Flan' })],
-    preparaciones: [{ id_preparacion: 1, nombre: 'Pollo arvejado', total: 2 }, { id_preparacion: 2, nombre: 'Flan', total: 1 }],
+    opiniones: [
+      op(1),
+      op(2, { estado: 'eliminada', comentario: '', cerrada_en: '2026-11-17T09:00:00', categoria: null, fecha_menu: null }),
+      op(3, { estado: 'editada', cerrada_en: '2026-11-18T10:00:00', id_preparacion: 2, preparacion: 'Flan' }),
+    ],
+    preparaciones: [
+      { id_preparacion: 1, nombre: 'Pollo arvejado', total: 2 },
+      { id_preparacion: 2, nombre: 'Flan', total: 1 },
+    ],
     resumen: { total: 3, con_comentario: 2, promedio_vigentes: 4, eliminadas: 1, editadas: 1 },
   };
   beforeEach(() => {
     vi.clearAllMocks();
     api.consultarOpinionesDetalle.mockResolvedValue(DETALLE);
-    api.consultarOpiniones.mockResolvedValue({ promedios: [{ id_preparacion: 1, nombre: 'Pollo arvejado', promedio: 4, total: 2 }], favoritos: [{ id_preparacion: 2, nombre: 'Flan', total: 5 }] });
-    api.consultarFavoritosDetalle.mockResolvedValue({ resumen: { total: 5, estudiantes: 3, preparaciones: 1 }, por_preparacion: [{ id_preparacion: 2, nombre: 'Flan', total: 5 }], favoritos: [{ id_preparacion: 2, preparacion: 'Flan', autor: 'Ana P.', correo: 'an.p@duocuc.cl', creado_en: '2026-11-16T12:00:00' }] });
+    api.consultarOpiniones.mockResolvedValue({
+      promedios: [{ id_preparacion: 1, nombre: 'Pollo arvejado', promedio: 4, total: 2 }],
+      favoritos: [{ id_preparacion: 2, nombre: 'Flan', total: 5 }],
+    });
+    api.consultarFavoritosDetalle.mockResolvedValue({
+      resumen: { total: 5, estudiantes: 3, preparaciones: 1 },
+      por_preparacion: [{ id_preparacion: 2, nombre: 'Flan', total: 5 }],
+      favoritos: [{ id_preparacion: 2, preparacion: 'Flan', autor: 'Ana P.', correo: 'an.p@duocuc.cl', creado_en: '2026-11-16T12:00:00' }],
+    });
   });
 
   it('muestra las opiniones con su estado y conserva las eliminadas y editadas', async () => {
@@ -101,10 +147,18 @@ describe('OpinionesPanel', () => {
     await usuario.selectOptions(await combo(3), 'eliminada');
     await usuario.selectOptions(await combo(1), 'JUNAEB');
     await usuario.click(await screen.findByLabelText('Solo con comentario'));
-    await waitFor(() => expect(api.consultarOpinionesDetalle).toHaveBeenLastCalledWith(expect.objectContaining({ estrellas: '5', estado: 'eliminada', categoria: 'JUNAEB', con_comentario: true })));
+    await waitFor(() =>
+      expect(api.consultarOpinionesDetalle).toHaveBeenLastCalledWith(
+        expect.objectContaining({ estrellas: '5', estado: 'eliminada', categoria: 'JUNAEB', con_comentario: true })
+      )
+    );
     await screen.findByText('Opiniones de los estudiantes');
     await usuario.click(await screen.findByRole('button', { name: 'Limpiar filtros' }));
-    await waitFor(() => expect(api.consultarOpinionesDetalle).toHaveBeenLastCalledWith(expect.objectContaining({ estrellas: '', estado: '', con_comentario: false })));
+    await waitFor(() =>
+      expect(api.consultarOpinionesDetalle).toHaveBeenLastCalledWith(
+        expect.objectContaining({ estrellas: '', estado: '', con_comentario: false })
+      )
+    );
   });
 
   it('al cambiar un filtro mantiene la página montada y marca que se está actualizando', async () => {
@@ -112,7 +166,12 @@ describe('OpinionesPanel', () => {
     render(<OpinionesPanel />);
     const combo = (await screen.findAllByRole('combobox'))[2];
     let resolver;
-    api.consultarOpinionesDetalle.mockImplementationOnce(() => new Promise((r) => { resolver = r; }));
+    api.consultarOpinionesDetalle.mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolver = r;
+        })
+    );
     await usuario.selectOptions(combo, '5');
     expect(combo).toBeInTheDocument();
     expect(combo).toHaveValue('5');
@@ -132,11 +191,20 @@ describe('OpinionesPanel', () => {
     await usuario.click(await screen.findByRole('button', { name: /Favoritos/ }));
     const combo = (await screen.findAllByRole('combobox'))[0];
     let resolver;
-    api.consultarFavoritosDetalle.mockImplementationOnce(() => new Promise((r) => { resolver = r; }));
+    api.consultarFavoritosDetalle.mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolver = r;
+        })
+    );
     await usuario.selectOptions(combo, '2');
     expect(screen.queryByText('Cargando favoritos…')).not.toBeInTheDocument();
     expect(document.querySelector('.opiniones-resultados')).toHaveClass('actualizando');
-    resolver({ resumen: { total: 5, estudiantes: 3, preparaciones: 1 }, por_preparacion: [{ id_preparacion: 2, nombre: 'Flan', total: 5 }], favoritos: [] });
+    resolver({
+      resumen: { total: 5, estudiantes: 3, preparaciones: 1 },
+      por_preparacion: [{ id_preparacion: 2, nombre: 'Flan', total: 5 }],
+      favoritos: [],
+    });
     await waitFor(() => expect(document.querySelector('.opiniones-resultados')).not.toHaveClass('actualizando'));
     expect(screen.getAllByRole('combobox')[0]).toBe(combo);
   });

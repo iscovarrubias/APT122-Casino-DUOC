@@ -125,7 +125,7 @@ src/
 
 ## Pruebas
 
-Las pruebas están junto al código (`*.test.jsx` y `*.test.js`). Son 346 casos en 34 archivos y cubren el 92 % de las líneas del frontend. Usan Vitest con Testing Library, que maneja la interfaz como lo haría una persona: busca los botones por su nombre, escribe en los campos y revisa lo que aparece en pantalla. `npm run test:cov` falla si la cobertura baja de 90 % en líneas, 88 % en sentencias, 85 % en funciones u 80 % en ramas.
+Las pruebas están junto al código (`*.test.jsx` y `*.test.js`). Son 372 casos en 36 archivos y cubren el 93 % de las líneas del frontend. Usan Vitest con Testing Library, que maneja la interfaz como lo haría una persona: busca los botones por su nombre, escribe en los campos y revisa lo que aparece en pantalla. `npm run test:cov` falla si la cobertura baja de 90 % en líneas, 88 % en sentencias, 85 % en funciones u 80 % en ramas. Las pruebas de punta a punta con Playwright, que recorren la aplicación completa en un navegador, están en `../e2e`.
 
 | Archivo | Qué cubre |
 |---|---|

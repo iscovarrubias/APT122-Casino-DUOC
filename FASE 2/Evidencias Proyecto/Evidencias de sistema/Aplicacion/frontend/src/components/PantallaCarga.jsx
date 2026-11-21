@@ -17,7 +17,12 @@ export default function PantallaCarga({
     return () => clearTimeout(temporizador);
   }, [retrasoMs]);
 
-  if (!visible) return <div className="pantalla-carga-espera" role="status" aria-live="polite"><span className="pc-sr">{mensaje}</span></div>;
+  if (!visible)
+    return (
+      <div className="pantalla-carga-espera" role="status" aria-live="polite">
+        <span className="pc-sr">{mensaje}</span>
+      </div>
+    );
 
   const clases = ['pantalla-carga'];
   if (compacta) clases.push('pantalla-carga--compacta');
@@ -25,12 +30,7 @@ export default function PantallaCarga({
   if (saliendo) clases.push('pantalla-carga--saliendo');
 
   return (
-    <div
-      className={clases.join(' ')}
-      style={forzada ? { '--pc-total': `${duracionMs}ms` } : undefined}
-      role="status"
-      aria-live="polite"
-    >
+    <div className={clases.join(' ')} style={forzada ? { '--pc-total': `${duracionMs}ms` } : undefined} role="status" aria-live="polite">
       <div className="pc-logo" aria-hidden="true">
         <div className="pc-capa pc-casinos" />
         <div className="pc-capa pc-duoc" />

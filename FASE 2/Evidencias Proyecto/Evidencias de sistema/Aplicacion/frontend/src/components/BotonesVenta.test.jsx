@@ -4,10 +4,20 @@ import userEvent from '@testing-library/user-event';
 import { BotonesVenta } from './PanelVentas';
 
 const plato = (categoria, preparacion) => ({
-  id_menu_preparacion: categoria.length, componente: 'Plato Principal', categoria, preparacion, restante: 10,
-  disponibilidad: 'disponible', precio: 3000,
+  id_menu_preparacion: categoria.length,
+  componente: 'Plato Principal',
+  categoria,
+  preparacion,
+  restante: 10,
+  disponibilidad: 'disponible',
+  precio: 3000,
 });
-const componentes = [plato('General', 'Pollo'), plato('JUNAEB', 'Cazuela'), plato('Vegetariano', 'Lentejas'), plato('Hipocalórico', 'Pescado')];
+const componentes = [
+  plato('General', 'Pollo'),
+  plato('JUNAEB', 'Cazuela'),
+  plato('Vegetariano', 'Lentejas'),
+  plato('Hipocalórico', 'Pescado'),
+];
 
 describe('BotonesVenta', () => {
   it('muestra Más opciones en todas las categorías menos JUNAEB', () => {
@@ -23,7 +33,7 @@ describe('BotonesVenta', () => {
     expect(onVender).toHaveBeenLastCalledWith('JUNAEB', 'combo');
     await userEvent.click(screen.getByRole('button', { name: 'Solo plato de General' }));
     expect(onVender).toHaveBeenLastCalledWith('General', 'solo_plato');
-    await userEvent.click(screen.getByRole('button', { name: 'Completo con bebida de máquina de Hipocalórico' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Completo + máquina de Hipocalórico' }));
     expect(onVender).toHaveBeenLastCalledWith('Hipocalórico', 'completo_maquina');
   });
 });

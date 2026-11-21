@@ -44,9 +44,7 @@ export function calcularCaloriasConOpcion(componentes, opciones = {}) {
   const elegidos = [];
   for (const [grupo, items] of Object.entries(grupos)) {
     const tipoElegido = opciones[grupo];
-    const elegido = tipoElegido
-      ? items.find((c) => c.componente === tipoElegido) || items[0]
-      : items[0];
+    const elegido = tipoElegido ? items.find((c) => c.componente === tipoElegido) || items[0] : items[0];
     if (elegido) elegidos.push(elegido);
   }
   return calcularCaloriasTotales([...base, ...elegidos]);
@@ -77,10 +75,10 @@ export function formatearHora(marca) {
 }
 
 export const CATEGORIAS_COLOR = {
-  General:     { color: '#F5A623', light: '#FDECD2' },
-  JUNAEB:        { color: '#D11B1B', light: '#FBE3E3' },
-  Vegetariano:   { color: '#3C7424', light: '#E1EFD8' },
-  Hipocalórico:  { color: '#318386', light: '#D7EAEB' },
+  General: { color: '#F5A623', light: '#FDECD2', texto: '#8A5300' },
+  JUNAEB: { color: '#D11B1B', light: '#FBE3E3', texto: '#B01616' },
+  Vegetariano: { color: '#3C7424', light: '#E1EFD8', texto: '#33631F' },
+  Hipocalórico: { color: '#318386', light: '#D7EAEB', texto: '#256466' },
 };
 
 export const CATEGORIAS_MENU = ['General', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
@@ -91,7 +89,10 @@ export function colorDeCategoria(categoria) {
 
 export function colorTextoSobre(hex) {
   const n = parseInt(String(hex).replace('#', ''), 16);
-  const canal = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const canal = (v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
   const luminancia = 0.2126 * canal((n >> 16) & 255) + 0.7152 * canal((n >> 8) & 255) + 0.0722 * canal(n & 255);
   return luminancia > 0.3 ? '#1B1F27' : '#FFFFFF';
 }

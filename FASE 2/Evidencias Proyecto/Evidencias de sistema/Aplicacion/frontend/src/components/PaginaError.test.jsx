@@ -5,7 +5,9 @@ import PaginaError from './PaginaError';
 import { infoError } from '../utils/errores';
 
 describe('PaginaError', () => {
-  beforeEach(() => { window.location.hash = ''; });
+  beforeEach(() => {
+    window.location.hash = '';
+  });
 
   it('muestra el 404 con el botón de volver al menú', async () => {
     render(<PaginaError codigo={404} rutaInicio="/otra" />);

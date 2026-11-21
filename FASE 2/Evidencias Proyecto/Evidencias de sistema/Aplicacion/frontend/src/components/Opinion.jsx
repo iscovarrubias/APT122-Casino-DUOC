@@ -9,7 +9,7 @@ import { useConfirmar } from '../context/confirmacion-context';
 export function Estrellas({ valor, tam = 16 }) {
   const llenas = Math.round(Number(valor) || 0);
   return (
-    <span className="estrellas" aria-label={`${valor} de 5 estrellas`}>
+    <span className="estrellas" role="img" aria-label={`${valor} de 5 estrellas`}>
       {[1, 2, 3, 4, 5].map((i) => (
         <Star key={i} size={tam} fill={i <= llenas ? 'currentColor' : 'none'} />
       ))}
@@ -30,8 +30,13 @@ export default function Opinion({ item }) {
   const mia = calificacionDe(item.id_preparacion);
 
   useEffect(() => {
-    if (mia) { setEstrellas(mia.estrellas); setComentario(mia.comentario || ''); }
-    else { setEstrellas(0); setComentario(''); }
+    if (mia) {
+      setEstrellas(mia.estrellas);
+      setComentario(mia.comentario || '');
+    } else {
+      setEstrellas(0);
+      setComentario('');
+    }
   }, [mia, item.id_preparacion]);
 
   const promedio = item.calificacion_promedio;
@@ -53,7 +58,15 @@ export default function Opinion({ item }) {
   }
 
   async function borrar() {
-    if (!(await confirmar({ titulo: 'Borrar calificación', mensaje: '¿Borrar tu calificación de este plato?', textoConfirmar: 'Borrar', peligro: true }))) return;
+    if (
+      !(await confirmar({
+        titulo: 'Borrar calificación',
+        mensaje: '¿Borrar tu calificación de este plato?',
+        textoConfirmar: 'Borrar',
+        peligro: true,
+      }))
+    )
+      return;
     setGuardando(true);
     try {
       await quitarCalificacion(item.id_preparacion);
@@ -70,17 +83,11 @@ export default function Opinion({ item }) {
       <div className="opinion-fila">
         <Estrellas valor={promedio || 0} />
         <span>
-          {promedio != null
-            ? `${Number(promedio).toFixed(1)} - ${total} ${total === 1 ? 'voto' : 'votos'}`
-            : 'Todavía sin calificaciones'}
+          {promedio != null ? `${Number(promedio).toFixed(1)} - ${total} ${total === 1 ? 'voto' : 'votos'}` : 'Todavía sin calificaciones'}
         </span>
 
         {total > 0 && (
-          <button
-            type="button"
-            className="boton boton-secundario boton-chico"
-            onClick={() => setModalAbierto(true)}
-          >
+          <button type="button" className="boton boton-secundario boton-chico" onClick={() => setModalAbierto(true)}>
             Ver opiniones
           </button>
         )}
@@ -129,7 +136,11 @@ export default function Opinion({ item }) {
           <p className="texto-suave" style={{ margin: 0, fontSize: '0.78rem' }}>
             Tu opinión es pública: otros estudiantes verán tu nombre y la inicial de tu apellido, tu calificación y tu comentario.
           </p>
-          {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
+          {error && typeof error === 'string' && (
+            <Mensaje tipo="error" onCerrar={() => setError(null)}>
+              {error}
+            </Mensaje>
+          )}
           <div className="en-linea">
             <button type="submit" className="boton boton-primario boton-chico" disabled={guardando}>
               {guardando ? 'Guardando…' : 'Guardar'}
@@ -142,11 +153,7 @@ export default function Opinion({ item }) {
       )}
 
       {modalAbierto && (
-        <OpinionModal
-          idPreparacion={item.id_preparacion}
-          nombrePlato={item.nombre}
-          onCerrar={() => setModalAbierto(false)}
-        />
+        <OpinionModal idPreparacion={item.id_preparacion} nombrePlato={item.nombre} onCerrar={() => setModalAbierto(false)} />
       )}
     </div>
   );

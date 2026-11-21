@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+.dist
+playwright-report
+test-results
+blob-report
+package-lock.json
+*.md
+*.sql
+*.svg
+*.webp
+*.png
+*.jpg
+backend/database/imagenes
+frontend/public

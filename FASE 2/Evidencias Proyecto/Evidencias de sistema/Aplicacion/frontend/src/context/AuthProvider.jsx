@@ -18,8 +18,7 @@ function guardar(sesion) {
   try {
     if (sesion) localStorage.setItem(CLAVE, JSON.stringify(sesion));
     else localStorage.removeItem(CLAVE);
-  } catch {
-  }
+  } catch {}
 }
 
 export default function AuthProvider({ children }) {

@@ -3,7 +3,10 @@ import { useEffect } from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 
 vi.mock('../api/gestion', () => ({
-  iniciarSesionApi: vi.fn(), consultarSesion: vi.fn(), iniciarSesionDuoc: vi.fn(), canjearTicketMicrosoft: vi.fn(),
+  iniciarSesionApi: vi.fn(),
+  consultarSesion: vi.fn(),
+  iniciarSesionDuoc: vi.fn(),
+  canjearTicketMicrosoft: vi.fn(),
 }));
 vi.mock('../api/cliente', () => ({ configurarCliente: vi.fn() }));
 vi.mock('../utils/tema', () => ({ aplicarTema: vi.fn() }));
@@ -17,10 +20,17 @@ import { useAuth } from './auth-context';
 const espia = { auth: null };
 function Espia() {
   const a = useAuth();
-  useEffect(() => { espia.auth = a; });
+  useEffect(() => {
+    espia.auth = a;
+  });
   return <p>{a.cargando ? 'cargando' : a.usuario ? `hola ${a.usuario.nombre}${a.kiosco ? ' (kiosco)' : ''}` : 'sin sesión'}</p>;
 }
-const montar = () => render(<AuthProvider><Espia /></AuthProvider>);
+const montar = () =>
+  render(
+    <AuthProvider>
+      <Espia />
+    </AuthProvider>
+  );
 const ADMIN = { id_usuario: 1, nombre: 'Isa', rol: 'Administrador', tema_preferido: 'oscuro' };
 const guardada = () => JSON.parse(localStorage.getItem('casino_sesion'));
 
@@ -91,7 +101,10 @@ describe('AuthProvider', () => {
   });
 
   it('el ticket de Microsoft se canjea por una sesión', async () => {
-    api.canjearTicketMicrosoft.mockResolvedValue({ token: 'ms', usuario: { nombre: 'Diego', rol: 'Nutricionista', tema_preferido: 'claro' } });
+    api.canjearTicketMicrosoft.mockResolvedValue({
+      token: 'ms',
+      usuario: { nombre: 'Diego', rol: 'Nutricionista', tema_preferido: 'claro' },
+    });
     montar();
     await screen.findByText('sin sesión');
     await act(() => espia.auth.iniciarConTicket('ticket-1'));

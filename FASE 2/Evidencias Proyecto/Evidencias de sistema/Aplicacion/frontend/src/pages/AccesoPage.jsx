@@ -22,7 +22,9 @@ export default function AccesoPage() {
     hecho.current = true;
     const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
     const fallar = (texto) => {
-      try { sessionStorage.setItem('casino_login_error', texto); } catch {  }
+      try {
+        sessionStorage.setItem('casino_login_error', texto);
+      } catch {}
       navegar('/login');
     };
     const error = params.get('error');

@@ -20,13 +20,9 @@ export default function ModalAcompanamientoEspecial({ fecha, preparaciones, onCe
       .catch(() => setComposicion({}));
   }, [fecha]);
 
-  const tiposDisponibles = categoria && composicion?.[categoria]
-    ? composicion[categoria].map((r) => r.tipo)
-    : [];
+  const tiposDisponibles = categoria && composicion?.[categoria] ? composicion[categoria].map((r) => r.tipo) : [];
 
-  const activas = tipo
-    ? preparaciones.filter((p) => p.activa && p.tipo === tipo)
-    : [];
+  const activas = tipo ? preparaciones.filter((p) => p.activa && p.tipo === tipo) : [];
 
   async function enviar(e) {
     e.preventDefault();
@@ -64,41 +60,67 @@ export default function ModalAcompanamientoEspecial({ fecha, preparaciones, onCe
     >
       <div className="v2 v2-formulario">
         <p className="texto-suave" style={{ margin: 0 }}>
-          Crea un acompañamiento distinto para una categoría. Reemplaza al compartido solo en esa categoría, por ejemplo agua mineral como bebida sin azúcar de JUNAEB.
+          Crea un acompañamiento distinto para una categoría. Reemplaza al compartido solo en esa categoría, por ejemplo agua mineral como
+          bebida sin azúcar de JUNAEB.
         </p>
 
-        <label className="campo"><span>Categoría</span>
-          <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setTipo(''); setIdPreparacion(''); }}>
+        <label className="campo">
+          <span>Categoría</span>
+          <select
+            value={categoria}
+            onChange={(e) => {
+              setCategoria(e.target.value);
+              setTipo('');
+              setIdPreparacion('');
+            }}
+          >
             <option value="">Elegir categoría</option>
-            {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+            {CATEGORIAS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
         </label>
 
         {categoria && (
-          <label className="campo"><span>Tipo de acompañamiento</span>
-            <select value={tipo} onChange={(e) => { setTipo(e.target.value); setIdPreparacion(''); }}>
+          <label className="campo">
+            <span>Tipo de acompañamiento</span>
+            <select
+              value={tipo}
+              onChange={(e) => {
+                setTipo(e.target.value);
+                setIdPreparacion('');
+              }}
+            >
               <option value="">Elegir tipo</option>
               {TIPOS.filter((t) => tiposDisponibles.includes(t)).map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t} value={t}>
+                  {t}
+                </option>
               ))}
             </select>
-            {tiposDisponibles.length === 0 && (
-              <span className="texto-suave">Esta categoría no acepta acompañamientos compartidos.</span>
-            )}
+            {tiposDisponibles.length === 0 && <span className="texto-suave">Esta categoría no acepta acompañamientos compartidos.</span>}
           </label>
         )}
 
         {tipo && (
-          <label className="campo"><span>Preparación</span>
+          <label className="campo">
+            <span>Preparación</span>
             <select value={idPreparacion} onChange={(e) => setIdPreparacion(e.target.value)}>
               <option value="">Elegir preparación</option>
-              {activas.map((p) => <option key={p.id_preparacion} value={p.id_preparacion}>{p.nombre}</option>)}
+              {activas.map((p) => (
+                <option key={p.id_preparacion} value={p.id_preparacion}>
+                  {p.nombre}
+                </option>
+              ))}
             </select>
           </label>
         )}
 
         {idPreparacion && (
-          <label className="campo"><span>Cantidad</span>
+          <label className="campo">
+            <span>Cantidad</span>
             <input type="number" min="0" step="1" value={cantidad} onChange={(e) => setCantidad(e.target.value)} />
           </label>
         )}

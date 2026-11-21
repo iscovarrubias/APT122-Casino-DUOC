@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  consultarJornadaHoy, anularVenta, consultarPrediccionHoy,
-  iniciarJornada, cerrarJornada, reabrirJornada, corregirCierre,
+  consultarJornadaHoy,
+  anularVenta,
+  consultarPrediccionHoy,
+  iniciarJornada,
+  cerrarJornada,
+  reabrirJornada,
+  corregirCierre,
 } from '../api/gestion';
 import { suscribirCambios } from '../utils/eventos';
 import { formatearHora } from '../utils/formato';
@@ -42,7 +47,10 @@ export default function CajaPage() {
     cargar();
     const intervalo = setInterval(cargar, 15000);
     const cerrar = suscribirCambios(cargar);
-    return () => { clearInterval(intervalo); cerrar(); };
+    return () => {
+      clearInterval(intervalo);
+      cerrar();
+    };
   }, [cargar]);
 
   const { vender, modales } = useVentas({ estado, cargar, setError, setAviso });
@@ -116,10 +124,20 @@ export default function CajaPage() {
 
   return (
     <div className="v2">
-      {error && typeof error === 'string' && <Mensaje tipo="error" onCerrar={() => setError(null)}>{error}</Mensaje>}
-      {aviso && !error && <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>{aviso}</Mensaje>}
+      {error && typeof error === 'string' && (
+        <Mensaje tipo="error" onCerrar={() => setError(null)}>
+          {error}
+        </Mensaje>
+      )}
+      {aviso && !error && (
+        <Mensaje tipo="ok" onCerrar={() => setAviso(null)}>
+          {aviso}
+        </Mensaje>
+      )}
 
-      {estado && !menu && <div className="estado-info">Todavía no hay un menú planificado para hoy. Avisa a la cocina o a administración.</div>}
+      {estado && !menu && (
+        <div className="estado-info">Todavía no hay un menú planificado para hoy. Avisa a la cocina o a administración.</div>
+      )}
       {menu && !jornada && menu.publicado && (
         <div className="tarjeta">
           <h2>Iniciar jornada</h2>
@@ -135,9 +153,14 @@ export default function CajaPage() {
                   <p className="stock-grupo-titulo">Platos</p>
                   {principales.map((c) => (
                     <label key={c.id_menu_preparacion} className="stock-fila">
-                      <span><strong>{etiqueta(c)}</strong>: {c.preparacion}</span>
+                      <span>
+                        <strong>{etiqueta(c)}</strong>: {c.preparacion}
+                      </span>
                       <input
-                        type="number" min="0" step="1" className="entrada-corta"
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="entrada-corta"
                         value={iniciales[c.id_menu_preparacion] ?? c.cantidad_planificada}
                         onChange={(e) => setIniciales({ ...iniciales, [c.id_menu_preparacion]: e.target.value })}
                       />
@@ -150,9 +173,14 @@ export default function CajaPage() {
                   <p className="stock-grupo-titulo">Acompañamientos</p>
                   {acompanamientos.map((c) => (
                     <label key={c.id_menu_preparacion} className="stock-fila">
-                      <span><strong>{etiqueta(c)}</strong>: {c.preparacion}</span>
+                      <span>
+                        <strong>{etiqueta(c)}</strong>: {c.preparacion}
+                      </span>
                       <input
-                        type="number" min="0" step="1" className="entrada-corta"
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="entrada-corta"
                         value={iniciales[c.id_menu_preparacion] ?? c.cantidad_planificada}
                         onChange={(e) => setIniciales({ ...iniciales, [c.id_menu_preparacion]: e.target.value })}
                       />
@@ -168,9 +196,7 @@ export default function CajaPage() {
           </button>
         </div>
       )}
-      {menu && !jornada && !menu.publicado && (
-        <Mensaje tipo="aviso">El menú de hoy aún no está publicado. Avisa a administración.</Mensaje>
-      )}
+      {menu && !jornada && !menu.publicado && <Mensaje tipo="aviso">El menú de hoy aún no está publicado. Avisa a administración.</Mensaje>}
 
       {abierta && (
         <>
@@ -192,11 +218,22 @@ export default function CajaPage() {
         <div className="tarjeta">
           <h2>Jornada cerrada{jornada.cierre_automatico ? ' (cierre automático)' : ''}</h2>
           <p className="texto-suave">Combos vendidos hoy:</p>
-          {ventas_por_categoria.map((v) => <div key={v.categoria}><strong>{v.categoria}</strong>: {v.ventas}</div>)}
-          <h3 className="v2-subtitulo" style={{ marginTop: 16 }}>Cómo terminó el día</h3>
+          {ventas_por_categoria.map((v) => (
+            <div key={v.categoria}>
+              <strong>{v.categoria}</strong>: {v.ventas}
+            </div>
+          ))}
+          <h3 className="v2-subtitulo" style={{ marginTop: 16 }}>
+            Cómo terminó el día
+          </h3>
           <ResumenCierre componentes={componentes} />
           {corrigiendo && (
-            <CorreccionCierre componentes={componentes} ocupado={ocupado} onGuardar={guardarCorreccion} onCancelar={() => setCorrigiendo(false)} />
+            <CorreccionCierre
+              componentes={componentes}
+              ocupado={ocupado}
+              onGuardar={guardarCorreccion}
+              onCancelar={() => setCorrigiendo(false)}
+            />
           )}
           {!corrigiendo && (
             <div className="en-linea" style={{ marginTop: 12 }}>
@@ -218,12 +255,7 @@ export default function CajaPage() {
       {modales}
 
       {cerrando && (
-        <ModalCierre
-          componentes={componentes}
-          ocupado={ocupado}
-          onConfirmar={confirmarCierre}
-          onCancelar={() => setCerrando(false)}
-        />
+        <ModalCierre componentes={componentes} ocupado={ocupado} onConfirmar={confirmarCierre} onCancelar={() => setCerrando(false)} />
       )}
     </div>
   );

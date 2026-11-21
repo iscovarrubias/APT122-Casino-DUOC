@@ -40,15 +40,20 @@ test('PRE-02 un tipo que no existe se rechaza con la lista de tipos válidos', a
 
 test('PRE-03 una variación queda enlazada a su receta original y la original no cambia', async () => {
   const original = await crear({
-    nombre: `Cazuela ${sufijo}`, tipo: 'Plato Principal', porciones_receta: 10,
+    nombre: `Cazuela ${sufijo}`,
+    tipo: 'Plato Principal',
+    porciones_receta: 10,
     ingredientes: ['Zapallo', 'Papa', 'Choclo'],
   });
   assert.equal(original.s, 201, original.texto);
   const antes = (await gestion()).find((p) => p.id_preparacion === original.d.id_preparacion);
 
   const variacion = await crear({
-    nombre: `Cazuela ${sufijo} (variación)`, tipo: 'Plato Principal', porciones_receta: 10,
-    ingredientes: ['Zapallo', 'Papa', 'Arroz'], id_preparacion_base: original.d.id_preparacion,
+    nombre: `Cazuela ${sufijo} (variación)`,
+    tipo: 'Plato Principal',
+    porciones_receta: 10,
+    ingredientes: ['Zapallo', 'Papa', 'Arroz'],
+    id_preparacion_base: original.d.id_preparacion,
   });
   assert.equal(variacion.s, 201, variacion.texto);
 
@@ -64,8 +69,16 @@ test('PRE-03 una variación queda enlazada a su receta original y la original no
 
 test('PRE-04 se puede crear una variación de otra variación', async () => {
   const raiz = await crear({ nombre: `Porotos ${sufijo}`, tipo: 'Plato Principal' });
-  const hija = await crear({ nombre: `Porotos ${sufijo} sin longaniza`, tipo: 'Plato Principal', id_preparacion_base: raiz.d.id_preparacion });
-  const nieta = await crear({ nombre: `Porotos ${sufijo} sin longaniza con riendas`, tipo: 'Plato Principal', id_preparacion_base: hija.d.id_preparacion });
+  const hija = await crear({
+    nombre: `Porotos ${sufijo} sin longaniza`,
+    tipo: 'Plato Principal',
+    id_preparacion_base: raiz.d.id_preparacion,
+  });
+  const nieta = await crear({
+    nombre: `Porotos ${sufijo} sin longaniza con riendas`,
+    tipo: 'Plato Principal',
+    id_preparacion_base: hija.d.id_preparacion,
+  });
   assert.equal(nieta.s, 201, nieta.texto);
   const n = (await gestion()).find((p) => p.id_preparacion === nieta.d.id_preparacion);
   assert.equal(n.id_preparacion_base, hija.d.id_preparacion);
@@ -98,7 +111,9 @@ test('PRE-07 si se borra la receta original, la variación sigue existiendo sin 
 test('PRE-08 los gramos por ingrediente quedan guardados en la receta', async () => {
   const ingrediente = (await pool.query('SELECT id_ingrediente FROM ingrediente ORDER BY id_ingrediente LIMIT 1')).rows[0];
   const r = await crear({
-    nombre: `Con gramos ${sufijo}`, tipo: 'Ensalada', porciones_receta: 4,
+    nombre: `Con gramos ${sufijo}`,
+    tipo: 'Ensalada',
+    porciones_receta: 4,
     ingredientes: [{ id_ingrediente: ingrediente.id_ingrediente, cantidad_g: 250 }],
   });
   assert.equal(r.s, 201, r.texto);
@@ -108,7 +123,10 @@ test('PRE-08 los gramos por ingrediente quedan guardados en la receta', async ()
 });
 
 test('PRE-09 una foto subida se guarda en la base y se sirve con su tipo y cabeceras seguras', async () => {
-  const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4c40000000049454e44ae426082', 'hex');
+  const png = Buffer.from(
+    '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4c40000000049454e44ae426082',
+    'hex'
+  );
   const formulario = new FormData();
   formulario.append('imagen', new Blob([png], { type: 'image/png' }), 'pixel.png');
   const subida = await s.api('POST', '/preparaciones/imagen', formulario, admin);

@@ -87,10 +87,7 @@ async function menuDelDia(fecha, categoria) {
 }
 
 async function obtenerOCrearMenu(fecha, id_sede = 1) {
-  const existente = await pool.query(
-    'SELECT id_menu, fecha, publicado FROM menu WHERE fecha = $1 AND id_sede = $2',
-    [fecha, id_sede]
-  );
+  const existente = await pool.query('SELECT id_menu, fecha, publicado FROM menu WHERE fecha = $1 AND id_sede = $2', [fecha, id_sede]);
   if (existente.rows[0]) return existente.rows[0];
 
   const { rows } = await pool.query(
@@ -101,10 +98,7 @@ async function obtenerOCrearMenu(fecha, id_sede = 1) {
 }
 
 async function obtenerMenuPorFecha(fecha, id_sede = 1) {
-  const { rows } = await pool.query(
-    'SELECT id_menu, fecha, publicado FROM menu WHERE fecha = $1 AND id_sede = $2',
-    [fecha, id_sede]
-  );
+  const { rows } = await pool.query('SELECT id_menu, fecha, publicado FROM menu WHERE fecha = $1 AND id_sede = $2', [fecha, id_sede]);
   return rows[0] || null;
 }
 
@@ -159,7 +153,7 @@ async function agregarComponente(id_menu, { id_preparacion, tipo_componente, cat
   }
 
   const hayPrecio = precio !== undefined && precio !== null && precio !== '';
-  const precioFinal = !esPlatoPrincipal ? null : (hayPrecio ? Number(precio) : await precioReciente(id_categoria_menu));
+  const precioFinal = !esPlatoPrincipal ? null : hayPrecio ? Number(precio) : await precioReciente(id_categoria_menu);
 
   const { rows } = await pool.query(
     `INSERT INTO menu_preparacion (id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada, precio)
@@ -190,10 +184,9 @@ async function actualizarComponente(id_menu_preparacion, { id_preparacion, canti
 
 async function eliminarComponente(id_menu_preparacion) {
   try {
-    const { rows } = await pool.query(
-      'DELETE FROM menu_preparacion WHERE id_menu_preparacion = $1 RETURNING id_menu_preparacion',
-      [id_menu_preparacion]
-    );
+    const { rows } = await pool.query('DELETE FROM menu_preparacion WHERE id_menu_preparacion = $1 RETURNING id_menu_preparacion', [
+      id_menu_preparacion,
+    ]);
     return rows[0] || null;
   } catch (err) {
     if (err.code === '23503') throw error(409, 'No se puede quitar: el componente ya tiene ventas registradas.');
@@ -204,25 +197,25 @@ async function eliminarComponente(id_menu_preparacion) {
 const OPCIONALES = ['Pan'];
 
 async function validarComposicion(id_menu) {
-  const comps = (await pool.query(
-    `SELECT c.nombre AS categoria, t.nombre AS tipo
+  const comps = (
+    await pool.query(
+      `SELECT c.nombre AS categoria, t.nombre AS tipo
      FROM menu_preparacion mp
      JOIN tipo_componente t ON t.id_tipo_componente = mp.id_tipo_componente
      LEFT JOIN categoria_menu c ON c.id_categoria_menu = mp.id_categoria_menu
      WHERE mp.id_menu = $1`,
-    [id_menu]
-  )).rows;
+      [id_menu]
+    )
+  ).rows;
 
   if (comps.length === 0) return ['el menú no tiene componentes'];
 
   const comp = await composicionPorCategoria();
   const faltantes = [];
 
-  const tieneTipo = (nombreCat, tipo) =>
-    comps.some((x) => x.tipo === tipo && (x.categoria === null || x.categoria === nombreCat));
+  const tieneTipo = (nombreCat, tipo) => comps.some((x) => x.tipo === tipo && (x.categoria === null || x.categoria === nombreCat));
 
-  const tienePrincipal = (nombreCat) =>
-    comps.some((x) => x.categoria === nombreCat && x.tipo === 'Plato Principal');
+  const tienePrincipal = (nombreCat) => comps.some((x) => x.categoria === nombreCat && x.tipo === 'Plato Principal');
 
   for (const [nombreCat, reglas] of Object.entries(comp)) {
     if (!tienePrincipal(nombreCat)) {
@@ -254,10 +247,10 @@ async function cambiarPublicacion(id_menu, publicado) {
       throw error(400, `No se puede publicar: ${faltantes.join('; ')}.`);
     }
   }
-  const { rows } = await pool.query(
-    'UPDATE menu SET publicado = $2 WHERE id_menu = $1 RETURNING id_menu, fecha, publicado',
-    [id_menu, publicado]
-  );
+  const { rows } = await pool.query('UPDATE menu SET publicado = $2 WHERE id_menu = $1 RETURNING id_menu, fecha, publicado', [
+    id_menu,
+    publicado,
+  ]);
   return rows[0] || null;
 }
 
@@ -373,20 +366,38 @@ async function copiarMenus(copias, { sobrescribir = false } = {}, id_sede = 1) {
     try {
       await client.query('BEGIN');
       const src = (await client.query('SELECT id_menu FROM menu WHERE fecha = $1 AND id_sede = $2', [origen, id_sede])).rows[0];
-      const comps = src ? (await client.query(
-        `SELECT mp.id_preparacion, mp.id_categoria_menu, mp.id_tipo_componente, mp.cantidad_planificada, mp.precio
+      const comps = src
+        ? (
+            await client.query(
+              `SELECT mp.id_preparacion, mp.id_categoria_menu, mp.id_tipo_componente, mp.cantidad_planificada, mp.precio
          FROM menu_preparacion mp JOIN preparacion p ON p.id_preparacion = mp.id_preparacion
-         WHERE mp.id_menu = $1 AND p.activa = TRUE`, [src.id_menu])).rows : [];
-      if (!comps.length) { await client.query('ROLLBACK'); resultado.omitidos.push({ fecha: destino, motivo: 'El día de origen no tiene menú.' }); continue; }
+         WHERE mp.id_menu = $1 AND p.activa = TRUE`,
+              [src.id_menu]
+            )
+          ).rows
+        : [];
+      if (!comps.length) {
+        await client.query('ROLLBACK');
+        resultado.omitidos.push({ fecha: destino, motivo: 'El día de origen no tiene menú.' });
+        continue;
+      }
 
       let dst = (await client.query('SELECT id_menu FROM menu WHERE fecha = $1 AND id_sede = $2 FOR UPDATE', [destino, id_sede])).rows[0];
       if (!dst) {
-        dst = (await client.query('INSERT INTO menu (id_sede, fecha, publicado) VALUES ($1, $2, FALSE) RETURNING id_menu', [id_sede, destino])).rows[0];
+        dst = (
+          await client.query('INSERT INTO menu (id_sede, fecha, publicado) VALUES ($1, $2, FALSE) RETURNING id_menu', [id_sede, destino])
+        ).rows[0];
       } else {
         const hay = (await client.query('SELECT COUNT(*)::int AS n FROM menu_preparacion WHERE id_menu = $1', [dst.id_menu])).rows[0].n;
-        if (hay > 0 && !sobrescribir) { await client.query('ROLLBACK'); resultado.omitidos.push({ fecha: destino, motivo: 'Ya tiene un menú cargado.' }); continue; }
+        if (hay > 0 && !sobrescribir) {
+          await client.query('ROLLBACK');
+          resultado.omitidos.push({ fecha: destino, motivo: 'Ya tiene un menú cargado.' });
+          continue;
+        }
         if ((await client.query('SELECT 1 FROM jornada WHERE id_menu = $1', [dst.id_menu])).rows[0]) {
-          await client.query('ROLLBACK'); resultado.omitidos.push({ fecha: destino, motivo: 'Ya tiene una jornada iniciada.' }); continue;
+          await client.query('ROLLBACK');
+          resultado.omitidos.push({ fecha: destino, motivo: 'Ya tiene una jornada iniciada.' });
+          continue;
         }
         await client.query('DELETE FROM menu_preparacion WHERE id_menu = $1', [dst.id_menu]);
         await client.query('UPDATE menu SET publicado = FALSE WHERE id_menu = $1', [dst.id_menu]);
@@ -395,7 +406,8 @@ async function copiarMenus(copias, { sobrescribir = false } = {}, id_sede = 1) {
         await client.query(
           `INSERT INTO menu_preparacion (id_menu, id_preparacion, id_categoria_menu, id_tipo_componente, cantidad_planificada, precio)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [dst.id_menu, c.id_preparacion, c.id_categoria_menu, c.id_tipo_componente, c.cantidad_planificada, c.precio]);
+          [dst.id_menu, c.id_preparacion, c.id_categoria_menu, c.id_tipo_componente, c.cantidad_planificada, c.precio]
+        );
       }
       await client.query('COMMIT');
       resultado.copiados++;
@@ -428,10 +440,19 @@ async function composicionPorCategoria() {
 }
 
 module.exports = {
-  menusDelMes, copiarMenus,
+  menusDelMes,
+  copiarMenus,
   preciosRecientes,
-  menuDelDia, obtenerOCrearMenu, obtenerMenuPorFecha, agregarComponente, actualizarComponente,
-  eliminarComponente, cambiarPublicacion, listarPorFecha,
-  actualizarDisponibilidad, historialDisponibilidad, historialMenus,
+  menuDelDia,
+  obtenerOCrearMenu,
+  obtenerMenuPorFecha,
+  agregarComponente,
+  actualizarComponente,
+  eliminarComponente,
+  cambiarPublicacion,
+  listarPorFecha,
+  actualizarDisponibilidad,
+  historialDisponibilidad,
+  historialMenus,
   composicionPorCategoria,
 };

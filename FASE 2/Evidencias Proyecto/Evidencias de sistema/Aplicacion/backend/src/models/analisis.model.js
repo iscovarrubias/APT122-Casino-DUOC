@@ -32,8 +32,10 @@ async function agotamientos(desde, hasta, id_sede) {
   );
   return rows.map((f) => ({
     ...f,
-    hora_promedio: f.segundos_promedio == null ? null
-      : `${String(Math.floor(f.segundos_promedio / 3600)).padStart(2, '0')}:${String(Math.floor((f.segundos_promedio % 3600) / 60)).padStart(2, '0')}`,
+    hora_promedio:
+      f.segundos_promedio == null
+        ? null
+        : `${String(Math.floor(f.segundos_promedio / 3600)).padStart(2, '0')}:${String(Math.floor((f.segundos_promedio % 3600) / 60)).padStart(2, '0')}`,
   }));
 }
 
@@ -102,8 +104,9 @@ async function origenes(desde, hasta, id_sede) {
 }
 
 async function rankingPeriodo(desde, hasta, id_sede) {
-  const resumen = (await pool.query(
-    `SELECT
+  const resumen = (
+    await pool.query(
+      `SELECT
         COUNT(*) FILTER (WHERE j.estado = 'cerrada')::int AS jornadas_cerradas,
         COUNT(*) FILTER (WHERE j.estado = 'cerrada' AND j.sobrante_contado)::int AS con_conteo_de_cocina,
         COUNT(*) FILTER (WHERE j.estado = 'cerrada' AND j.cierre_automatico)::int AS cierres_automaticos,
@@ -113,8 +116,9 @@ async function rankingPeriodo(desde, hasta, id_sede) {
      FROM jornada j
      JOIN menu m ON m.id_menu = j.id_menu
      WHERE m.fecha BETWEEN $1::date AND $2::date AND m.id_sede = $3`,
-    [desde, hasta, id_sede]
-  )).rows[0];
+      [desde, hasta, id_sede]
+    )
+  ).rows[0];
 
   const { rows } = await pool.query(
     `WITH jornadas_mes AS (
@@ -185,8 +189,8 @@ async function rankingMensual(mes, id_sede) {
   return rankingPeriodo(`${mes}-01`, `${mes}-${String(ultimo).padStart(2, '0')}`, id_sede);
 }
 
-const aHora = (seg) => (seg == null ? null
-  : `${String(Math.floor(seg / 3600)).padStart(2, '0')}:${String(Math.floor((seg % 3600) / 60)).padStart(2, '0')}`);
+const aHora = (seg) =>
+  seg == null ? null : `${String(Math.floor(seg / 3600)).padStart(2, '0')}:${String(Math.floor((seg % 3600) / 60)).padStart(2, '0')}`;
 
 const BASE_DETALLE = `
   WITH base AS (
@@ -235,23 +239,35 @@ function conPorcentajes(f) {
 async function detalle(desde, hasta, id_sede, { id_preparacion = null, categoria = null } = {}) {
   const par = [desde, hasta, id_sede, id_preparacion, categoria];
   const [porCategoria, preparaciones, porHora, porDia] = await Promise.all([
-    pool.query(`${BASE_DETALLE}
+    pool.query(
+      `${BASE_DETALLE}
       SELECT categoria, es_principal, ${RESUMEN_GRUPO}
       FROM base GROUP BY categoria, es_principal
-      ORDER BY es_principal DESC, categoria`, par),
-    pool.query(`${BASE_DETALLE}
+      ORDER BY es_principal DESC, categoria`,
+      par
+    ),
+    pool.query(
+      `${BASE_DETALLE}
       SELECT id_preparacion, preparacion AS nombre, MIN(componente) AS componente,
              COUNT(DISTINCT categoria) FILTER (WHERE es_principal)::int AS categorias, ${RESUMEN_GRUPO}
       FROM base GROUP BY id_preparacion, preparacion
-      ORDER BY SUM(vendidas) DESC, preparacion`, par),
-    pool.query(`${BASE_DETALLE}
+      ORDER BY SUM(vendidas) DESC, preparacion`,
+      par
+    ),
+    pool.query(
+      `${BASE_DETALLE}
       SELECT EXTRACT(HOUR FROM ve.fecha_hora)::int AS hora, SUM(ve.cantidad)::int AS unidades
       FROM base b JOIN venta_efectiva ve ON ve.id_menu_preparacion = b.id_menu_preparacion
-      GROUP BY 1 ORDER BY 1`, par),
-    pool.query(`${BASE_DETALLE}
+      GROUP BY 1 ORDER BY 1`,
+      par
+    ),
+    pool.query(
+      `${BASE_DETALLE}
       SELECT fecha, categoria, preparacion, planificadas, vendidas, precio, agotado_en,
              ROUND((vendidas / GREATEST(EXTRACT(EPOCH FROM (ultima - primera)) / 3600.0, 0.25))::numeric, 1)::float8 AS ritmo_hora
-      FROM base ORDER BY fecha DESC, categoria, preparacion LIMIT 200`, par),
+      FROM base ORDER BY fecha DESC, categoria, preparacion LIMIT 200`,
+      par
+    ),
   ]);
   return {
     por_categoria: porCategoria.rows.map(conPorcentajes),

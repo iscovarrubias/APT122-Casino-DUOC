@@ -117,47 +117,97 @@
 }
 
 @keyframes pc-aparecer {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes pc-llenar {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 @keyframes pc-salir {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes pc-ola {
-  from { clip-path: inset(0 100% 0 0); opacity: 0; transform: translateY(14%); }
-  to { clip-path: inset(0 0 0 0); opacity: 1; transform: none; }
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+    transform: translateY(14%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes pc-subir {
-  from { opacity: 0; transform: translateY(12%); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(12%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes pc-caer {
-  0% { opacity: 0; transform: translateY(-140%) rotate(-12deg); }
-  8% { opacity: 1; }
-  55% { opacity: 1; transform: translateY(0) rotate(6deg); }
-  70% { transform: translateY(-14%) rotate(-3deg); }
-  85% { transform: translateY(0) rotate(1.5deg); }
-  100% { opacity: 1; transform: none; }
+  0% {
+    opacity: 0;
+    transform: translateY(-140%) rotate(-12deg);
+  }
+  8% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0) rotate(6deg);
+  }
+  70% {
+    transform: translateY(-14%) rotate(-3deg);
+  }
+  85% {
+    transform: translateY(0) rotate(1.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes pc-balanceo {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(1.4deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(1.4deg);
+  }
 }
 
 @keyframes pc-barrido {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(270%); }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(270%);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .pantalla-carga,

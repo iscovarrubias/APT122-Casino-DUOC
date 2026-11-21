@@ -29,8 +29,14 @@ export default function PanelSidebar({ ruta }) {
   const { activa, ir, ref, indicadorRef } = useNavAnimada(ruta, navegar, items.length);
 
   const cerrarHoja = () => setAjustes(false);
-  const accion = (fn) => () => { cerrarHoja(); fn(); };
-  const salir = () => { cerrarSesion(); navegar('/'); };
+  const accion = (fn) => () => {
+    cerrarHoja();
+    fn();
+  };
+  const salir = () => {
+    cerrarSesion();
+    navegar('/');
+  };
   const verMenuPublico = () => navegar('/');
 
   const botonTema = (
@@ -60,12 +66,7 @@ export default function PanelSidebar({ ruta }) {
               <h2>¡Hola, {primerNombre}!</h2>
               <p>{usuario.rol}</p>
             </div>
-            <button
-              type="button"
-              className="avatar avatar-boton"
-              onClick={() => setAjustes(true)}
-              aria-label="Abrir configuración"
-            >
+            <button type="button" className="avatar avatar-boton" onClick={() => setAjustes(true)} aria-label="Abrir configuración">
               {inicial}
             </button>
           </div>
@@ -116,13 +117,7 @@ export default function PanelSidebar({ ruta }) {
 
         {ajustes && (
           <div className="hoja-fondo" onClick={cerrarHoja}>
-            <div
-              className="hoja"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Configuración"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="hoja" role="dialog" aria-modal="true" aria-label="Configuración" onClick={(e) => e.stopPropagation()}>
               <span className="hoja-asa" aria-hidden="true" />
               <div className="hoja-titulo">
                 <h2>Configuración</h2>
@@ -136,18 +131,16 @@ export default function PanelSidebar({ ruta }) {
                   <span className="interruptor-bola">{esOscuro ? <Moon size={16} /> : <Sun size={16} />}</span>
                 </button>
               </div>
-                <button
-                  type="button"
-                  className="hoja-opcion hoja-panel-cta"
-                  onClick={accion(verMenuPublico)}
-                >
-                  <span className="hoja-panel-cta-izq">
-                    <Globe size={18} aria-hidden="true" />
-                    <span>Ver menú público</span>
-                  </span>
-                  <span aria-hidden="true">›</span>
-                </button>
-              <button className="hoja-salir" onClick={accion(salir)}>Cerrar sesión</button>
+              <button type="button" className="hoja-opcion hoja-panel-cta" onClick={accion(verMenuPublico)}>
+                <span className="hoja-panel-cta-izq">
+                  <Globe size={18} aria-hidden="true" />
+                  <span>Ver menú público</span>
+                </span>
+                <span aria-hidden="true">›</span>
+              </button>
+              <button className="hoja-salir" onClick={accion(salir)}>
+                Cerrar sesión
+              </button>
             </div>
           </div>
         )}

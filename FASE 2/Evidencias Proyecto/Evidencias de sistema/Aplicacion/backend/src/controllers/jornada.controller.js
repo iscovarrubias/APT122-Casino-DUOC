@@ -28,11 +28,13 @@ async function iniciar(req, res, next) {
 async function cerrar(req, res, next) {
   try {
     const { sobrantes } = req.body || {};
-    res.json(await jornadaModel.cerrar({
-      id_usuario: req.user.id_usuario,
-      id_sede: req.user.id_sede,
-      sobrantes: sobrantes || {},
-    }));
+    res.json(
+      await jornadaModel.cerrar({
+        id_usuario: req.user.id_usuario,
+        id_sede: req.user.id_sede,
+        sobrantes: sobrantes || {},
+      })
+    );
   } catch (err) {
     next(err);
   }
@@ -40,10 +42,12 @@ async function cerrar(req, res, next) {
 
 async function reabrir(req, res, next) {
   try {
-    res.json(await jornadaModel.reabrir({
-      id_usuario: req.user.id_usuario,
-      id_sede: req.user.id_sede,
-    }));
+    res.json(
+      await jornadaModel.reabrir({
+        id_usuario: req.user.id_usuario,
+        id_sede: req.user.id_sede,
+      })
+    );
   } catch (err) {
     next(err);
   }
@@ -52,11 +56,13 @@ async function reabrir(req, res, next) {
 async function corregirCierre(req, res, next) {
   try {
     const { sobrantes } = req.body || {};
-    res.json(await jornadaModel.corregirCierre({
-      sobrantes,
-      id_usuario: req.user.id_usuario,
-      id_sede: req.user.id_sede,
-    }));
+    res.json(
+      await jornadaModel.corregirCierre({
+        sobrantes,
+        id_usuario: req.user.id_usuario,
+        id_sede: req.user.id_sede,
+      })
+    );
   } catch (err) {
     next(err);
   }
@@ -87,11 +93,13 @@ async function venta(req, res, next) {
 
 async function anularVenta(req, res, next) {
   try {
-    res.json(await jornadaModel.anularVenta({
-      id_venta_combo: req.params.id,
-      id_usuario: req.user.id_usuario,
-      id_sede: req.user.id_sede,
-    }));
+    res.json(
+      await jornadaModel.anularVenta({
+        id_venta_combo: req.params.id,
+        id_usuario: req.user.id_usuario,
+        id_sede: req.user.id_sede,
+      })
+    );
   } catch (err) {
     next(err);
   }

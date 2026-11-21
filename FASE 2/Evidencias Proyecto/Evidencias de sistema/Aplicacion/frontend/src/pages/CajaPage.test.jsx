@@ -3,8 +3,14 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../api/gestion', () => ({
-  consultarJornadaHoy: vi.fn(), anularVenta: vi.fn(), consultarPrediccionHoy: vi.fn(), registrarVenta: vi.fn(),
-  iniciarJornada: vi.fn(), cerrarJornada: vi.fn(), reabrirJornada: vi.fn(), corregirCierre: vi.fn(),
+  consultarJornadaHoy: vi.fn(),
+  anularVenta: vi.fn(),
+  consultarPrediccionHoy: vi.fn(),
+  registrarVenta: vi.fn(),
+  iniciarJornada: vi.fn(),
+  cerrarJornada: vi.fn(),
+  reabrirJornada: vi.fn(),
+  corregirCierre: vi.fn(),
 }));
 vi.mock('../utils/eventos', () => ({ suscribirCambios: vi.fn(() => () => {}) }));
 
@@ -13,8 +19,16 @@ import ConfirmacionProvider from '../context/ConfirmacionProvider';
 import CajaPage from './CajaPage';
 
 const comp = (id, componente, categoria, preparacion, restante = 20) => ({
-  id_menu_preparacion: id, componente, categoria, preparacion, restante, cantidad_planificada: 20,
-  total_disponible: 20, vendidas: 20 - restante, disponibilidad: restante > 0 ? 'disponible' : 'agotado', precio: 3500,
+  id_menu_preparacion: id,
+  componente,
+  categoria,
+  preparacion,
+  restante,
+  cantidad_planificada: 20,
+  total_disponible: 20,
+  vendidas: 20 - restante,
+  disponibilidad: restante > 0 ? 'disponible' : 'agotado',
+  precio: 3500,
 });
 const COMPONENTES = [
   comp(1, 'Plato Principal', 'General', 'Pollo arvejado'),
@@ -26,15 +40,34 @@ const COMPONENTES = [
   comp(7, 'Bebida', null, 'Jugo'),
 ];
 const COMPOSICION = {
-  General: [{ tipo: 'Postre', grupo_opcion: 1 }, { tipo: 'Fruta', grupo_opcion: 1 }, { tipo: 'Bebida', grupo_opcion: null }],
+  General: [
+    { tipo: 'Postre', grupo_opcion: 1 },
+    { tipo: 'Fruta', grupo_opcion: 1 },
+    { tipo: 'Bebida', grupo_opcion: null },
+  ],
   JUNAEB: [{ tipo: 'Bebida', grupo_opcion: null }],
-  Vegetariano: [{ tipo: 'Postre', grupo_opcion: 1 }, { tipo: 'Fruta', grupo_opcion: 1 }],
+  Vegetariano: [
+    { tipo: 'Postre', grupo_opcion: 1 },
+    { tipo: 'Fruta', grupo_opcion: 1 },
+  ],
   Hipocalórico: [{ tipo: 'Fruta', grupo_opcion: null }],
 };
 const MENU = { id_menu: 1, publicado: true };
-const ABIERTA = { menu: MENU, jornada: { estado: 'abierta', iniciada_en: '2026-11-20T12:00:00' }, componentes: COMPONENTES, composicion: COMPOSICION, ventas_recientes: [], ventas_por_categoria: [] };
+const ABIERTA = {
+  menu: MENU,
+  jornada: { estado: 'abierta', iniciada_en: '2026-11-20T12:00:00' },
+  componentes: COMPONENTES,
+  composicion: COMPOSICION,
+  ventas_recientes: [],
+  ventas_por_categoria: [],
+};
 
-const montar = () => render(<ConfirmacionProvider><CajaPage /></ConfirmacionProvider>);
+const montar = () =>
+  render(
+    <ConfirmacionProvider>
+      <CajaPage />
+    </ConfirmacionProvider>
+  );
 
 describe('CajaPage', () => {
   beforeEach(() => {
@@ -62,7 +95,11 @@ describe('CajaPage', () => {
     const usuario = userEvent.setup();
     montar();
     await usuario.click(await screen.findByText('Ajustar cantidades antes de iniciar'));
-    const campo = screen.getAllByText('Pollo arvejado', { exact: false }).map((n) => n.closest('label')).find(Boolean).querySelector('input');
+    const campo = screen
+      .getAllByText('Pollo arvejado', { exact: false })
+      .map((n) => n.closest('label'))
+      .find(Boolean)
+      .querySelector('input');
     await usuario.clear(campo);
     await usuario.type(campo, '35');
     await usuario.click(screen.getByRole('button', { name: 'Iniciar jornada' }));
@@ -90,7 +127,12 @@ describe('CajaPage', () => {
   });
 
   it('deshacer una venta reciente la anula', async () => {
-    api.consultarJornadaHoy.mockResolvedValue({ ...ABIERTA, ventas_recientes: [{ id_venta_combo: 77, categoria: 'General', opcion: 'Postre', registrada_en: '2026-11-20T12:10:00', anulada: false }] });
+    api.consultarJornadaHoy.mockResolvedValue({
+      ...ABIERTA,
+      ventas_recientes: [
+        { id_venta_combo: 77, categoria: 'General', opcion: 'Postre', registrada_en: '2026-11-20T12:10:00', anulada: false },
+      ],
+    });
     api.anularVenta.mockResolvedValue({});
     const usuario = userEvent.setup();
     montar();
@@ -112,7 +154,11 @@ describe('CajaPage', () => {
   });
 
   it('con la jornada cerrada muestra el resumen y permite reabrir', async () => {
-    api.consultarJornadaHoy.mockResolvedValue({ ...ABIERTA, jornada: { estado: 'cerrada', cierre_automatico: false }, ventas_por_categoria: [{ categoria: 'General', ventas: 12 }] });
+    api.consultarJornadaHoy.mockResolvedValue({
+      ...ABIERTA,
+      jornada: { estado: 'cerrada', cierre_automatico: false },
+      ventas_por_categoria: [{ categoria: 'General', ventas: 12 }],
+    });
     api.reabrirJornada.mockResolvedValue({});
     const usuario = userEvent.setup();
     montar();

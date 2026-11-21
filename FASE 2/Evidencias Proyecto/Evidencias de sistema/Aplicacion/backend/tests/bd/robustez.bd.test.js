@@ -52,7 +52,11 @@ function revisarRespuesta(r, contexto) {
   assert.ok(r.d && typeof r.d === 'object', `${contexto} no respondió JSON`);
   if (r.s >= 400) {
     assert.equal(typeof r.d.error, 'string', `${contexto} sin mensaje de error`);
-    assert.doesNotMatch(r.texto, /at \/|node_modules|stack|SELECT |INSERT |syntax error at|relation "|column "/i, `${contexto} filtró detalles internos`);
+    assert.doesNotMatch(
+      r.texto,
+      /at \/|node_modules|stack|SELECT |INSERT |syntax error at|relation "|column "/i,
+      `${contexto} filtró detalles internos`
+    );
   }
 }
 
@@ -60,7 +64,12 @@ test('ROB-01 ningún identificador inválido en las rutas del personal provoca u
   let casos = 0;
   for (const [metodo, ruta, cuerpo] of RUTAS_CON_ID) {
     for (const id of IDS_INVALIDOS) {
-      const r = await s.api(metodo, ruta.replace(':id', encodeURIComponent(id)), cuerpo ?? (metodo === 'GET' || metodo === 'DELETE' ? undefined : {}), admin);
+      const r = await s.api(
+        metodo,
+        ruta.replace(':id', encodeURIComponent(id)),
+        cuerpo ?? (metodo === 'GET' || metodo === 'DELETE' ? undefined : {}),
+        admin
+      );
       revisarRespuesta(r, `${metodo} ${ruta} id=${id}`);
       casos += 1;
     }
@@ -80,12 +89,27 @@ test('ROB-02 ningún identificador inválido en las rutas del estudiante provoca
 
 test('ROB-03 un identificador válido que no existe responde 404 o 400, nunca 500', async () => {
   for (const [metodo, ruta, cuerpo] of RUTAS_CON_ID) {
-    const r = await s.api(metodo, ruta.replace(':id', '987654'), cuerpo ?? (metodo === 'GET' || metodo === 'DELETE' ? undefined : {}), admin);
+    const r = await s.api(
+      metodo,
+      ruta.replace(':id', '987654'),
+      cuerpo ?? (metodo === 'GET' || metodo === 'DELETE' ? undefined : {}),
+      admin
+    );
     revisarRespuesta(r, `${metodo} ${ruta} id=987654`);
   }
 });
 
-const FECHAS_IMPOSIBLES = ['2026-02-30', '2026-02-29', '2026-04-31', '2026-13-01', '2026-00-10', '26-11-20', '2026/11/20', 'hoy', "2026-11-20' OR '1'='1"];
+const FECHAS_IMPOSIBLES = [
+  '2026-02-30',
+  '2026-02-29',
+  '2026-04-31',
+  '2026-13-01',
+  '2026-00-10',
+  '26-11-20',
+  '2026/11/20',
+  'hoy',
+  "2026-11-20' OR '1'='1",
+];
 
 test('ROB-04 las fechas imposibles se rechazan con 400 en todas las consultas por fecha', async () => {
   const consultas = [
@@ -108,7 +132,12 @@ test('ROB-04 las fechas imposibles se rechazan con 400 en todas las consultas po
 test('ROB-05 planificar en una fecha imposible se rechaza sin tocar la base', async () => {
   const antes = (await pool.query('SELECT COUNT(*)::int AS n FROM menu')).rows[0].n;
   for (const fecha of ['2026-02-30', '2027-02-29']) {
-    const r = await s.api('POST', '/menu/planificacion', { fecha, id_preparacion: 1, tipo_componente: 'Pan', cantidad_planificada: 5 }, admin);
+    const r = await s.api(
+      'POST',
+      '/menu/planificacion',
+      { fecha, id_preparacion: 1, tipo_componente: 'Pan', cantidad_planificada: 5 },
+      admin
+    );
     assert.equal(r.s, 400, fecha);
   }
   assert.equal((await pool.query('SELECT COUNT(*)::int AS n FROM menu')).rows[0].n, antes);
@@ -160,7 +189,12 @@ test('ROB-09 JSON mal formado responde 400 con un mensaje claro', async () => {
 });
 
 test('ROB-10 rutas y métodos inexistentes responden 404 en JSON', async () => {
-  for (const [metodo, ruta] of [['GET', '/nada'], ['DELETE', '/usuarios'], ['PUT', '/menu/hoy'], ['GET', '/../../etc/passwd']]) {
+  for (const [metodo, ruta] of [
+    ['GET', '/nada'],
+    ['DELETE', '/usuarios'],
+    ['PUT', '/menu/hoy'],
+    ['GET', '/../../etc/passwd'],
+  ]) {
     const r = await s.api(metodo, ruta, undefined, admin);
     assert.equal(r.s, 404, `${metodo} ${ruta}`);
     assert.equal(typeof r.d.error, 'string');

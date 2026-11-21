@@ -25,9 +25,7 @@ async function login(req, res, next) {
     }
 
     const sesionLarga = ROLES_PANEL.includes(usuario.rol) && (kiosco === true || usuario.rol === 'Cajero');
-    const expiresIn = sesionLarga
-      ? process.env.JWT_EXPIRES_IN_KIOSCO || '7d'
-      : process.env.JWT_EXPIRES_IN || '8h';
+    const expiresIn = sesionLarga ? process.env.JWT_EXPIRES_IN_KIOSCO || '7d' : process.env.JWT_EXPIRES_IN || '8h';
 
     const token = jwt.sign(
       { id_usuario: usuario.id_usuario, email: usuario.email, rol: usuario.rol, id_sede: usuario.id_sede },
@@ -38,12 +36,12 @@ async function login(req, res, next) {
     res.json({
       token,
       kiosco: sesionLarga,
-      usuario: { 
-        id_usuario: usuario.id_usuario, 
-        nombre: usuario.nombre, 
-        email: usuario.email, 
+      usuario: {
+        id_usuario: usuario.id_usuario,
+        nombre: usuario.nombre,
+        email: usuario.email,
         rol: usuario.rol,
-        tema_preferido: usuario.tema_preferido 
+        tema_preferido: usuario.tema_preferido,
       },
     });
   } catch (err) {
@@ -61,8 +59,13 @@ async function yo(req, res, next) {
   }
 }
 
-const nombreDeCorreo = (email) => email.split('@')[0].split(/[._-]/).filter(Boolean)
-  .map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+const nombreDeCorreo = (email) =>
+  email
+    .split('@')[0]
+    .split(/[._-]/)
+    .filter(Boolean)
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(' ');
 
 async function loginDuoc(req, res, next) {
   try {
@@ -76,32 +79,36 @@ async function loginDuoc(req, res, next) {
     if (!usuario) {
       const sede = (await pool.query('SELECT id_sede FROM sede ORDER BY id_sede LIMIT 1')).rows[0];
       await usuarioModel.crear({
-        nombre: nombreDeCorreo(email), email,
+        nombre: nombreDeCorreo(email),
+        email,
         passwordHash: await bcrypt.hash(randomBytes(24).toString('hex'), 10),
-        rol: 'Estudiante', id_sede: sede.id_sede,
+        rol: 'Estudiante',
+        id_sede: sede.id_sede,
       });
       usuario = await usuarioModel.buscarPorEmail(email);
     }
 
     const token = jwt.sign(
       { id_usuario: usuario.id_usuario, email: usuario.email, rol: usuario.rol, id_sede: usuario.id_sede },
-      process.env.JWT_SECRET, { expiresIn: '8h' });
-    res.json({ 
-      token, 
-      usuario: { 
-        id_usuario: usuario.id_usuario, 
-        nombre: usuario.nombre, 
-        email: usuario.email, 
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+    res.json({
+      token,
+      usuario: {
+        id_usuario: usuario.id_usuario,
+        nombre: usuario.nombre,
+        email: usuario.email,
         rol: usuario.rol,
-        tema_preferido: usuario.tema_preferido 
-      } 
+        tema_preferido: usuario.tema_preferido,
+      },
     });
   } catch (err) {
     next(err);
   }
 }
 
-const correoValido = (valor) => typeof valor === 'string' ? valor.trim().toLowerCase() : '';
+const correoValido = (valor) => (typeof valor === 'string' ? valor.trim().toLowerCase() : '');
 
 async function identificar(req, res, next) {
   try {
@@ -114,7 +121,10 @@ async function identificar(req, res, next) {
     }
 
     if (!usuario && entra.habilitado() && entra.esDominioPersonal(email) && !entra.esDominioEstudiante(email)) {
-      throw new ApiError(403, 'Tu cuenta no tiene acceso al sistema del casino. Si eres parte del personal, pide al administrador que te registre.');
+      throw new ApiError(
+        403,
+        'Tu cuenta no tiene acceso al sistema del casino. Si eres parte del personal, pide al administrador que te registre.'
+      );
     }
     if (!usuario && !entra.esDominioEstudiante(email) && !/@duocuc\.cl$/.test(email)) {
       throw new ApiError(400, 'Usa tu correo institucional (@duocuc.cl).');
@@ -141,7 +151,10 @@ const NOMBRE_COOKIE = 'entra_estado';
 const RUTA_COOKIE = '/api/auth/microsoft';
 
 function leerCookie(req, nombre) {
-  const par = String(req.headers.cookie || '').split(';').map((c) => c.trim()).find((c) => c.startsWith(`${nombre}=`));
+  const par = String(req.headers.cookie || '')
+    .split(';')
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${nombre}=`));
   return par ? decodeURIComponent(par.slice(nombre.length + 1)) : '';
 }
 
@@ -150,8 +163,11 @@ function microsoftInicio(req, res) {
   const hint = correoValido(req.query.login_hint);
   const { url, cookie } = entra.iniciar(/^[^\s@]+@[^\s@]+$/.test(hint) ? hint : '');
   res.cookie(NOMBRE_COOKIE, cookie, {
-    httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production',
-    maxAge: 10 * 60 * 1000, path: RUTA_COOKIE,
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 10 * 60 * 1000,
+    path: RUTA_COOKIE,
   });
   res.redirect(url);
 }
@@ -162,9 +178,11 @@ async function cuentaDesdeCorreo(email) {
     if (!entra.esDominioEstudiante(email)) throw new ApiError(403, entra.esDominioPersonal(email) ? 'sin_acceso' : 'cuenta_no_permitida');
     const sede = (await pool.query('SELECT id_sede FROM sede ORDER BY id_sede LIMIT 1')).rows[0];
     await usuarioModel.crear({
-      nombre: nombreDeCorreo(email), email,
+      nombre: nombreDeCorreo(email),
+      email,
       passwordHash: await bcrypt.hash(randomBytes(24).toString('hex'), 10),
-      rol: 'Estudiante', id_sede: sede.id_sede,
+      rol: 'Estudiante',
+      id_sede: sede.id_sede,
     });
     usuario = await usuarioModel.buscarPorEmail(email);
   }
@@ -186,15 +204,18 @@ async function microsoftCallback(req, res) {
     const sesionLarga = usuario.rol === 'Cajero';
     const token = jwt.sign(
       { id_usuario: usuario.id_usuario, email: usuario.email, rol: usuario.rol, id_sede: usuario.id_sede },
-      process.env.JWT_SECRET, { expiresIn: sesionLarga ? (process.env.JWT_EXPIRES_IN_KIOSCO || '7d') : (process.env.JWT_EXPIRES_IN || '8h') });
+      process.env.JWT_SECRET,
+      { expiresIn: sesionLarga ? process.env.JWT_EXPIRES_IN_KIOSCO || '7d' : process.env.JWT_EXPIRES_IN || '8h' }
+    );
     const ticket = await entra.crearTicket({
-      token, kiosco: sesionLarga,
-      usuario: { 
-        id_usuario: usuario.id_usuario, 
-        nombre: usuario.nombre, 
-        email: usuario.email, 
+      token,
+      kiosco: sesionLarga,
+      usuario: {
+        id_usuario: usuario.id_usuario,
+        nombre: usuario.nombre,
+        email: usuario.email,
         rol: usuario.rol,
-        tema_preferido: usuario.tema_preferido
+        tema_preferido: usuario.tema_preferido,
       },
     });
     res.redirect(`${frontend}/#/acceso?ticket=${ticket}`);
@@ -207,9 +228,7 @@ async function microsoftCallback(req, res) {
 
 async function microsoftCanje(req, res, next) {
   try {
-    const sesion = typeof req.body?.ticket === 'string' && req.body.ticket.length <= 64
-      ? await entra.canjearTicket(req.body.ticket)
-      : null;
+    const sesion = typeof req.body?.ticket === 'string' && req.body.ticket.length <= 64 ? await entra.canjearTicket(req.body.ticket) : null;
     if (!sesion) throw new ApiError(401, 'El acceso expiró. Vuelve a intentarlo.');
     res.json(sesion);
   } catch (err) {

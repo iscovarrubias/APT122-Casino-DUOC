@@ -34,8 +34,7 @@ export async function pedir(ruta, { metodo = 'GET', cuerpo, conToken = true } = 
   let datos = null;
   try {
     datos = await res.json();
-  } catch {
-  }
+  } catch {}
 
   if (!res.ok) {
     if (res.status === 401 && conToken && token && alSesionInvalida) alSesionInvalida();
@@ -61,8 +60,7 @@ export async function pedirArchivo(ruta, archivo, campo = 'imagen') {
   let datos = null;
   try {
     datos = await res.json();
-  } catch {
-  }
+  } catch {}
 
   if (!res.ok) {
     if (res.status === 401 && token && alSesionInvalida) alSesionInvalida();
