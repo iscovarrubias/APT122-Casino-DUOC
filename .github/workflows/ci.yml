@@ -5,6 +5,9 @@ on:
     branches: [main, master]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   backend:
     runs-on: ubuntu-latest
@@ -29,13 +32,17 @@ jobs:
       run:
         working-directory: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/backend"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/backend/package-lock.json"
       - run: npm ci
+      - name: Formato del código (Prettier)
+        run: npm run formato:revisar
+      - name: Dependencias sin vulnerabilidades altas o críticas
+        run: npm audit --audit-level=high --omit=dev
       - name: Pruebas unitarias y de seguridad
         run: npm test
       - name: Preparar la base de pruebas
@@ -54,16 +61,69 @@ jobs:
       run:
         working-directory: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/frontend"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/frontend/package-lock.json"
       - run: npm ci
+      - name: Formato del código (Prettier)
+        run: npm run formato:revisar
+      - name: Dependencias sin vulnerabilidades altas o críticas
+        run: npm audit --audit-level=high --omit=dev
       - name: Lint
         run: npm run lint
       - name: Pruebas con cobertura
         run: npm run test:cov
       - name: Compilar
         run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: casino_e2e_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      E2E_DATABASE_URL: postgres://postgres:postgres@localhost:5432/casino_e2e_test
+    defaults:
+      run:
+        working-directory: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Instalar dependencias
+        run: |
+          npm ci --prefix backend
+          npm ci --prefix frontend
+          npm ci --prefix e2e
+      - name: Formato de las pruebas (Prettier)
+        working-directory: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/e2e"
+        run: npm run formato:revisar
+      - name: Instalar Chromium
+        working-directory: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/e2e"
+        run: npx playwright install --with-deps chromium
+      - name: Pruebas de punta a punta (Playwright)
+        working-directory: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/e2e"
+        run: npx playwright test
+      - name: Guardar el reporte
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: reporte-playwright
+          path: "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/e2e/playwright-report"
+          retention-days: 14

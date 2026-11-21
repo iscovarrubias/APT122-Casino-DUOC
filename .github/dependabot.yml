@@ -1,0 +1,52 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/backend"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Santiago
+    open-pull-requests-limit: 5
+    groups:
+      menores:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "deps(backend)"
+
+  - package-ecosystem: npm
+    directory: "/FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/frontend"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Santiago
+    open-pull-requests-limit: 5
+    groups:
+      menores:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "deps(frontend)"
+
+  - package-ecosystem: npm
+    directory: "/FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/e2e"
+    schedule:
+      interval: monthly
+      timezone: America/Santiago
+    open-pull-requests-limit: 2
+    groups:
+      todas:
+        patterns: ["*"]
+    commit-message:
+      prefix: "deps(e2e)"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+      timezone: America/Santiago
+    groups:
+      acciones:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"

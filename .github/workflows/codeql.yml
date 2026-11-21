@@ -1,0 +1,35 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  schedule:
+    - cron: '17 9 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  analizar:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+          config: |
+            paths:
+              - "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/backend/src"
+              - "FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicacion/frontend/src"
+            paths-ignore:
+              - "**/*.test.js"
+              - "**/*.test.jsx"
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:javascript-typescript"
