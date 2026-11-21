@@ -77,6 +77,7 @@ Las ventas simuladas quedan marcadas como `simulado` en la base de datos y la pr
 | 18 | La categoría "Principal" pasa a llamarse "General" |
 | 19 y 20 | Tipos de venta (combo, solo plato y completo con bebida de máquina) y corrección del cierre de jornada |
 | 21 | Variaciones de receta en la planificación |
+| 22 | Hora estimada de agotamiento para los estudiantes, avisos por correo del menú semanal y de los favoritos, y páginas de Términos y Privacidad |
 
 ## Tecnologías
 
@@ -86,7 +87,7 @@ Las ventas simuladas quedan marcadas como `simulado` en la base de datos y la pr
 | Backend | Node.js 20+ y Express 5, API REST con eventos en tiempo real (SSE) |
 | Base de datos | PostgreSQL 14+, elegido por el historial de menús y las relaciones muchos a muchos entre preparaciones e ingredientes |
 | Autenticación | JWT, contraseña para el personal y Microsoft Entra ID (OIDC con PKCE) para los estudiantes |
-| Calidad | Más de 530 pruebas con `node:test` y Vitest (unitarias, integración, seguridad, robustez, carga de hora punta y contrato entre frontend y backend), 88 % de cobertura en el backend y 92 % en el frontend, análisis estático con oxlint e integración continua con GitHub Actions |
+| Calidad | Más de 700 pruebas con `node:test`, Vitest y Playwright (unitarias, integración, seguridad, robustez, carga de hora punta, contrato entre frontend y backend, de punta a punta en navegador para cada funcionalidad y rol, y accesibilidad WCAG 2.1 AA con axe), 89 % de cobertura en el backend y 93 % en el frontend, oxlint, Prettier, Dependabot, CodeQL e integración continua con GitHub Actions |
 | Despliegue | Render (frontend y backend) y Neon (PostgreSQL), también se puede levantar con Docker Compose |
 
 ## Metodología
