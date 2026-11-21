@@ -105,19 +105,23 @@ src/
 ├── api/            cliente.js (fetch con JWT), gestion.js (endpoints del panel) y menu.js (endpoints públicos)
 ├── components/     Interfaz reutilizable
 │   ├── Menú público:   MenuPrincipal, CategoriaTabs, VistaSemanal, VistaPreguntas, TablaNutricional,
-│   │                   AlergenoPills, AvisoAlergias, EstadoBadge, BotonFavorito, Opinion y OpinionModal
+│   │                   AlergenoPills, AvisoAlergias, EstadoBadge, PrediccionAgotamiento, BotonFavorito,
+│   │                   Opinion y OpinionModal
 │   ├── Panel:          PanelLayout, PanelSidebar, PanelVentas, PrediccionPanel, OpinionesPanel,
 │   │                   RankingMensual, SelectorPeriodo, ModalCierre, CorreccionCierre, ResumenCierre,
 │   │                   ModalAcompanamientoEspecial, ModalOpcion y RecetaModal
 │   ├── Exportación:    ExportarMenu, ExportarAnalisis, ExportarVentana, HojasMenu y HojasAnalisis
 │   └── Comunes:        Mensaje, Ayuda, Cargando, PantallaCarga, PaginaError, ModalFormulario, CampoFecha,
-│                       ImagenOIcono, RecortarImagen, NoEncontrada, ErrorBoundary, Sidebar y PerfilEstudianteModal
+│                       ImagenOIcono, RecortarImagen, NoEncontrada, ErrorBoundary, Sidebar, PerfilEstudianteModal
+│                       y DocumentoLegal (Términos y Privacidad)
 ├── context/        AuthProvider (sesión) y ConfirmacionProvider (diálogos de confirmación)
 ├── pages/          VistaPublica, LoginPage, AccesoPage, CajaPage, KioscoPage, PlanificacionPage,
 │                   IngredientesPage, PreparacionesPage, AnalisisPage y UsuariosPage
+│   ├── planificacion/  TarjetaRanura, PanelCopiar, VistaMes y utilidades de PlanificacionPage
+│   └── preparaciones/  Formulario, TarjetaPreparacion y Columna de PreparacionesPage
 ├── ruteo/          rutas.js (permisos por rol) y useRuta.js (navegación por hash)
 ├── utils/          formato, periodos, opciones, eventos (cliente SSE), estudiante, useVentas, errores,
-│                   exportarMenu, exportarExcel, exportarAnalisis, tema, splash, revelar y navAnimada
+│                   exportarMenu, exportarExcel, exportarAnalisis, tema, splash, legal y navAnimada
 ├── pruebas/        Configuración de las pruebas
 ├── App.jsx y main.jsx
 └── index.css, panel.css, diseno.css y responsive.css
