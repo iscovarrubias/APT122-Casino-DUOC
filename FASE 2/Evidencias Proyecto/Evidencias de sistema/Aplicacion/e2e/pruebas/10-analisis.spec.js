@@ -25,8 +25,13 @@ test.describe('Análisis', () => {
     await expect(page.getByRole('textbox', { name: 'Fecha desde' })).not.toHaveValue('');
     const treinta = Number(await dias.textContent());
     await periodo.getByRole('button', { name: 'Esta semana' }).click();
-    await expect.poll(async () => Number(await dias.textContent())).toBeLessThan(treinta);
-    expect(Number(await dias.textContent())).toBeLessThanOrEqual(7);
+    const vacio = page.getByText('No hay datos en este rango');
+    const diasSemana = async () => {
+      if (await vacio.isVisible()) return 0;
+      return Number(await dias.textContent({ timeout: 1000 }).catch(() => NaN));
+    };
+    await expect.poll(diasSemana).toBeLessThan(treinta);
+    expect(await diasSemana()).toBeLessThanOrEqual(7);
   });
 
   test('filtrar por categoría enfoca las ventas por hora y las preparaciones en ese menú', async ({ page }) => {

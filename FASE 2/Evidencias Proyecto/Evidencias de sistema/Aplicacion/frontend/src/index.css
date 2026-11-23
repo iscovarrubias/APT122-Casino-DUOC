@@ -574,7 +574,7 @@ table.tabla-nutricional td {
 }
 .semanal-badge-hoy {
   background: var(--amber);
-  color: #fff;
+  color:  #3b2500;
   font-size: 0.65rem;
   font-weight: 700;
   padding: 3px 8px;
