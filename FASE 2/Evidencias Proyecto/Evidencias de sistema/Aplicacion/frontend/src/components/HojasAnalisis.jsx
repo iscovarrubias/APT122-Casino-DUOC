@@ -275,7 +275,7 @@ export function HojaOpinionesLista({ d }) {
       {lista.length === 0 && <p>No hay comentarios en este período.</p>}
       <div className="ha-opiniones">
         {lista.map((o) => (
-          <article key={o.id_opinion} style={{ borderLeftColor: COL[o.categoria] || '#8a94a6' }}>
+          <article key={o.id_opinion}>
             <header>
               <strong>{o.preparacion}</strong>
               <span>

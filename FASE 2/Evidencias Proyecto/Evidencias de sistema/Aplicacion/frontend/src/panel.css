@@ -192,7 +192,6 @@
   background: var(--card-bg);
   color: var(--text);
   border-radius: 12px;
-  border-left: 12px solid var(--m-color);
   box-shadow: 0 6px 22px rgba(17, 24, 39, 0.1);
   animation: mensaje-entrar 0.25s ease-out both;
 }
@@ -279,7 +278,6 @@
   .mensaje {
     gap: 10px;
     padding: 12px 40px 12px 12px;
-    border-left-width: 9px;
   }
   .mensaje-icono {
     width: 30px;
@@ -596,13 +594,6 @@
   background: var(--card-bg);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow);
-  border-left: 6px solid var(--disponible);
-}
-.chip-comp.baja_disponibilidad {
-  border-left-color: var(--baja);
-}
-.chip-comp.agotado {
-  border-left-color: var(--agotado);
 }
 .stock-lista {
   display: flex;
@@ -2292,7 +2283,6 @@ details.tarjeta > summary {
   margin-bottom: 18px;
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--amber) 14%, var(--card-bg));
-  border-left: 5px solid var(--amber);
   color: var(--text);
   font-size: 0.92rem;
 }
@@ -2434,7 +2424,6 @@ details.tarjeta > summary {
   font-size: 0.92rem;
 }
 .hoy-tarjeta {
-  border-left: 5px solid var(--acento, var(--navy));
   background: var(--bg);
   border-radius: var(--radius-sm);
   padding: 12px 14px;
@@ -2538,7 +2527,6 @@ details.tarjeta > summary {
   background: var(--card-bg);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  border-left: 6px solid var(--acento, var(--navy));
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -2886,7 +2874,6 @@ details.tarjeta > summary {
 }
 .ha-opiniones article {
   border: 1px solid #e4e7ec;
-  border-left: 6px solid #8a94a6;
   border-radius: 8px;
   padding: 10px 12px;
   display: flex;
@@ -3078,7 +3065,6 @@ details.tarjeta > summary {
   gap: 12px;
   padding: 11px 6px 11px 12px;
   cursor: pointer;
-  border-left: 3px solid transparent;
   border-bottom: 1px solid var(--border);
   color: var(--text-muted);
 }
@@ -3086,7 +3072,6 @@ details.tarjeta > summary {
   border-bottom: 0;
 }
 .exv-lista label.activa {
-  border-left-color: var(--amber);
   color: var(--navy);
   background: color-mix(in srgb, var(--amber) 8%, transparent);
 }

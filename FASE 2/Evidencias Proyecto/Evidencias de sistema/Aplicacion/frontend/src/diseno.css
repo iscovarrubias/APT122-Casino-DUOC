@@ -680,7 +680,6 @@
 }
 .v2 .copia-panel {
   border: 1px solid var(--v2-borde);
-  border-left: 3px solid var(--amber);
   border-radius: var(--v2-radio);
   box-shadow: none;
 }
@@ -2408,7 +2407,6 @@
 .perfil-modal .mensaje {
   margin: 0;
   padding: 10px 36px 10px 12px;
-  border-left-width: 6px;
   box-shadow: none;
   font-size: 0.85rem;
   border-radius: 8px;
@@ -2773,7 +2771,6 @@
 .legal-resumen {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--amber);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 22px;
