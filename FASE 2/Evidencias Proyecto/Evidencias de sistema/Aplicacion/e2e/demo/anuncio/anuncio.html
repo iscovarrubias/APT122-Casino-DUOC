@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#f3f5f8}
+body{font-family:Poppins,system-ui,sans-serif;color:#0a2239;-webkit-font-smoothing:antialiased}
+#escena{position:absolute;inset:0;overflow:hidden}
+#fondo{position:absolute;inset:0;background:#f3f5f8}
+.abs{position:absolute;left:0;top:0}
+.tel{transform-origin:0 0}
+.tel img{position:absolute;left:0;top:0}
+.toque{position:absolute;border-radius:50%;border:10px solid #fbb930;opacity:0}
+.cargando{position:absolute}
+.cargando .capa{position:absolute;inset:0;-webkit-mask-size:100% 100%;-webkit-mask-repeat:no-repeat}
+.cargando .c1{background:#1b2022;-webkit-mask-image:url(img/casinos.webp)}
+.cargando .c2{background:#fbb930;-webkit-mask-image:url(img/duoc.webp)}
+.cargando .c3{background:#0a2239;-webkit-mask-image:url(img/uc.webp)}
+.cargando .c4{background:url(img/gorro.webp) center/100% 100% no-repeat;transform-origin:15.6% 42.9%}
+.cargando .pista{position:absolute;height:8px;border-radius:999px;background:#e3e8ee;overflow:hidden}
+.cargando .pista span{position:absolute;left:0;top:0;height:100%;width:38%;border-radius:999px;background:#fbb930}
+.texto{position:absolute;font-weight:800;letter-spacing:-.02em;line-height:1.02;white-space:nowrap}
+.texto span{display:inline-block;transform-origin:50% 80%}
+#cursor{width:30px;height:42px;z-index:50}
+#numero{font-weight:800;font-size:560px;line-height:1;letter-spacing:-.04em;color:#0a2239;text-align:center;width:620px}
+#numero .n{position:absolute;left:0;width:620px;text-align:center}
+#hora{display:flex;align-items:center;gap:30px}
+#hora .esfera{width:150px;height:150px;border-radius:50%;border:14px solid #fbb930;position:relative}
+#hora .esfera i{position:absolute;left:50%;bottom:50%;width:12px;margin-left:-6px;border-radius:6px;background:#0a2239;transform-origin:50% 100%}
+#hora b{font-size:150px;font-weight:800;letter-spacing:-.03em;color:#0a2239}
+#sello{padding:22px 60px;border:12px solid #d11b1b;border-radius:26px;color:#d11b1b;font-size:150px;font-weight:800;letter-spacing:.06em;background:rgba(255,255,255,.92)}
+.aviso{width:760px;padding:30px 36px;border-radius:34px;background:rgba(255,255,255,.97);box-shadow:0 30px 80px rgba(10,34,57,.25);display:flex;gap:26px;align-items:center}
+.aviso .ico{flex:none;width:92px;height:92px;border-radius:24px;background:#e9edf2;display:flex;align-items:center;justify-content:center}
+.aviso .t1{font-size:24px;font-weight:600;color:#5b6b7d;display:flex;justify-content:space-between}
+.aviso .t2{font-size:36px;font-weight:700;color:#0a2239;line-height:1.2;margin-top:4px}
+.corazon{position:absolute;width:60px;height:60px}
+#estrellas{display:flex;gap:22px}
+#estrellas svg{width:130px;height:130px}
+#movil{position:absolute;left:907px;top:32px;width:440px;height:956px;transform:scale(2.2227,2.226);transform-origin:0 0;border-radius:62px;overflow:hidden;background:#fff}
+#movil .sb{position:absolute;left:0;right:0;top:0;height:57px;font-size:17.3px;font-weight:700;color:#000}
+#movil .sb b{position:absolute;left:78px;top:30px;transform:translate(-50%,-50%)}
+#movil .sb svg{position:absolute;right:22px;top:20px}
+#movil .isla{position:absolute;left:174px;top:15px;width:93px;height:36px;border-radius:18px;background:#000}
+#movil .pill{position:absolute;left:16px;right:16px;bottom:30px;height:52px;border-radius:26px;background:#eef1f5;font-size:16px;line-height:52px;padding-left:44px;color:#0a2239;font-weight:500;white-space:nowrap;overflow:hidden}
+#movil .pill svg{position:absolute;left:18px;top:18px}
+#movil .pill .ph{color:#8a96a5;font-weight:400}
+#movil .caret{display:inline-block;width:2px;height:20px;background:#0a2239;vertical-align:-4px;margin-left:1px}
+#url{white-space:nowrap;font-size:40px;font-weight:600;color:#5b6b7d;letter-spacing:.01em}
+#subrayado{height:12px;border-radius:6px;background:#fbb930}
+</style>
+</head>
+<body>
+<div id="escena">
+  <div id="fondo"></div>
+  <div class="texto abs" id="t-cat"></div>
+  <div class="abs" id="numero"><div class="n" id="n-a"></div><div class="n" id="n-b"></div></div>
+  <div class="abs" id="hora"><div class="esfera"><i id="aguja-h"></i><i id="aguja-m"></i></div><b id="hora-txt"></b></div>
+  <div class="abs" id="estrellas"></div>
+  <div class="abs" id="plato"><img id="plato-img" src="img/plato-0.png" style="width:100%;height:100%;border-radius:36px;box-shadow:0 40px 100px rgba(0,0,0,.35)"></div>
+  <div class="abs tel" id="tel4"></div>
+  <div class="abs tel" id="tel3"></div>
+  <div class="abs" id="sello">AGOTADO</div>
+  <div class="abs" id="corazones"></div>
+  <div class="abs aviso" id="aviso"><div class="ico"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#0a2239" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg></div><div style="flex:1"><div class="t1"><span>Casinos DuocUC</span><span>ahora</span></div><div class="t2">Hoy hay Pollo asado, tu favorito.</div></div></div>
+  <div class="abs aviso" id="aviso2"><div class="ico"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#0a2239" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg></div><div style="flex:1"><div class="t1"><span>Casinos DuocUC</span><span>ahora</span></div><div class="t2">Menú de la semana: incluye tus favoritos.</div></div></div>
+  <div class="texto abs" id="t-principal"></div>
+  <div class="cargando" id="carga-final"></div>
+  <div class="abs" id="subrayado"></div>
+  <div class="texto abs" id="t-final"></div>
+  <div class="abs" id="url">casino-duoc-web.onrender.com</div>
+</div>
+<script>
+const G = window.GEO;
+const D = window.DATOS;
+const URL_TXT = 'casino-duoc-web.onrender.com';
+const AMARILLO = '#fbb930', AZUL = '#0a2239', CLARO = '#f3f5f8';
+const CAT = [['General', '#F5A623'], ['JUNAEB', '#D11B1B'], ['Vegetariano', '#3C7424'], ['Hipocalórico', '#318386']];
+const $ = (id) => document.getElementById(id);
+const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const pr = (t, a, b) => cl((t - a) / (b - a));
+const eOut = (k) => 1 - Math.pow(1 - k, 3);
+const eExpo = (k) => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * k));
+const eIO = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const eBack = (k) => { const c = 1.9; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
+function bez(x1, y1, x2, y2) {
+  return (x) => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    let lo = 0, hi = 1, t = x;
+    for (let i = 0; i < 30; i++) { t = (lo + hi) / 2; const bx = 3 * (1 - t) * (1 - t) * t * x1 + 3 * (1 - t) * t * t * x2 + t * t * t; if (bx < x) lo = t; else hi = t; }
+    return 3 * (1 - t) * (1 - t) * t * y1 + 3 * (1 - t) * t * t * y2 + t * t * t;
+  };
+}
+const BZ = bez(0.22, 0.8, 0.3, 1);
+const EIN = bez(0.42, 0, 1, 1);
+const mezcla = (c1, c2, k) => {
+  const a = c1.match(/\w\w/g).map((h) => parseInt(h, 16)), b = c2.match(/\w\w/g).map((h) => parseInt(h, 16));
+  return `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], k))).join(',')})`;
+};
+const set = (el, css) => { for (const k in css) el.style[k] = css[k]; };
+
+function armarTel(id, angulo, pantallas) {
+  const g = G[angulo], el = $(id);
+  set(el, { width: g.w + 'px', height: g.h + 'px' });
+  el.__img = {};
+  for (const p of pantallas) {
+    const im = document.createElement('img');
+    im.src = `img/m${angulo}-${p}.png`; im.style.opacity = 0; im.width = g.w; im.height = g.h;
+    el.appendChild(im); el.__img[p] = im;
+  }
+  if (angulo === 4) {
+    const m = document.createElement('div'); m.id = 'movil';
+    m.innerHTML = `<div class="sb"><b>${D.horaBarra}</b><svg width="84" height="14" viewBox="0 0 84 14"><rect x="0" y="9" width="3.7" height="4.7" rx="1"/><rect x="5.7" y="7" width="3.7" height="6.7" rx="1"/><rect x="11.3" y="4.7" width="3.7" height="9" rx="1"/><rect x="17" y="2.3" width="3.7" height="11.3" rx="1"/><path d="M30 6.5a10 10 0 0 1 14 0M33 9.3a5.5 5.5 0 0 1 8 0" stroke="#000" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="37" cy="11.8" r="1.8"/><rect x="54" y="1.5" width="26" height="12" rx="3.4" fill="none" stroke="#000" stroke-width="1.4"/><rect x="56" y="3.5" width="18" height="8" rx="2"/><rect x="81.3" y="5.5" width="2" height="4.5" rx="1"/></svg></div><div class="isla"></div><div class="cargando" id="carga-movil"></div><div class="pill" id="m-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6b7d" stroke-width="2.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span id="m-url"></span><i class="caret" id="m-caret"></i></div>`;
+    el.appendChild(m); el.__movil = m;
+  }
+  const cu = document.createElement('div'); cu.className = 'cuerpo'; set(cu, { position: 'absolute', left: g.bx + 'px', top: g.by + 'px', width: g.bw + 'px', height: g.bh + 'px' }); el.appendChild(cu); el.__cuerpo = cu;
+  const t = document.createElement('div'); t.className = 'toque'; el.appendChild(t); el.__toque = t;
+  el.__g = g;
+  return el;
+}
+function telPos(el, x, y, alto, rot = 0, op = 1, blur = 0) {
+  const g = el.__g, s = alto / g.bh;
+  set(el, { transform: `translate(${x}px,${y}px) rotate(${rot}deg) scale(${s}) translate(${-g.cx}px,${-g.cy}px)`, opacity: op, filter: blur > 0.05 ? `blur(${blur}px)` : 'none', display: op <= 0 ? 'none' : 'block' });
+  el.__s = s; el.__x = x; el.__y = y; el.__rot = rot;
+}
+function pantallas(el, pesos) {
+  for (const k in el.__img) el.__img[k].style.opacity = pesos[k] || 0;
+}
+const SX = 907, KX = 978 / 440, KY = 2128 / 956, SY = 32 + 57 * KY;
+function puntoTel(el, px, py) {
+  const g = el.__g, s = el.__s, r = (el.__rot * Math.PI) / 180;
+  const lx = (SX + px * KX - g.cx) * s, ly = (SY + py * KY - g.cy) * s;
+  return [el.__x + lx * Math.cos(r) - ly * Math.sin(r), el.__y + lx * Math.sin(r) + ly * Math.cos(r)];
+}
+function toque(el, px, py, t, t0, crudo) {
+  const k = pr(t, t0, t0 + 0.5);
+  const d = el.__toque;
+  if (k <= 0 || k >= 1) { d.style.opacity = 0; return; }
+  const r = lerp(30, 120, eOut(k));
+  set(d, { left: SX + px * KX - r + 'px', top: (crudo ? 32 : SY) + py * KY - r + 'px', width: 2 * r + 'px', height: 2 * r + 'px', opacity: 1 - k });
+}
+function cargando(el, t, x, y, ancho, conBarra) {
+  if (!el.__ok) {
+    el.innerHTML = '<div style="position:absolute;inset:0" class="logo"><div class="capa c1"></div><div class="capa c2"></div><div class="capa c3"></div><div class="capa c4"></div></div><div class="pista"><span></span></div>';
+    el.__ok = true;
+  }
+  const alto = (ancho * 607) / 1400;
+  set(el, { left: x - ancho / 2 + 'px', top: y - alto / 2 + 'px', width: ancho + 'px', height: alto + 'px', display: t < 0 ? 'none' : 'block' });
+  const [c1, c2, c3, c4] = el.querySelectorAll('.capa');
+  const ola = BZ(pr(t, 0.05, 0.55));
+  set(c1, { clipPath: `inset(0 ${100 - ola * 100}% 0 0)`, opacity: ola, transform: `translateY(${(1 - ola) * 14}%)` });
+  const s2 = BZ(pr(t, 0.3, 0.75)), s3 = BZ(pr(t, 0.4, 0.85));
+  set(c2, { opacity: s2, transform: `translateY(${(1 - s2) * 12}%)` });
+  set(c3, { opacity: s3, transform: `translateY(${(1 - s3) * 12}%)` });
+  const kc = pr(t, 0.5, 1.15);
+  const fr = [[0, 0, -140, -12], [0.08, 1, null, null], [0.55, 1, 0, 6], [0.7, 1, -14, -3], [0.85, 1, 0, 1.5], [1, 1, 0, 0]];
+  let op = 0, ty = -140, ro = -12;
+  if (kc > 0) {
+    const kk = EIN(kc);
+    const pts = [[0, -140, -12], [0.55, 0, 6], [0.7, -14, -3], [0.85, 0, 1.5], [1, 0, 0]];
+    for (let i = 0; i < pts.length - 1; i++) if (kk >= pts[i][0] && kk <= pts[i + 1][0]) { const q = (kk - pts[i][0]) / (pts[i + 1][0] - pts[i][0]); ty = lerp(pts[i][1], pts[i + 1][1], q); ro = lerp(pts[i][2], pts[i + 1][2], q); }
+    op = cl(kk / 0.08);
+  }
+  if (t > 1.3) ro = 1.4 * Math.sin((((t - 1.3) / 2.4) * 2 * Math.PI) / 2) ** 2;
+  set(c4, { opacity: op, transform: `translateY(${ty}%) rotate(${ro}deg)` });
+  const pista = el.querySelector('.pista');
+  const bw = ancho * 0.46;
+  set(pista, { display: conBarra ? 'block' : 'none', left: (ancho - bw) / 2 + 'px', top: alto + ancho * 0.13 + 'px', width: bw + 'px', opacity: pr(t, 0.5, 0.8) });
+  const ciclo = ((t - 0.5) % 1.3 + 1.3) % 1.3 / 1.3;
+  pista.firstChild.style.transform = `translateX(${lerp(-100, 270, eIO(ciclo))}%)`;
+}
+function texto(el, palabras, t, t0, opts = {}) {
+  const key = palabras.join('|') + (opts.color || '');
+  if (el.__key !== key) {
+    el.innerHTML = palabras.map((p) => `<span>${p}</span>`).join(opts.br ? '<br>' : ' ');
+    el.__key = key;
+  }
+  set(el, { whiteSpace: opts.ancho ? 'normal' : 'nowrap', width: opts.ancho ? opts.ancho + 'px' : 'auto', left: (opts.x ?? 140) + 'px', top: (opts.y ?? 400) + 'px', fontSize: (opts.size ?? 110) + 'px', color: opts.color || AZUL, display: t < t0 || (opts.fin && t > opts.fin + 0.35) ? 'none' : 'block', textAlign: opts.align || 'left' });
+  const paso = opts.paso ?? 0.16;
+  el.style.transform = opts.trans || '';
+  if (!opts.ancho && t >= t0) {
+    const max = opts.max ?? 860;
+    const w = el.offsetWidth;
+    if (w > max) el.style.fontSize = ((opts.size ?? 110) * max) / w + 'px';
+  }
+  const salida = opts.fin ? pr(t, opts.fin, opts.fin + 0.3) : 0;
+  el.querySelectorAll('span').forEach((s, i) => {
+    const k = pr(t, t0 + i * paso, t0 + i * paso + 0.32);
+    const sc = k <= 0 ? 0.6 : lerp(1.35, 1, eBack(k));
+    set(s, { opacity: cl(k * 3) * (1 - salida), transform: `translateY(${(1 - eOut(k)) * 40 - salida * 60}px) scale(${sc})`, filter: k < 1 ? `blur(${(1 - k) * 8}px)` : salida > 0 ? `blur(${salida * 10}px)` : 'none' });
+  });
+}
+function estrella(lleno) {
+  return `<svg viewBox="0 0 24 24"><path d="M12 2.6l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z" fill="${lleno ? AMARILLO : 'none'}" stroke="${AMARILLO}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+}
+
+const tel4 = armarTel('tel4', 4, ['tel-general', 'tel-cat-1', 'tel-cat-2', 'tel-cat-3', 'tel-quedan-5', 'tel-quedan-4', 'tel-quedan-3', 'tel-reloj', 'tel-agotado', 'tel-cuenta', 'tel-fav', 'tel-alergeno', 'tel-estrellas-0', 'tel-estrellas-1', 'tel-estrellas-2', 'tel-estrellas-3', 'tel-estrellas-4', 'tel-estrellas-5', 'tel-comentario-03', 'tel-comentario-06', 'tel-comentario-10']);
+const tel3 = armarTel('tel3', 3, ['tel-general']);
+const corazones = $('corazones');
+const CORAZONES = Array.from({ length: 14 }, (_, i) => {
+  const d = document.createElement('div'); d.className = 'corazon';
+  d.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.9 4.5c2.1 0 3.6 1.1 5.1 3 1.5-1.9 3-3 5.1-3 3.9 0 6 3.9 4.5 7.3C19.5 16.4 12 21 12 21z" fill="' + (i % 3 ? '#e5484d' : AMARILLO) + '"/></svg>';
+  corazones.appendChild(d);
+  const a = (i / 14) * Math.PI * 2 + (i % 2) * 0.3;
+  return { d, a, r: 160 + (i % 4) * 55, s: 0.6 + (i % 3) * 0.3 };
+});
+
+const T_ALTO = 900, TX = 1330, TY = 540;
+
+window.seek = function (t) {
+  let fondo = CLARO;
+  let tel4op = 0, tel3op = 0;
+  let x4 = TX, y4 = TY, a4 = T_ALTO, r4 = 0, b4 = 0;
+  const pes = {};
+  const mov = tel4.__movil;
+  if (t < 6.9) {
+    const ap = eExpo(pr(t, 0, 0.6));
+    const va = eIO(pr(t, 4.2, 5.2));
+    tel4op = cl(ap * 1.5);
+    x4 = lerp(960, TX, va); y4 = 540 + (1 - ap) * 40;
+    a4 = T_ALTO * lerp(0.94, 1, ap);
+    const fl = Math.sin(Math.max(0, t - 5.2) * 2.4);
+    r4 = lerp(0, -3, eIO(pr(t, 5.2, 6.9))) + fl * 0.6 + Math.sin(va * Math.PI) * -2;
+    b4 = Math.sin(va * Math.PI) * 2.5;
+    pes['tel-general'] = 1;
+    const n = Math.floor(cl((t - 0.95) / 0.048, 0, URL_TXT.length));
+    $('m-url').innerHTML = n ? URL_TXT.slice(0, n) : t > 0.75 ? '' : '<span class="ph">Buscar o ingresar dirección</span>';
+    $('m-caret').style.display = t > 0.75 && t < 2.5 && (n > 0 || Math.floor(t * 2.4) % 2 === 0) ? 'inline-block' : 'none';
+    const en = Math.exp(-(((t - 2.5) * 12) ** 2));
+    $('m-pill').style.transform = `scale(${1 - en * 0.04})`;
+    toque(tel4, 220, 896, t, 0.7, true);
+    toque(tel4, 380, 896, t, 2.45, true);
+    cargando($('carga-movil'), t < 2.6 ? -1 : (t - 2.6) * 1.05, 220, 440, 300, true);
+    set(mov, { display: t < 4.2 ? 'block' : 'none', opacity: 1 - eOut(pr(t, 3.9, 4.2)) });
+  } else mov.style.display = 'none';
+  const catT = [6.9, 8.0, 9.1, 10.2];
+  if (t >= 6.9 && t < 11.2) {
+    tel4op = 1;
+    let idx = 0;
+    catT.forEach((c, i) => { if (t >= c + 0.15) idx = i; });
+    const tk = catT[idx] + 0.15;
+    const prev = idx === 0 ? null : ['tel-general', 'tel-cat-1', 'tel-cat-2', 'tel-cat-3'][idx - 1];
+    const cur = ['tel-general', 'tel-cat-1', 'tel-cat-2', 'tel-cat-3'][idx];
+    const kf = pr(t, tk, tk + 0.18);
+    if (prev) { pes[prev] = 1 - kf; pes[cur] = 1; } else pes[cur] = 1;
+    const box = D.cajas['cat-' + CAT[idx][0]];
+    const pulso = Math.exp(-(((t - tk) * 6) ** 2)) * (t > tk - 0.2 ? 1 : 0);
+    r4 = -3 + 3 * Math.sin((t - 6.9) * 1.3);
+    a4 = T_ALTO * (1 + pulso * 0.025);
+    catT.forEach((c, i) => toque(tel4, D.cajas['cat-' + CAT[i][0]].x + 48, D.cajas['cat-' + CAT[i][0]].y + 32, t, c));
+    const colPrev = idx === 0 ? CLARO.slice(1) : CAT[idx - 1][1].slice(1);
+    fondo = mezcla(colPrev, CAT[idx][1].slice(1), eOut(pr(t, tk, tk + 0.3)));
+    if (t > 10.85) fondo = mezcla(CAT[3][1].slice(1), CLARO.slice(1), eIO(pr(t, 10.85, 11.2)));
+    const tc = $('t-cat');
+    texto(tc, [CAT[idx][0]], t, tk, { x: 120, y: 290, size: 170, max: 820, color: '#fff', fin: idx === 3 ? 10.85 : catT[idx + 1] + 0.05, paso: 0 });
+  } else $('t-cat').style.display = 'none';
+
+  const plato = $('plato');
+  if (t >= 7.2 && t < 10.75) {
+    let idx = 0;
+    catT.forEach((c, i) => { if (t >= c + 0.15) idx = i; });
+    const im = $('plato-img');
+    if (im.__i !== idx) { im.src = `img/plato-${idx}.png`; im.__i = idx; }
+    const ib = D.cajas.imagen;
+    const sal = eBack(pr(t, 7.2, 7.75)), vuelta = eIO(pr(t, 10.2, 10.75));
+    const k = sal * (1 - vuelta);
+    const [px, py] = puntoTel(tel4, ib.x, ib.y);
+    const pw = ib.width * KX * tel4.__s, ph = ib.height * KY * tel4.__s;
+    const tw = 640, th = (640 * ib.height) / ib.width;
+    const pop = idx > 0 ? Math.exp(-(((t - catT[idx] - 0.15) * 7) ** 2)) * 0.05 : 0;
+    set(plato, { display: 'block', left: lerp(px, 120, k) + 'px', top: lerp(py, 560, k) + 'px', width: lerp(pw, tw, k) + 'px', height: lerp(ph, th, k) + 'px', transform: `rotate(${lerp(0, -3, k)}deg) scale(${1 + pop})`, opacity: k > 0.02 ? 1 : 0 });
+  } else plato.style.display = 'none';
+
+  if (t >= 11.2 && t < 18.4) {
+    tel4op = 1;
+    const q = D.cajas.quedan;
+    const zoom = eIO(pr(t, 11.2, 11.8));
+    const fx = q.x + 140, fy = q.y;
+    const A = lerp(T_ALTO, 2050, zoom);
+    const s = A / G[4].bh;
+    const lx = (SX + fx * KX - G[4].cx) * s, ly = (SY + fy * KY - G[4].cy) * s;
+    x4 = lerp(TX, 1420 - lx, zoom); y4 = lerp(TY, 560 - ly, zoom); a4 = A; r4 = 0;
+    const vel = Math.sin(pr(t, 11.2, 11.8) * Math.PI);
+    b4 = vel * 6;
+    const salida = eIO(pr(t, 17.8, 18.4));
+    if (salida > 0) { a4 = lerp(A, T_ALTO, salida); x4 = lerp(x4, TX, salida); y4 = lerp(y4, TY, salida); b4 = Math.sin(salida * Math.PI) * 6; }
+    const pasos = [[11.2, 'tel-quedan-5'], [12.2, 'tel-quedan-4'], [13.0, 'tel-quedan-3'], [13.9, 'tel-reloj'], [15.4, 'tel-agotado']];
+    let a = 0; pasos.forEach((p, i) => { if (t >= p[0]) a = i; });
+    const kf = pr(t, pasos[a][0], pasos[a][0] + 0.15);
+    if (a > 0) pes[pasos[a - 1][1]] = 1 - kf;
+    pes[pasos[a][1]] = 1;
+    if (t < 11.4) { pes['tel-cat-3'] = 1 - pr(t, 11.2, 11.4); pes['tel-quedan-5'] = pr(t, 11.2, 11.4); }
+  }
+  const numero = $('numero');
+  if (t >= 11.6 && t < 17.9) {
+    const vals = [[11.6, '5'], [12.2, '4'], [13.0, '3'], [15.4, '0']];
+    let i = 0; vals.forEach((v, j) => { if (t >= v[0]) i = j; });
+    const k = eOut(pr(t, vals[i][0], vals[i][0] + 0.3));
+    const sale = 1 - eOut(pr(t, 17.5, 17.9));
+    set(numero, { display: 'block', left: '90px', top: '170px', height: '600px', opacity: sale, color: i === 3 ? '#d11b1b' : AZUL });
+    $('n-a').textContent = vals[i][1];
+    set($('n-a'), { transform: `translateY(${(1 - k) * 120}px)`, opacity: k, color: i === 3 ? '#d11b1b' : AZUL });
+    $('n-b').textContent = i > 0 ? vals[i - 1][1] : '';
+    set($('n-b'), { transform: `translateY(${-k * 120}px)`, opacity: 1 - k, color: AZUL });
+    const hz = t >= 13.9 && t < 15.3;
+    numero.style.opacity = hz ? 1 - eOut(pr(t, 13.9, 14.2)) : t >= 15.3 ? eOut(pr(t, 15.3, 15.5)) * sale : sale;
+  } else numero.style.display = 'none';
+  const hora = $('hora');
+  if (t >= 13.9 && t < 15.5) {
+    const k = eBack(pr(t, 13.95, 14.4)), s = 1 - eOut(pr(t, 15.15, 15.45));
+    const [hh, mm] = D.cajas.horaEstimada.split(':').map(Number);
+    const giro = eOut(pr(t, 13.95, 15.0));
+    set(hora, { display: 'flex', left: '120px', top: '400px', opacity: cl(k) * s, transform: `scale(${lerp(0.7, 1, k)})` });
+    set($('aguja-h'), { height: '44px', transform: `rotate(${((hh % 12) * 30 + mm / 2) * giro}deg)` });
+    set($('aguja-m'), { height: '62px', width: '8px', marginLeft: '-4px', transform: `rotate(${mm * 6 * giro + 360 * (1 - giro)}deg)` });
+    $('hora-txt').textContent = D.cajas.horaEstimada;
+  } else hora.style.display = 'none';
+  const sello = $('sello');
+  if (t >= 15.6 && t < 17.9) {
+    const k = pr(t, 15.6, 15.9);
+    const golpe = t > 15.9 ? Math.exp(-(t - 15.9) * 9) * Math.sin((t - 15.9) * 60) * 10 : 0;
+    set(sello, { display: 'block', left: '980px', top: '470px', transform: `rotate(-9deg) scale(${lerp(3.2, 1, EIN(k))}) translate(${golpe}px,${golpe * 0.5}px)`, opacity: cl(k * 2) * (1 - eOut(pr(t, 17.5, 17.9))) });
+  } else sello.style.display = 'none';
+
+  if (t >= 18.4 && t < 22.2) {
+    tel4op = 1;
+    const tap = 19.3;
+    pes['tel-agotado'] = 1 - pr(t, 18.4, 18.6);
+    pes['tel-cuenta'] = t < tap ? pr(t, 18.4, 18.6) : 1 - pr(t, tap, tap + 0.12);
+    if (t >= tap) pes['tel-fav'] = 1;
+    const c = D.cajas.corazon;
+    toque(tel4, c.x + 14, c.y + 22, t, tap - 0.05);
+    r4 = lerp(0, 3, eIO(pr(t, 18.4, 19.2)));
+    a4 = T_ALTO * (1 + Math.exp(-(((t - tap) * 7) ** 2)) * 0.02);
+    const [hx, hy] = puntoTel(tel4, c.x + 14, c.y + 22);
+    CORAZONES.forEach((h) => {
+      const k = pr(t, tap, tap + 0.9);
+      const e = eOut(k);
+      set(h.d, { display: k > 0 && k < 1 ? 'block' : 'none', transform: `translate(${hx - 30 + Math.cos(h.a) * h.r * e}px,${hy - 30 + Math.sin(h.a) * h.r * e - k * 60}px) scale(${h.s * (1 - k * 0.4)})`, opacity: 1 - k });
+    });
+    const sa = eIO(pr(t, 21.8, 22.2));
+    [['aviso', 19.9, 380], ['aviso2', 20.6, 560]].forEach(([id, t0, y]) => {
+      const ka = eBack(pr(t, t0, t0 + 0.5));
+      set($(id), { display: 'flex', left: '140px', top: lerp(-260, y, ka) - sa * 900 + 'px', opacity: cl(ka * 2) });
+    });
+    texto($('t-principal'), ['Tus', 'favoritos', 'y', 'el', 'menú', 'semanal,', 'por', 'correo.'], t, 18.5, { x: 140, y: 170, size: 66, fin: 21.8, paso: 0.1, ancho: 800 });
+  } else { CORAZONES.forEach((h) => (h.d.style.display = 'none')); $('aviso').style.display = 'none'; $('aviso2').style.display = 'none'; }
+
+  if (t >= 22.2 && t < 25.3) {
+    tel4op = 1;
+    pes['tel-fav'] = 1 - pr(t, 22.2, 22.4);
+    pes['tel-alergeno'] = pr(t, 22.2, 22.4);
+    const al = D.cajas.alerta;
+    const zoom = eIO(pr(t, 22.45, 23.0)) * (1 - eIO(pr(t, 24.8, 25.3)));
+    const A = lerp(T_ALTO, 1700, zoom), s = A / G[4].bh;
+    const lx = (SX + (al.x + al.width / 2) * KX - G[4].cx) * s, ly = (SY + (al.y + al.height / 2) * KY - G[4].cy) * s;
+    a4 = A; x4 = lerp(TX, 1420 - lx, zoom); y4 = lerp(TY, 600 - ly, zoom);
+    b4 = Math.sin(pr(t, 22.45, 23.0) * Math.PI) * 5 + Math.sin(pr(t, 24.8, 25.3) * Math.PI) * 5;
+    fondo = mezcla(CLARO.slice(1), 'fff3d6', zoom);
+    texto($('t-principal'), ['Te', 'avisa', 'si', 'tiene', 'algo', 'a', 'lo', 'que', 'eres', 'alérgico.'], t, 22.6, { x: 120, y: 640, size: 76, fin: 24.9, paso: 0.09, ancho: 760 });
+  }
+
+  if (t >= 25.3 && t < 29.4) {
+    tel4op = 1;
+    const st = D.cajas['estrella-1'];
+    const zoom = eIO(pr(t, 25.3, 25.8)) * (1 - eIO(pr(t, 28.9, 29.4)));
+    const A = lerp(T_ALTO, 1500, zoom), s = A / G[4].bh;
+    const fx = 220, fy = st.y + 60;
+    const lx = (SX + fx * KX - G[4].cx) * s, ly = (SY + fy * KY - G[4].cy) * s;
+    a4 = A; x4 = lerp(TX, 1400 - lx, zoom); y4 = lerp(TY, 560 - ly, zoom);
+    b4 = Math.sin(pr(t, 25.3, 25.8) * Math.PI) * 5;
+    const seq = [[25.3, 'tel-estrellas-0'], [26.0, 'tel-estrellas-1'], [26.3, 'tel-estrellas-2'], [26.6, 'tel-estrellas-3'], [26.9, 'tel-estrellas-4'], [27.2, 'tel-estrellas-5'], [27.7, 'tel-comentario-03'], [28.0, 'tel-comentario-06'], [28.3, 'tel-comentario-10']];
+    let a = 0; seq.forEach((p, i) => { if (t >= p[0]) a = i; });
+    const kf = pr(t, seq[a][0], seq[a][0] + 0.08);
+    if (a > 0) pes[seq[a - 1][1]] = 1 - kf; else pes['tel-alergeno'] = 1 - pr(t, 25.3, 25.45);
+    pes[seq[a][1]] = a === 0 ? pr(t, 25.3, 25.45) : 1;
+    for (let i = 1; i <= 5; i++) toque(tel4, D.cajas['estrella-' + i].x + 13, D.cajas['estrella-' + i].y + 22, t, 25.95 + (i - 1) * 0.3);
+    const es = $('estrellas');
+    const llenas = seq.slice(1, 6).filter((p) => t >= p[0]).length;
+    const key = 'e' + llenas;
+    if (es.__k !== key) { es.innerHTML = [1, 2, 3, 4, 5].map((i) => estrella(i <= llenas)).join(''); es.__k = key; }
+    const ke = eOut(pr(t, 25.6, 26.0)), se = 1 - eOut(pr(t, 28.8, 29.2));
+    set(es, { display: 'flex', left: '120px', top: '330px', opacity: ke * se, transform: `translateY(${(1 - ke) * 40}px)` });
+    [...es.children].forEach((sv, i) => { const kk = pr(t, 26.0 + i * 0.3, 26.25 + i * 0.3); sv.style.transform = `scale(${kk > 0 && kk < 1 ? 1 + Math.sin(kk * Math.PI) * 0.35 : 1})`; });
+    texto($('t-principal'), ['Y', 'tu', 'opinión', 'llega', 'a', 'la', 'cocina.'], t, 26.4, { x: 120, y: 540, size: 92, fin: 28.8, paso: 0.11, ancho: 760 });
+  } else $('estrellas').style.display = 'none';
+
+  if (t >= 18.4 && t < 18.5) $('t-principal').style.display = 'none';
+  if (t < 4.0 || (t >= 6.9 && t < 18.5) || t >= 29.4) {
+    if (t >= 11.2 && t < 17.9) {
+      const frases = t < 13.85 ? [['Mira', 'cuánto', 'queda.'], 11.75, 13.6] : t < 15.45 ? [['Y', 'a', 'qué', 'hora', 'se', 'acabaría.'], 14.4, 15.2] : [['Sin', 'filas', 'por', 'un', 'plato', 'que', 'ya', 'no', 'hay.'], 15.9, 17.5];
+      const y = t < 13.85 ? 780 : t < 15.45 ? 640 : 800;
+      texto($('t-principal'), frases[0], t, frases[1], { x: 120, y: t >= 15.45 ? 760 : y, size: 72, fin: frases[2], paso: 0.1, ancho: 760 });
+    } else $('t-principal').style.display = 'none';
+  }
+  if (t >= 4.0 && t < 6.9) texto($('t-principal'), ['¿Qué', 'hay', 'de', 'almuerzo?'], t, 4.85, { x: 120, y: 330, size: 124, br: true, fin: 6.55, paso: 0.22 });
+
+  if (t >= 29.4) {
+    const k = eIO(pr(t, 29.4, 30.3));
+    const q = pr(t, 29.5, 29.9);
+    tel4op = 1 - eIO(q);
+    a4 = lerp(T_ALTO, 760, eIO(q)); x4 = lerp(TX, 960, eIO(q));
+    pes['tel-comentario-10'] = 1 - pr(t, 29.4, 29.6); pes['tel-general'] = pr(t, 29.4, 29.6);
+    tel3op = eIO(q);
+    const fl = Math.sin((t - 29.5) * 1.6);
+    const mueve = eIO(pr(t, 30.4, 31.3));
+    telPos(tel3, lerp(960, 430, mueve) + fl * 5, 560 + fl * 10, lerp(760, 760, mueve) * lerp(0.92, 1, eOut(q)), lerp(-8, 0, eOut(q)) + fl * 0.8, tel3op, Math.sin(q * Math.PI) * 4);
+    pantallas(tel3, { 'tel-general': 1 });
+    const lt = t - 31.2;
+    cargando($('carga-final'), lt < 0 ? -1 : lt, 1420, 420, 760, false);
+    $('carga-final').style.display = lt < 0 ? 'none' : 'block';
+    texto($('t-final'), ['Revisa', 'el', 'menú', 'antes', 'de', 'ir.'], t, 32.0, { x: 1420, y: 640, size: 70, paso: 0.1, align: 'center' });
+    $('t-final').style.transform = 'translateX(-50%)';
+    const ku = eOut(pr(t, 32.6, 33.0));
+    set($('subrayado'), { display: 'block', left: 1420 - 160 * ku + 'px', top: '745px', width: 320 * ku + 'px' });
+    set($('url'), { display: 'block', left: '1420px', top: '780px', transform: `translate(-50%,${(1 - ku) * 20}px)`, opacity: ku });
+  } else { tel3.style.display = 'none'; $('carga-final').style.display = 'none'; $('t-final').style.display = 'none'; $('subrayado').style.display = 'none'; $('url').style.display = 'none'; }
+
+  if (t >= 6.9 && t < 29.4 && !(t >= 11.2 && t < 18.4) && !(t >= 22.2 && t < 29.4)) {
+    if (!(t >= 18.4)) { x4 = TX; y4 = TY; }
+  }
+  if (t >= 18.4 && t < 22.2) { x4 = TX; y4 = TY; }
+  telPos(tel4, x4, y4, a4, r4, tel4op, b4);
+  pantallas(tel4, pes);
+  $('fondo').style.background = fondo;
+};
+window.revisar = function () {
+  const malos = [];
+  const tels = [tel4, tel3].filter((e) => e.style.display !== 'none' && Number(e.style.opacity) > 0.05).map((e) => e.__cuerpo.getBoundingClientRect());
+  const cajasTxt = [];
+  document.querySelectorAll('.texto span, #numero .n, #hora, #estrellas, .aviso, #url, #plato, #carga-final, #subrayado').forEach((el) => {
+    let v = el, vis = true;
+    while (v && v !== document.body) { const cs = getComputedStyle(v); if (cs.display === 'none' || Number(cs.opacity) < 0.05) { vis = false; break; } v = v.parentElement; }
+    if (!vis) return;
+    const r = el.getBoundingClientRect();
+    if (r.width < 2) return;
+    cajasTxt.push([el.id || el.textContent.trim().slice(0, 20), r]);
+  });
+  for (const tr of tels) for (const [n, r] of cajasTxt) {
+    const m = 40;
+    if (r.right > tr.left - m && r.left < tr.right + m && r.bottom > tr.top - m && r.top < tr.bottom + m) malos.push(n);
+  }
+  return malos;
+};
+window.listo = Promise.all([...document.images].map((i) => (i.complete ? 1 : new Promise((r) => { i.onload = r; i.onerror = r; })))).then(() => document.fonts.ready);
+</script>
+</body>
+</html>
