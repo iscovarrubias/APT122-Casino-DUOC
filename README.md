@@ -1,3 +1,11 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logooscuro.svg">
+    <source media="(prefers-color-scheme: light)" srcset="FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logo.svg">
+    <img src="FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logo.svg" alt="Casinos DuocUC" width="320">
+  </picture>
+</p>
+
 # Proyecto APT122: Plataforma de gestión y análisis de la oferta gastronómica del Casino DUOC UC
 
 Plataforma web para el casino de la sede Valparaíso de DUOC UC, los estudiantes consultan el menú del día desde el celular o el computador antes de ir al casino, y el personal planifica el menú, controla la jornada de almuerzos y analiza la demanda con datos.
