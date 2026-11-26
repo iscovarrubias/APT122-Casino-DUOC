@@ -1,5 +1,5 @@
 import { consultarAnalisisDetalle, consultarMensual, consultarOpinionesDetalle, consultarFavoritosDetalle } from '../api/gestion';
-import { etiquetaRango } from './periodos';
+import { etiquetaRango, MESES } from './periodos';
 import { descargarBlob } from './exportarExcel';
 
 const NARANJA = 'FFEA7A12';
@@ -290,22 +290,8 @@ async function nuevoLibro() {
 }
 
 const DIAS_ES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-const MESES_ES = [
-  'enero',
-  'febrero',
-  'marzo',
-  'abril',
-  'mayo',
-  'junio',
-  'julio',
-  'agosto',
-  'septiembre',
-  'octubre',
-  'noviembre',
-  'diciembre',
-];
 const fechaConDia = (f) =>
-  `${DIAS_ES[new Date(`${f}T12:00:00Z`).getUTCDay()]} ${Number(f.slice(8))} de ${MESES_ES[Number(f.slice(5, 7)) - 1]} de ${f.slice(0, 4)}`;
+  `${DIAS_ES[new Date(`${f}T12:00:00Z`).getUTCDay()]} ${Number(f.slice(8))} de ${MESES[Number(f.slice(5, 7)) - 1]} de ${f.slice(0, 4)}`;
 const pct = (v) => (v == null ? null : v / 100);
 const FMT_PCT = '0.0%';
 function imagen(wb, ws, buffer, col, fila, ancho = 640, alto = 300) {

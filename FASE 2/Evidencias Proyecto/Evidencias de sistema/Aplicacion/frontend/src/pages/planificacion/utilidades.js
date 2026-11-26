@@ -1,4 +1,5 @@
 import { hoyChile } from '../../utils/formato';
+import { MESES } from '../../utils/periodos';
 import { Utensils, Ticket, Leaf, Salad, CakeSlice, CupSoda, Soup, Wheat, Apple } from 'lucide-react';
 
 export const PRINCIPALES = [
@@ -23,25 +24,11 @@ export const lunesDe = (f) => {
   const d = new Date(`${f}T12:00:00Z`).getUTCDay();
   return sumarDias(f, d === 0 ? -6 : 1 - d);
 };
-export const NOMBRES_DIA = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+const NOMBRES_DIA = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 export const nombreDia = (f) => NOMBRES_DIA[(new Date(`${f}T12:00:00Z`).getUTCDay() + 6) % 7];
-export const MESES_L = [
-  'enero',
-  'febrero',
-  'marzo',
-  'abril',
-  'mayo',
-  'junio',
-  'julio',
-  'agosto',
-  'septiembre',
-  'octubre',
-  'noviembre',
-  'diciembre',
-];
 export const nombreLargo = (f) => {
   const d = nombreDia(f);
-  return `${d.charAt(0).toUpperCase()}${d.slice(1)} ${Number(f.slice(8))} de ${MESES_L[Number(f.slice(5, 7)) - 1]}`;
+  return `${d.charAt(0).toUpperCase()}${d.slice(1)} ${Number(f.slice(8))} de ${MESES[Number(f.slice(5, 7)) - 1]}`;
 };
 export function etiquetaRelativa(f) {
   const hoy = hoyChile();

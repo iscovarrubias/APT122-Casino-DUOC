@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CalendarDays, ListChecks, ClipboardList } from 'lucide-react';
 import ExportarVentana from './ExportarVentana';
 import CampoFecha from './CampoFecha';
+import { MESES } from '../utils/periodos';
 import { cargarPeriodo, nombreArchivo } from '../utils/exportarMenu';
 import { exportarExcel, descargarBlob } from '../utils/exportarExcel';
 import { HojaCalendario, HojaDetalle, HojaTotal } from './HojasMenu';
@@ -24,7 +25,6 @@ const HOJAS = {
   },
 };
 
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const sumar = (f, n) => new Date(new Date(`${f}T12:00:00Z`).getTime() + n * 86400000).toISOString().slice(0, 10);
 const lunesDe = (f) => {
   const d = new Date(`${f}T12:00:00Z`).getUTCDay();

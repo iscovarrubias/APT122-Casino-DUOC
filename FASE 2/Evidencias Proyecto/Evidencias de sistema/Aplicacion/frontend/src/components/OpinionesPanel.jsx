@@ -5,12 +5,12 @@ import { Estrellas } from './Opinion';
 import { colorDeCategoria, parseFechaISO } from '../utils/formato';
 import Ayuda from './Ayuda';
 import CampoFecha from './CampoFecha';
+import { MESES } from '../utils/periodos';
 import ExportarAnalisis from './ExportarAnalisis';
 import { hoyChile, haceDiasChile, CATEGORIAS_MENU as CATEGORIAS } from '../utils/formato';
 import Cargando from './Cargando';
 import PaginaError from './PaginaError';
 
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes'];
 
 function fechaMenu(f) {

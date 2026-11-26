@@ -1,4 +1,5 @@
 import { consultarMes } from '../api/gestion';
+import { MESES } from './periodos';
 
 const sumar = (f, n) => new Date(new Date(`${f}T12:00:00Z`).getTime() + n * 86400000).toISOString().slice(0, 10);
 const lunesDe = (f) => {
@@ -7,13 +8,12 @@ const lunesDe = (f) => {
 };
 const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const DIAS_CORTOS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const dia = (f) => Number(f.slice(8, 10));
 const mesNombre = (f) => MESES[Number(f.slice(5, 7)) - 1];
 const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
-export const ORDEN_CATEGORIAS = ['General', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
-export const ESTILO_CATEGORIA = {
+const ORDEN_CATEGORIAS = ['General', 'JUNAEB', 'Vegetariano', 'Hipocalórico'];
+const ESTILO_CATEGORIA = {
   General: { texto: '9A5B00', fila: 'FEF4E6', etiqueta: 'FDECD2' },
   JUNAEB: { texto: 'D11B1B', fila: 'FDF5F5', etiqueta: 'FBE3E3' },
   Vegetariano: { texto: '3C7424', fila: 'F1F7ED', etiqueta: 'E1EFD8' },
