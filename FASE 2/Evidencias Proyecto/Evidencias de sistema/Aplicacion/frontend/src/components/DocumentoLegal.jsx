@@ -324,12 +324,6 @@ export default function DocumentoLegal({ tipo }) {
 
       <p className="legal-fecha">Última actualización: {ACTUALIZACION_LEGAL}</p>
 
-      <div className="legal-resumen">
-        {esPrivacidad
-          ? 'En corto: para ver el menú no necesitas dar ningún dato. Si inicias sesión, usamos tu nombre y correo institucional, y lo que tú decidas agregar. No vendemos datos ni los usamos para publicidad.'
-          : 'En corto: la plataforma te informa del menú del casino. La información de alérgenos es referencial, tus opiniones son públicas y deben ser respetuosas, y tu cuenta es personal.'}
-      </div>
-
       {esPrivacidad ? <Privacidad /> : <Terminos />}
 
       <div className="legal-pie">
