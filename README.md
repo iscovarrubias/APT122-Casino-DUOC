@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logooscuro.svg">
-    <source media="(prefers-color-scheme: light)" srcset="FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logo.svg">
-    <img src="FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logo.svg" alt="Casinos DuocUC" width="320">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/iscovarrubias/APT122-Casino-DUOC/main/FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logooscuro.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/iscovarrubias/APT122-Casino-DUOC/main/FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logo.svg">
+    <img src="https://raw.githubusercontent.com/iscovarrubias/APT122-Casino-DUOC/main/FASE%202/Evidencias%20Proyecto/Evidencias%20de%20sistema/Aplicacion/frontend/public/logo.svg" alt="Casinos DuocUC" width="320">
   </picture>
 </p>
 
