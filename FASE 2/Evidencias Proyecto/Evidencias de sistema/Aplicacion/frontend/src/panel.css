@@ -2022,6 +2022,10 @@ details.tarjeta > summary {
   .pestanas {
     flex-wrap: nowrap;
     overflow-x: auto;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 0 16px;
+    scrollbar-width: none;
   }
   .pestana {
     white-space: nowrap;
@@ -2468,12 +2472,6 @@ details.tarjeta > summary {
   }
 }
 @media (max-width: 600px) {
-  .pestanas {
-    margin-left: -16px;
-    margin-right: -16px;
-    padding: 0 16px;
-    scrollbar-width: none;
-  }
   .pestanas::-webkit-scrollbar {
     display: none;
   }
@@ -2501,9 +2499,6 @@ details.tarjeta > summary {
   }
   .indicador-valor {
     font-size: 1.7rem;
-  }
-  .filtros-opiniones {
-    grid-template-columns: 1fr 1fr;
   }
   .filtros-opiniones .campo:first-child {
     grid-column: 1 / -1;

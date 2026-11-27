@@ -762,6 +762,12 @@
   font-size: 1.4rem;
   font-weight: 800;
   letter-spacing: 0.01em;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 .v2 .caja-plato {
   font-size: 0.98rem;
@@ -1715,6 +1721,8 @@
   margin: 0;
   border-radius: 8px;
   background: var(--bg);
+  padding: 8px 6px 8px 12px;
+  line-height: 1.35;
 }
 .v2 .plan-sugerencia > svg {
   flex: none;
@@ -1723,6 +1731,9 @@
 .v2 .plan-sugerencia > span {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 .v2 .plan-acciones {
   display: flex;
@@ -1757,6 +1768,8 @@
 .v2 .plan-sugerencia .texto-suave {
   color: var(--text-muted);
   display: block;
+  margin: 0;
+  font-size: 0.74rem;
 }
 .v2 .mes-celda {
   border: 1px solid var(--v2-borde);
@@ -2385,15 +2398,6 @@
   font-weight: 600;
   color: var(--text);
 }
-
-.v2 .caja-categoria {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  width: 100%;
-}
 .v2 .caja-precio {
   font-size: 1.1rem;
   font-weight: 800;
@@ -2585,19 +2589,6 @@
   color: var(--text-muted);
   opacity: 0.6;
   cursor: not-allowed;
-}
-.v2 .plan-sugerencia {
-  padding: 8px 6px 8px 12px;
-  line-height: 1.35;
-}
-.v2 .plan-sugerencia > span {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.v2 .plan-sugerencia .texto-suave {
-  margin: 0;
-  font-size: 0.74rem;
 }
 .v2 .plan-sugerencia-usar {
   min-height: 28px;
