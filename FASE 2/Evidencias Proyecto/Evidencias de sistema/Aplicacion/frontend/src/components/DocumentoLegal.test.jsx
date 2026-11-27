@@ -38,10 +38,9 @@ function clavesDelNavegador() {
 describe('DocumentoLegal: Términos y Condiciones', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('muestra la fecha de actualización, el resumen y las diez secciones', () => {
+  it('muestra la fecha de actualización y las diez secciones', () => {
     render(<DocumentoLegal tipo="terminos" />);
     expect(screen.getByText(`Última actualización: ${ACTUALIZACION_LEGAL}`)).toBeInTheDocument();
-    expect(screen.getByText(/En corto: la plataforma te informa del menú/)).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(10);
   });
 

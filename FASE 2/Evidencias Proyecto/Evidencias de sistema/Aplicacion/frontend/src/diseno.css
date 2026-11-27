@@ -256,6 +256,7 @@
   margin-bottom: 14px;
 }
 .v2 .prep-columna-cabeza h2 span {
+  margin-left: 4px;
   color: var(--text-muted);
   font-weight: 500;
   font-size: 0.9rem;
@@ -660,6 +661,10 @@
   border-radius: 10px;
 }
 @media (max-width: 700px) {
+  .v2 .plan-grid,
+  .v2 .plan-grid-3 {
+    grid-template-columns: 1fr;
+  }
   .v2 .plan-seccion-cabeza {
     flex-wrap: wrap;
     align-items: stretch;
@@ -710,7 +715,9 @@
 }
 .v2 .plan-card-estado {
   background: none;
+  color: var(--text-muted);
   padding: 0;
+  font-weight: 500;
   font-size: 0.74rem;
   display: inline-flex;
   align-items: center;
@@ -767,6 +774,7 @@
 }
 .v2 .caja-estado {
   padding: 3px 12px;
+  background: var(--c-blanco-a20);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -940,6 +948,8 @@
   display: block;
   margin-top: 4px;
   font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--text-muted);
 }
 .v2-pub .tabs {
   gap: 8px;
@@ -1279,6 +1289,7 @@
 .v2 .chip {
   border-width: 1px;
   border-color: var(--v2-borde);
+  background: var(--card-bg);
   font-weight: 500;
 }
 .v2 .chip.activo {
@@ -1482,6 +1493,33 @@
   margin: -6px 0 0;
   font-size: 0.88rem;
   color: var(--text-muted);
+}
+.v2 .grupo {
+  border: 1px solid var(--v2-borde);
+  border-radius: var(--v2-radio);
+  padding: 16px;
+  gap: 10px;
+}
+.v2 .grupo legend {
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: var(--text);
+  padding: 0 6px;
+}
+.v2 .grupo > .texto-suave {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+.v2 .chips-alergia {
+  margin: 2px 0 4px;
+  gap: 6px;
+}
+.v2 .chip-alergia {
+  font-weight: 500;
+  font-size: 0.84rem;
+  padding: 6px 14px;
 }
 .v2 .chip-alergia.activa {
   font-weight: 600;
@@ -1820,6 +1858,7 @@
   }
   :root:not([data-theme='oscuro']) .sidebar-nav-item.active {
     background: var(--c-blanco-a16);
+    color: var(--c-blanco);
     box-shadow: none;
   }
   :root:not([data-theme='oscuro']) .sidebar-link {
@@ -1853,6 +1892,7 @@
     left: 0;
     right: -20px;
     height: 0;
+    opacity: 0;
     pointer-events: none;
     background: var(--card-bg);
     border-radius: 999px 0 0 999px;
@@ -2109,6 +2149,9 @@
 .v2-pub .card-incluye .tabla-nutricional {
   margin-bottom: 6px;
 }
+.v2-pub .card-incluye .alergenos-pills {
+  margin-top: 0;
+}
 .v2-pub .card-incluye .subtitulo + .alergenos-pills {
   margin-top: 2px;
 }
@@ -2120,12 +2163,18 @@
 }
 .modal.perfil-modal {
   max-width: 540px;
+  padding: 24px 22px;
+  gap: 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px var(--c-azul-890-a08);
 }
 [data-theme='oscuro'] .modal.perfil-modal {
   box-shadow: 0 8px 32px var(--c-negro-a40);
 }
 .perfil-modal h2 {
   margin: 0 0 4px;
+  font-size: 1.15rem;
+  font-weight: 650;
   color: var(--text);
 }
 .perfil-modal > .texto-suave {
@@ -2220,6 +2269,11 @@
   background: var(--c-naranjo-515);
   border-color: var(--c-naranjo-515);
 }
+.perfil-modal .boton-secundario {
+  background: transparent;
+  border-color: var(--v2-borde);
+  color: var(--text);
+}
 .perfil-modal .boton-secundario:hover:not(:disabled) {
   border-color: var(--text-muted);
 }
@@ -2252,6 +2306,11 @@
   box-shadow: none;
   font-size: 0.85rem;
   border-radius: 8px;
+}
+@media (max-width: 600px) {
+  .modal.perfil-modal {
+    padding: 20px 18px;
+  }
 }
 .perfil-modal .grupo + .grupo {
   margin-top: 20px;
@@ -2344,11 +2403,16 @@
   letter-spacing: 0.01em;
 }
 .composicion-details {
+  padding: 0;
   overflow: hidden;
   margin-bottom: 22px;
 }
 .composicion-details > summary {
+  cursor: pointer;
   list-style: none;
+  padding: 14px 18px;
+  font-weight: 600;
+  font-size: 0.92rem;
   color: var(--navy);
   display: flex;
   align-items: center;
@@ -2559,6 +2623,9 @@
   border: 1px solid var(--border);
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+.receta-tabla {
+  width: 100%;
 }
 .form-aviso-variacion {
   margin: 0 0 12px;
