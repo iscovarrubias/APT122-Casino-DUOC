@@ -1,4 +1,116 @@
 :root {
+  --c-azul-30: #f7f8fa;
+  --c-azul-50: #f0f2f5;
+  --c-azul-60: #e8edf5;
+  --c-azul-160: #cfd5de;
+  --c-azul-440: #4c8fd1;
+  --c-azul-720: #2a2a66;
+  --c-azul-725: #3a4556;
+  --c-azul-740: #1f3864;
+  --c-azul-740-a03: rgba(31, 56, 100, 0.03);
+  --c-azul-740-a05: rgba(31, 56, 100, 0.05);
+  --c-azul-740-a08: rgba(31, 56, 100, 0.08);
+  --c-azul-740-a14: rgba(31, 56, 100, 0.14);
+  --c-azul-760: #222258;
+  --c-azul-770: #2a2a4a;
+  --c-azul-810: #1a1a45;
+  --c-azul-820: #1e1e3e;
+  --c-azul-830: #1f2937;
+  --c-azul-850: #131338;
+  --c-azul-870: #0a2239;
+  --c-azul-870-a15: rgba(10, 34, 57, 0.15);
+  --c-azul-870-a50: rgba(27, 31, 39, 0.5);
+  --c-azul-870-a55: rgba(27, 31, 39, 0.55);
+  --c-azul-875: #1b1f27;
+  --c-azul-880: #11112b;
+  --c-azul-890-a08: rgba(17, 24, 39, 0.08);
+  --c-azul-890-a10: rgba(17, 24, 39, 0.1);
+  --c-azul-890-a12: rgba(17, 24, 39, 0.12);
+  --c-azul-890-a16: rgba(17, 24, 39, 0.16);
+  --c-azul-890-a20: rgba(17, 24, 39, 0.2);
+  --c-azul-900: #0d0d26;
+  --c-blanco: #ffffff;
+  --c-blanco-a04: rgba(255, 255, 255, 0.04);
+  --c-blanco-a08: rgba(255, 255, 255, 0.08);
+  --c-blanco-a09: rgba(255, 255, 255, 0.09);
+  --c-blanco-a10: rgba(255, 255, 255, 0.1);
+  --c-blanco-a16: rgba(255, 255, 255, 0.16);
+  --c-blanco-a20: rgba(255, 255, 255, 0.2);
+  --c-blanco-a22: rgba(255, 255, 255, 0.22);
+  --c-blanco-a28: rgba(255, 255, 255, 0.28);
+  --c-blanco-a30: rgba(255, 255, 255, 0.3);
+  --c-blanco-a68: rgba(255, 255, 255, 0.68);
+  --c-blanco-a78: rgba(255, 255, 255, 0.78);
+  --c-gris-20: #f8f9fa;
+  --c-gris-40: #f4f5f7;
+  --c-gris-50: #f2f2f2;
+  --c-gris-85: #e5e7eb;
+  --c-gris-90: #e6e8ec;
+  --c-gris-95: #e4e7ec;
+  --c-gris-150: #d5d8dd;
+  --c-gris-230: #c4c4c4;
+  --c-gris-235: #c3c2c5;
+  --c-gris-270: #aeb8c6;
+  --c-gris-350: #9aa4b2;
+  --c-gris-355: #9ca3af;
+  --c-gris-390: #8e8eaa;
+  --c-gris-530: #6b6b85;
+  --c-gris-540: #6b7280;
+  --c-gris-600: #5b6472;
+  --c-gris-605: #566175;
+  --c-gris-650: #4a4a66;
+  --c-gris-830: #2b2b2b;
+  --c-gris-880: #1b2123;
+  --c-gris-930: #111;
+  --c-morado-450: #b15fbb;
+  --c-naranjo-80: #fcefd8;
+  --c-naranjo-90: #fdecd2;
+  --c-naranjo-150: #fcd5b5;
+  --c-naranjo-190: #fbd9a0;
+  --c-naranjo-440: #d1834c;
+  --c-naranjo-450: #f5a623;
+  --c-naranjo-450-a30: rgba(245, 166, 35, 0.3);
+  --c-naranjo-510: #ea7a12;
+  --c-naranjo-515: #e0951a;
+  --c-naranjo-520: #c98a2e;
+  --c-naranjo-690: #92400e;
+  --c-naranjo-700: #9a5b00;
+  --c-naranjo-730: #7a5410;
+  --c-naranjo-735: #8a5200;
+  --c-naranjo-760: #5a4220;
+  --c-naranjo-880: #3b2500;
+  --c-negro: #000;
+  --c-negro-a14: rgba(0, 0, 0, 0.14);
+  --c-negro-a15: rgba(0, 0, 0, 0.15);
+  --c-negro-a20: rgba(0, 0, 0, 0.2);
+  --c-negro-a22: rgba(0, 0, 0, 0.22);
+  --c-negro-a25: rgba(0, 0, 0, 0.25);
+  --c-negro-a40: rgba(0, 0, 0, 0.4);
+  --c-negro-a45: rgba(0, 0, 0, 0.45);
+  --c-negro-a50: rgba(0, 0, 0, 0.5);
+  --c-rojo-50: #fbeaea;
+  --c-rojo-70: #fbe1e1;
+  --c-rojo-130: #f6c4c4;
+  --c-rojo-150: #f0c4c4;
+  --c-rojo-290: #f87171;
+  --c-rojo-400: #ef4444;
+  --c-rojo-520: #c53030;
+  --c-rojo-540: #c0392b;
+  --c-rojo-610: #a52121;
+  --c-rojo-750: #5a2323;
+  --c-verde-90: #dcf3e1;
+  --c-verde-110: #e1efd8;
+  --c-verde-180: #b8ecc7;
+  --c-verde-600: #2e9e6b;
+  --c-verde-605: #2e9e5b;
+  --c-verde-640: #16a34a;
+  --c-verde-725: #1d6b34;
+  --c-verde-730: #4f6228;
+  --c-verde-735: #2e6b1f;
+  --c-verde-790: #1f4a2c;
+}
+
+:root {
   --navy: #1f3864;
   --navy-solid: #1f3864;
   --navy-light: #2c4a7c;
@@ -19,7 +131,7 @@
   --shadow: 0 4px 18px rgba(31, 56, 100, 0.08);
   color-scheme: light;
 }
-[data-theme='oscuro'] {
+[data-theme="oscuro"] {
   --navy: #ffffff;
   --text: #ffffff;
   --text-muted: #8e8eaa;
@@ -48,7 +160,7 @@ body {
     background 0.2s,
     color 0.2s;
   margin: 0;
-  font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
 }
 .app-layout {
   display: flex;
@@ -114,7 +226,7 @@ body {
     color 0.15s;
 }
 .sidebar-nav-item:hover:not(.active) {
-  background: rgba(31, 56, 100, 0.05);
+  background: var(--c-azul-740-a05);
   color: var(--navy);
 }
 .sidebar-nav-item.active {
@@ -134,7 +246,7 @@ body {
   gap: 8px;
   padding: 12px 18px;
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--c-blanco);
   color: var(--navy-solid);
   border: none;
   font-weight: 600;
@@ -144,13 +256,13 @@ body {
   transition: background 0.15s;
 }
 .sidebar-link:hover {
-  background: #f0f2f5;
+  background: var(--c-azul-50);
 }
-[data-theme='oscuro'] .sidebar-link {
+[data-theme="oscuro"] .sidebar-link {
   background: var(--amber);
-  color: #1b1f27;
+  color: var(--c-azul-875);
 }
-[data-theme='oscuro'] .sidebar-link:hover {
+[data-theme="oscuro"] .sidebar-link:hover {
   background: var(--border);
   color: var(--text);
 }
@@ -161,7 +273,7 @@ body {
   padding: 12px 18px;
   border-radius: 999px;
   background: var(--navy-solid);
-  color: #fff;
+  color: var(--c-blanco);
   border: none;
   font-weight: 600;
   font-size: 0.85rem;
@@ -214,21 +326,21 @@ body {
   font-weight: 700;
   font-size: 0.85rem;
   letter-spacing: 0.02em;
-  background: #e4e7ec;
+  background: var(--c-gris-95);
   color: var(--text-muted);
   transition:
     background 0.15s,
     color 0.15s;
 }
-[data-theme='oscuro'] .tab:not(.active) {
-  background: #1a1a45;
-  color: #c3c2c5;
+[data-theme="oscuro"] .tab:not(.active) {
+  background: var(--c-azul-810);
+  color: var(--c-gris-235);
 }
-[data-theme='oscuro'] .tab:not(.active):hover {
-  background: #222258;
+[data-theme="oscuro"] .tab:not(.active):hover {
+  background: var(--c-azul-760);
 }
 .tab.active {
-  color: #fff;
+  color: var(--c-blanco);
 }
 .tab-icon {
   flex-shrink: 0;
@@ -248,11 +360,11 @@ body {
 }
 .card-imagen {
   height: 260px;
-  background: var(--accent-categoria-light, #fcefd8);
+  background: var(--accent-categoria-light, var(--c-naranjo-80));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-categoria, #c98a2e);
+  color: var(--accent-categoria, var(--c-naranjo-520));
   position: relative;
   transition: background 0.2s;
 }
@@ -382,12 +494,12 @@ table.tabla-nutricional thead th {
   padding: 8px 10px;
   font-size: 0.75rem;
 }
-[data-theme='oscuro'] table.tabla-nutricional thead th {
+[data-theme="oscuro"] table.tabla-nutricional thead th {
   background: var(--navy-solid);
-  color: #c3c2c5;
+  color: var(--c-gris-235);
 }
-[data-theme='oscuro'] table.tabla-nutricional td {
-  color: #c3c2c5;
+[data-theme="oscuro"] table.tabla-nutricional td {
+  color: var(--c-gris-235);
   border-bottom-color: var(--border);
 }
 table.tabla-nutricional td {
@@ -421,13 +533,13 @@ table.tabla-nutricional td {
   background: var(--navy-light);
 }
 .pill-alergeno:nth-child(6n + 4) {
-  background: #b15fbb;
+  background: var(--c-morado-450);
 }
 .pill-alergeno:nth-child(6n + 5) {
-  background: #4c8fd1;
+  background: var(--c-azul-440);
 }
 .pill-alergeno:nth-child(6n + 6) {
-  background: #d1834c;
+  background: var(--c-naranjo-440);
 }
 .seccion-incluye {
   margin-top: 40px;
@@ -452,7 +564,7 @@ table.tabla-nutricional td {
   flex-direction: column;
 }
 .card-incluye::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -464,7 +576,7 @@ table.tabla-nutricional td {
 .card-incluye .card-imagen {
   height: 240px;
   flex-shrink: 0;
-  background: var(--accent-categoria-light, #fcefd8);
+  background: var(--accent-categoria-light, var(--c-naranjo-80));
 }
 .card-incluye .card-body {
   padding: 20px 22px 24px;
@@ -555,7 +667,7 @@ table.tabla-nutricional td {
   flex-wrap: wrap;
 }
 .semanal-card-header:hover {
-  background: rgba(31, 56, 100, 0.03);
+  background: var(--c-azul-740-a03);
 }
 .semanal-card-titulo {
   display: flex;
@@ -574,7 +686,7 @@ table.tabla-nutricional td {
 }
 .semanal-badge-hoy {
   background: var(--amber);
-  color: #3b2500;
+  color: var(--c-naranjo-880);
   font-size: 0.65rem;
   font-weight: 700;
   padding: 3px 8px;
@@ -681,14 +793,14 @@ table.tabla-nutricional td {
   display: none;
 }
 .pregunta-item summary::before {
-  content: '+';
+  content: "+";
   display: inline-block;
   width: 18px;
   color: var(--amber);
   font-weight: 700;
 }
 .pregunta-item[open] summary::before {
-  content: '−';
+  content: "−";
 }
 .pregunta-item p {
   margin: 10px 0 0 18px;
@@ -754,7 +866,7 @@ table.tabla-nutricional td {
   padding: 4px 6px;
   font: inherit;
   font-size: 0.7rem;
-  color: #aeb8c6;
+  color: var(--c-gris-270);
   cursor: pointer;
   border-radius: 6px;
   transition:
@@ -762,10 +874,10 @@ table.tabla-nutricional td {
     font-weight 0.15s;
 }
 .sidebar-legal-link:hover {
-  color: #ffffff;
+  color: var(--c-blanco);
   font-weight: 700;
 }
-[data-theme='oscuro'] .sidebar-legal-link:hover {
+[data-theme="oscuro"] .sidebar-legal-link:hover {
   color: var(--text);
   font-weight: 700;
 }
@@ -825,7 +937,7 @@ table.tabla-nutricional td {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
-[data-theme='oscuro'] .app-toggle-tema {
+[data-theme="oscuro"] .app-toggle-tema {
   color: var(--text);
 }
 @media (max-width: 900px) {
@@ -839,7 +951,7 @@ table.tabla-nutricional td {
   gap: 8px;
   padding: 12px 18px;
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--c-blanco);
   color: var(--navy-solid);
   border: none;
   font-weight: 600;
@@ -855,20 +967,20 @@ table.tabla-nutricional td {
 .sidebar-panel-cta svg {
   flex-shrink: 0;
 }
-[data-theme='oscuro'] .sidebar-panel-cta {
+[data-theme="oscuro"] .sidebar-panel-cta {
   background: var(--amber);
-  color: #1b1f27;
+  color: var(--c-azul-875);
 }
-[data-theme='oscuro'] .sidebar-panel-cta:hover {
-  background: #e0951a;
+[data-theme="oscuro"] .sidebar-panel-cta:hover {
+  background: var(--c-naranjo-515);
 }
 .hoja-opcion.hoja-panel-cta {
   background: var(--navy-solid);
   color: white;
 }
-[data-theme='oscuro'] .hoja-opcion.hoja-panel-cta {
+[data-theme="oscuro"] .hoja-opcion.hoja-panel-cta {
   background: var(--amber);
-  color: #1b1f27;
+  color: var(--c-azul-875);
 }
 .hoja-opcion.hoja-panel-cta svg {
   color: inherit;

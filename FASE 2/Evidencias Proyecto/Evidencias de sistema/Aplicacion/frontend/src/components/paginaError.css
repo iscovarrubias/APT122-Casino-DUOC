@@ -6,10 +6,10 @@
   justify-content: center;
   padding: 40px 24px;
   text-align: center;
-  background-color: #f8f9fa;
+  background-color: var(--c-gris-20);
   position: relative;
   overflow: hidden;
-  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  font-family: "Poppins", "Segoe UI", sans-serif;
 }
 .pagina-error--compacta {
   min-height: 0;
@@ -21,7 +21,7 @@
 }
 .pe-fondo-decoracion {
   position: absolute;
-  color: #e5e7eb;
+  color: var(--c-gris-85);
   pointer-events: none;
   z-index: 0;
 }
@@ -49,7 +49,7 @@
   font-size: 4.5rem;
   font-weight: 800;
   line-height: 1.1;
-  color: #1f3864;
+  color: var(--c-azul-740);
   margin-bottom: 20px;
   letter-spacing: -1px;
 }
@@ -62,12 +62,12 @@
   margin: 0 0 10px 0;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1b1f27;
+  color: var(--c-azul-875);
 }
 .pe-mensaje {
   margin: 0 0 24px 0;
   font-size: 0.95rem;
-  color: #5b6472;
+  color: var(--c-gris-600);
   line-height: 1.5;
   max-width: 45ch;
 }
@@ -92,27 +92,27 @@
   font-family: inherit;
 }
 .pe-boton-primario {
-  background-color: #f5a623;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(245, 166, 35, 0.3);
+  background-color: var(--c-naranjo-450);
+  color: var(--c-blanco);
+  box-shadow: 0 4px 12px var(--c-naranjo-450-a30);
 }
 .pe-boton-primario:hover {
-  background-color: #e0951a;
+  background-color: var(--c-naranjo-515);
   transform: translateY(-2px);
 }
 .pe-boton-secundario {
   background-color: transparent;
-  color: #5b6472;
-  border: 1px solid #e6e8ec;
+  color: var(--c-gris-600);
+  border: 1px solid var(--c-gris-90);
 }
 .pe-boton-secundario:hover {
-  background-color: #f4f5f7;
-  color: #1b1f27;
+  background-color: var(--c-gris-40);
+  color: var(--c-azul-875);
 }
 .pe-detalle {
   margin-top: 30px;
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--c-gris-355);
 }
 .pe-detalle summary {
   cursor: pointer;
@@ -121,10 +121,10 @@
   display: block;
   margin-top: 8px;
   padding: 10px;
-  background: #ffffff;
-  border: 1px solid #e6e8ec;
+  background: var(--c-blanco);
+  border: 1px solid var(--c-gris-90);
   border-radius: 8px;
-  color: #ef4444;
+  color: var(--c-rojo-400);
   text-align: left;
   overflow-wrap: anywhere;
 }
@@ -154,7 +154,7 @@
 .pe-exclamacion {
   font-size: 5rem;
   font-weight: 800;
-  color: #f5a623;
+  color: var(--c-naranjo-450);
   line-height: 0.8;
   margin-bottom: 10px;
 }
@@ -167,38 +167,38 @@
   max-width: 600px;
   gap: 0;
 }
-[data-theme='oscuro'] .pagina-error {
+[data-theme="oscuro"] .pagina-error {
   background-color: var(--bg);
 }
-[data-theme='oscuro'] .pe-exclamacion {
+[data-theme="oscuro"] .pe-exclamacion {
   color: var(--amber);
 }
-[data-theme='oscuro'] .pe-codigo-grande {
+[data-theme="oscuro"] .pe-codigo-grande {
   color: var(--text);
 }
-[data-theme='oscuro'] .pe-titulo {
+[data-theme="oscuro"] .pe-titulo {
   color: var(--text);
 }
-[data-theme='oscuro'] .pe-mensaje {
+[data-theme="oscuro"] .pe-mensaje {
   color: var(--text-muted);
 }
-[data-theme='oscuro'] .pe-boton-secundario {
+[data-theme="oscuro"] .pe-boton-secundario {
   color: var(--text);
   border-color: var(--border);
 }
-[data-theme='oscuro'] .pe-boton-secundario:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+[data-theme="oscuro"] .pe-boton-secundario:hover {
+  background-color: var(--c-blanco-a08);
 }
-[data-theme='oscuro'] .pe-detalle {
+[data-theme="oscuro"] .pe-detalle {
   color: var(--text-muted);
 }
-[data-theme='oscuro'] .pe-detalle code {
-  background-color: #0d0d26;
+[data-theme="oscuro"] .pe-detalle code {
+  background-color: var(--c-azul-900);
   border-color: var(--border);
-  color: #f87171;
+  color: var(--c-rojo-290);
 }
-[data-theme='oscuro'] .pe-fondo-decoracion {
-  color: rgba(255, 255, 255, 0.04);
+[data-theme="oscuro"] .pe-fondo-decoracion {
+  color: var(--c-blanco-a04);
 }
 .pagina-error--embebido {
   background: none !important;
@@ -208,7 +208,7 @@
   min-height: 0 !important;
   border-radius: 0 !important;
 }
-[data-theme='oscuro'] .pagina-error--embebido {
+[data-theme="oscuro"] .pagina-error--embebido {
   background: none !important;
   border: 0 !important;
   box-shadow: none !important;
