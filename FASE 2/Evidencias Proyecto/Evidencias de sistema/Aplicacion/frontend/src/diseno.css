@@ -18,11 +18,6 @@
   flex-wrap: wrap;
   margin-bottom: 14px;
 }
-.v2-conteo {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.88rem;
-}
 .v2 .boton {
   min-height: 38px;
   padding: 0 16px;
@@ -106,8 +101,6 @@
 }
 .v2 .campo-ayuda {
   margin: 0;
-  font-size: 0.78rem;
-  color: var(--text-muted);
 }
 .v2 .tabla-contenedor {
   border: 1px solid var(--v2-borde);
@@ -221,7 +214,7 @@
     min-width: 0;
   }
   .v2 .tabla-usuarios {
-    min-width: 0 !important;
+    min-width: 0;
   }
   .v2 .tabla-usuarios tr {
     padding: 14px 16px;
@@ -263,7 +256,6 @@
   margin-bottom: 14px;
 }
 .v2 .prep-columna-cabeza h2 span {
-  margin-left: 4px;
   color: var(--text-muted);
   font-weight: 500;
   font-size: 0.9rem;
@@ -494,7 +486,7 @@
   .v2 .tabla-ingredientes,
   .v2 .tabla-ingredientes tbody {
     display: block;
-    min-width: 0 !important;
+    min-width: 0;
   }
   .v2 .tabla-ingredientes tr {
     display: grid;
@@ -628,13 +620,6 @@
 .v2 .plan-sugerencia strong {
   color: var(--text);
 }
-.v2 .plan-card .celda-acciones {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-  border: 0;
-}
 .v2 .mes-grid {
   gap: 6px;
 }
@@ -656,22 +641,6 @@
   font-weight: 650;
   color: var(--text);
 }
-.v2 .mes-estado {
-  font-size: 0.72rem;
-  gap: 6px;
-}
-.v2 .mes-estado::before {
-  width: 6px;
-  height: 6px;
-}
-.v2 .mes-vacio {
-  font-size: 0.74rem;
-  color: var(--text-muted);
-}
-.v2 .mes-plato {
-  font-size: 0.74rem;
-  color: var(--text);
-}
 .v2 .mes-celda.sel-origen {
   box-shadow: inset 0 0 0 1px var(--navy);
 }
@@ -691,10 +660,6 @@
   border-radius: 10px;
 }
 @media (max-width: 700px) {
-  .v2 .plan-grid,
-  .v2 .plan-grid-3 {
-    grid-template-columns: 1fr;
-  }
   .v2 .plan-seccion-cabeza {
     flex-wrap: wrap;
     align-items: stretch;
@@ -740,39 +705,16 @@
   min-height: 34px;
   font-size: 0.88rem;
 }
-.v2 .plan-card .celda-acciones .boton {
-  min-height: 32px;
-  padding: 0 14px;
-}
 .v2 .plan-seccion {
   margin-bottom: 26px;
 }
 .v2 .plan-card-estado {
   background: none;
-  color: var(--text-muted);
   padding: 0;
-  font-weight: 500;
   font-size: 0.74rem;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-.v2 .plan-pie {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 12px;
-  flex-wrap: wrap;
-}
-.v2 .plan-pie .plan-sugerencia {
-  flex: 1 1 200px;
-  margin: 0;
-}
-.v2 .plan-pie .celda-acciones {
-  margin-left: auto;
-}
-.v2 .plan-card .celda-acciones .boton-texto.peligro {
-  margin-left: 0;
 }
 .v2-subtitulo {
   margin: 0 0 10px;
@@ -816,7 +758,6 @@
 }
 .v2 .caja-plato {
   font-size: 0.98rem;
-  opacity: 0.95;
 }
 .v2 .caja-restante {
   font-size: 3.2rem;
@@ -826,13 +767,11 @@
 }
 .v2 .caja-estado {
   padding: 3px 12px;
-  background: var(--c-blanco-a20);
   font-size: 0.78rem;
   font-weight: 600;
 }
 .v2 .caja-estimacion {
   font-size: 0.75rem;
-  opacity: 0.92;
 }
 .v2 .caja-boton.baja_disponibilidad {
   box-shadow: inset 0 0 0 4px var(--baja);
@@ -1001,8 +940,6 @@
   display: block;
   margin-top: 4px;
   font-size: 0.95rem;
-  font-weight: 400;
-  color: var(--text-muted);
 }
 .v2-pub .tabs {
   gap: 8px;
@@ -1089,7 +1026,7 @@
 }
 .v2-pub .estado-pill {
   padding: 0;
-  background: none !important;
+  background: none;
   color: var(--text);
   font-size: 0.88rem;
   font-weight: 600;
@@ -1182,7 +1119,7 @@
   border-bottom: 0;
 }
 .v2-pub .pill-alergeno {
-  background: color-mix(in srgb, var(--text) 8%, var(--card-bg)) !important;
+  background: color-mix(in srgb, var(--text) 8%, var(--card-bg));
   color: var(--text);
   font-weight: 600;
   font-size: 0.78rem;
@@ -1241,13 +1178,6 @@
   font-weight: 600;
   padding: 3px 10px;
 }
-.v2-pub .semanal-subtitulo {
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
 .v2-pub .semanal-badge-hoy {
   text-transform: none;
   letter-spacing: 0;
@@ -1294,11 +1224,6 @@
 .v2 .login-tarjeta .boton-ancho {
   min-height: 42px;
   width: 100%;
-}
-.v2 .login-tarjeta .boton-enlace {
-  margin-top: 18px;
-  font-size: 0.88rem;
-  color: var(--text-muted);
 }
 .v2 .pestanas {
   border-bottom: 1px solid var(--v2-borde);
@@ -1354,7 +1279,6 @@
 .v2 .chip {
   border-width: 1px;
   border-color: var(--v2-borde);
-  background: var(--card-bg);
   font-weight: 500;
 }
 .v2 .chip.activo {
@@ -1559,33 +1483,6 @@
   font-size: 0.88rem;
   color: var(--text-muted);
 }
-.v2 .grupo {
-  border: 1px solid var(--v2-borde);
-  border-radius: var(--v2-radio);
-  padding: 16px;
-  gap: 10px;
-}
-.v2 .grupo legend {
-  font-size: 0.92rem;
-  font-weight: 650;
-  color: var(--text);
-  padding: 0 6px;
-}
-.v2 .grupo > .texto-suave {
-  margin: 0;
-  font-size: 0.84rem;
-  color: var(--text-muted);
-  line-height: 1.45;
-}
-.v2 .chips-alergia {
-  margin: 2px 0 4px;
-  gap: 6px;
-}
-.v2 .chip-alergia {
-  font-weight: 500;
-  font-size: 0.84rem;
-  padding: 6px 14px;
-}
 .v2 .chip-alergia.activa {
   font-weight: 600;
 }
@@ -1695,28 +1592,6 @@
     animation-duration: 2.4s;
   }
 }
-.no-encontrada {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 24px;
-  text-align: center;
-  color: var(--text);
-  background: var(--bg);
-}
-.no-encontrada h1 {
-  margin: 6px 0 0;
-  font-size: 1.5rem;
-  color: var(--navy);
-}
-.no-encontrada p {
-  margin: 0 0 12px;
-  color: var(--text-muted);
-  max-width: 38ch;
-}
 .saltar {
   position: absolute;
   left: 12px;
@@ -1796,12 +1671,10 @@
 .v2 .plan-sugerencia {
   font-size: 0.78rem;
   color: var(--text-muted);
-  line-height: 1.3;
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 0;
-  padding: 6px 10px;
   border-radius: 8px;
   background: var(--bg);
 }
@@ -1846,8 +1719,6 @@
 .v2 .plan-sugerencia .texto-suave {
   color: var(--text-muted);
   display: block;
-  font-size: 0.72rem;
-  margin-top: 1px;
 }
 .v2 .mes-celda {
   border: 1px solid var(--v2-borde);
@@ -1949,7 +1820,6 @@
   }
   :root:not([data-theme="oscuro"]) .sidebar-nav-item.active {
     background: var(--c-blanco-a16);
-    color: var(--c-blanco);
     box-shadow: none;
   }
   :root:not([data-theme="oscuro"]) .sidebar-link {
@@ -1983,7 +1853,6 @@
     left: 0;
     right: -20px;
     height: 0;
-    opacity: 0;
     pointer-events: none;
     background: var(--card-bg);
     border-radius: 999px 0 0 999px;
@@ -2200,19 +2069,6 @@
 .v2-pub .tab.tab-agotada.active {
   box-shadow: inset 0 0 0 1px var(--text-muted);
 }
-.v2-pub .semanal-componentes li.no-disponible .semanal-nombre {
-  color: var(--text-muted);
-}
-.v2-pub .semanal-componentes li.no-disponible .semanal-tipo {
-  color: var(--text-muted);
-  background: var(--bg);
-}
-.v2-pub .semanal-estado {
-  align-self: flex-start;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
 @media (min-width: 601px) {
   .modal.modal-confirmacion {
     max-width: 440px;
@@ -2253,9 +2109,6 @@
 .v2-pub .card-incluye .tabla-nutricional {
   margin-bottom: 6px;
 }
-.v2-pub .card-incluye .alergenos-pills {
-  margin-top: 0;
-}
 .v2-pub .card-incluye .subtitulo + .alergenos-pills {
   margin-top: 2px;
 }
@@ -2267,18 +2120,12 @@
 }
 .modal.perfil-modal {
   max-width: 540px;
-  padding: 24px 22px;
-  gap: 0;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px var(--c-azul-890-a08);
 }
 [data-theme="oscuro"] .modal.perfil-modal {
   box-shadow: 0 8px 32px var(--c-negro-a40);
 }
 .perfil-modal h2 {
   margin: 0 0 4px;
-  font-size: 1.15rem;
-  font-weight: 650;
   color: var(--text);
 }
 .perfil-modal > .texto-suave {
@@ -2373,11 +2220,6 @@
   background: var(--c-naranjo-515);
   border-color: var(--c-naranjo-515);
 }
-.perfil-modal .boton-secundario {
-  background: transparent;
-  border-color: var(--v2-borde);
-  color: var(--text);
-}
 .perfil-modal .boton-secundario:hover:not(:disabled) {
   border-color: var(--text-muted);
 }
@@ -2410,11 +2252,6 @@
   box-shadow: none;
   font-size: 0.85rem;
   border-radius: 8px;
-}
-@media (max-width: 600px) {
-  .modal.perfil-modal {
-    padding: 20px 18px;
-  }
 }
 .perfil-modal .grupo + .grupo {
   margin-top: 20px;
@@ -2503,21 +2340,15 @@
   font-weight: 800;
   padding: 2px 10px;
   border-radius: 999px;
-  background: var(--c-blanco-a28);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
 .composicion-details {
-  padding: 0;
   overflow: hidden;
   margin-bottom: 22px;
 }
 .composicion-details > summary {
-  cursor: pointer;
   list-style: none;
-  padding: 14px 18px;
-  font-weight: 600;
-  font-size: 0.92rem;
   color: var(--navy);
   display: flex;
   align-items: center;
@@ -2728,9 +2559,6 @@
   border: 1px solid var(--border);
   font-size: 0.8rem;
   color: var(--text-muted);
-}
-.receta-tabla {
-  width: 100%;
 }
 .form-aviso-variacion {
   margin: 0 0 12px;
