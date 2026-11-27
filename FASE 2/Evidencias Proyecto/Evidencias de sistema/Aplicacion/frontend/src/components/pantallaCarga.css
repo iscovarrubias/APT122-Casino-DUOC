@@ -18,7 +18,7 @@
   animation: pc-aparecer 0.3s ease var(--pc-r) both;
 }
 
-[data-theme="oscuro"] .pantalla-carga {
+[data-theme='oscuro'] .pantalla-carga {
   --pc-casinos: #f4f6f7;
   --pc-uc: #7aaade;
 }
@@ -49,27 +49,24 @@
 }
 .pc-casinos {
   background: var(--pc-casinos);
-  -webkit-mask-image: url("/carga/casinos.webp");
-  mask-image: url("/carga/casinos.webp");
-  animation: pc-ola 0.5s cubic-bezier(0.22, 0.8, 0.3, 1)
-    calc(var(--pc-r) + 0.05s) both;
+  -webkit-mask-image: url('/carga/casinos.webp');
+  mask-image: url('/carga/casinos.webp');
+  animation: pc-ola 0.5s cubic-bezier(0.22, 0.8, 0.3, 1) calc(var(--pc-r) + 0.05s) both;
 }
 .pc-duoc {
   background: var(--pc-duoc);
-  -webkit-mask-image: url("/carga/duoc.webp");
-  mask-image: url("/carga/duoc.webp");
-  animation: pc-subir 0.45s cubic-bezier(0.22, 0.8, 0.3, 1)
-    calc(var(--pc-r) + 0.3s) both;
+  -webkit-mask-image: url('/carga/duoc.webp');
+  mask-image: url('/carga/duoc.webp');
+  animation: pc-subir 0.45s cubic-bezier(0.22, 0.8, 0.3, 1) calc(var(--pc-r) + 0.3s) both;
 }
 .pc-uc {
   background: var(--pc-uc);
-  -webkit-mask-image: url("/carga/uc.webp");
-  mask-image: url("/carga/uc.webp");
-  animation: pc-subir 0.45s cubic-bezier(0.22, 0.8, 0.3, 1)
-    calc(var(--pc-r) + 0.4s) both;
+  -webkit-mask-image: url('/carga/uc.webp');
+  mask-image: url('/carga/uc.webp');
+  animation: pc-subir 0.45s cubic-bezier(0.22, 0.8, 0.3, 1) calc(var(--pc-r) + 0.4s) both;
 }
 .pc-gorro {
-  background: url("/carga/gorro.webp") center / 100% 100% no-repeat;
+  background: url('/carga/gorro.webp') center / 100% 100% no-repeat;
   transform-origin: 15.6% 42.9%;
   animation:
     pc-caer 0.65s ease-in calc(var(--pc-r) + 0.5s) both,
@@ -101,8 +98,7 @@
 .pantalla-carga--forzada .pc-barra span {
   width: 100%;
   transform-origin: left center;
-  animation: pc-llenar calc(var(--pc-total) - 0.5s)
-    cubic-bezier(0.3, 0.6, 0.3, 1) 0.5s both;
+  animation: pc-llenar calc(var(--pc-total) - 0.5s) cubic-bezier(0.3, 0.6, 0.3, 1) 0.5s both;
 }
 .pantalla-carga--saliendo {
   animation: pc-salir 0.25s ease forwards;

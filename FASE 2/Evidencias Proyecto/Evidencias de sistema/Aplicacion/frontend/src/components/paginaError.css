@@ -9,7 +9,7 @@
   background-color: var(--c-gris-20);
   position: relative;
   overflow: hidden;
-  font-family: "Poppins", "Segoe UI", sans-serif;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
 }
 .pagina-error--compacta {
   min-height: 0;
@@ -139,29 +139,29 @@
   max-width: 600px;
   gap: 0;
 }
-[data-theme="oscuro"] .pagina-error {
+[data-theme='oscuro'] .pagina-error {
   background-color: var(--bg);
 }
-[data-theme="oscuro"] .pe-exclamacion {
+[data-theme='oscuro'] .pe-exclamacion {
   color: var(--amber);
 }
-[data-theme="oscuro"] .pe-codigo-grande {
+[data-theme='oscuro'] .pe-codigo-grande {
   color: var(--text);
 }
-[data-theme="oscuro"] .pe-titulo {
+[data-theme='oscuro'] .pe-titulo {
   color: var(--text);
 }
-[data-theme="oscuro"] .pe-mensaje {
+[data-theme='oscuro'] .pe-mensaje {
   color: var(--text-muted);
 }
-[data-theme="oscuro"] .pe-boton-secundario {
+[data-theme='oscuro'] .pe-boton-secundario {
   color: var(--text);
   border-color: var(--border);
 }
-[data-theme="oscuro"] .pe-boton-secundario:hover {
+[data-theme='oscuro'] .pe-boton-secundario:hover {
   background-color: var(--c-blanco-a08);
 }
-[data-theme="oscuro"] .pe-fondo-decoracion {
+[data-theme='oscuro'] .pe-fondo-decoracion {
   color: var(--c-blanco-a04);
 }
 .pagina-error--embebido {
@@ -172,7 +172,7 @@
   min-height: 0;
   border-radius: 0;
 }
-[data-theme="oscuro"] .pagina-error--embebido {
+[data-theme='oscuro'] .pagina-error--embebido {
   background: none;
   border: 0;
   box-shadow: none;

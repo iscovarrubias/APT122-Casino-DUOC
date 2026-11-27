@@ -24,7 +24,7 @@
 .boton-primario:hover:not(:disabled) {
   background: var(--navy-light);
 }
-[data-theme="oscuro"] .boton-secundario:hover:not(:disabled) {
+[data-theme='oscuro'] .boton-secundario:hover:not(:disabled) {
   background: var(--c-azul-760);
 }
 .boton-peligro {
@@ -65,7 +65,7 @@
   user-select: none;
   padding: 4px 0;
 }
-.campo-check input[type="checkbox"] {
+.campo-check input[type='checkbox'] {
   -webkit-appearance: none;
   width: 38px;
   height: 22px;
@@ -77,8 +77,8 @@
   flex-shrink: 0;
   margin: 0;
 }
-.campo-check input[type="checkbox"]::after {
-  content: "";
+.campo-check input[type='checkbox']::after {
+  content: '';
   position: absolute;
   top: 2px;
   left: 2px;
@@ -89,17 +89,17 @@
   box-shadow: 0 1px 3px var(--c-negro-a20);
   transition: transform 0.2s;
 }
-.campo-check input[type="checkbox"]:checked {
+.campo-check input[type='checkbox']:checked {
   background: var(--navy-solid);
 }
-.campo-check input[type="checkbox"]:checked::after {
+.campo-check input[type='checkbox']:checked::after {
   transform: translateX(16px);
 }
-.campo-check input[type="checkbox"]:focus-visible {
+.campo-check input[type='checkbox']:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
-.campo-check input[type="checkbox"]:disabled {
+.campo-check input[type='checkbox']:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
@@ -138,7 +138,7 @@
   box-shadow: 0 6px 22px var(--c-azul-890-a10);
   animation: mensaje-entrar 0.25s ease-out both;
 }
-[data-theme="oscuro"] .mensaje {
+[data-theme='oscuro'] .mensaje {
   box-shadow: 0 6px 22px var(--c-negro-a45);
 }
 .mensaje-ok {
@@ -625,7 +625,7 @@ details.tarjeta > summary {
   border-radius: 12px;
   box-shadow: 0 10px 28px var(--c-azul-890-a16);
 }
-[data-theme="oscuro"] .prep-menu-lista {
+[data-theme='oscuro'] .prep-menu-lista {
   box-shadow: 0 10px 28px var(--c-negro-a50);
 }
 .prep-menu-lista button {
@@ -662,11 +662,7 @@ details.tarjeta > summary {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(
-    in srgb,
-    var(--acento, var(--navy)) 12%,
-    var(--card-bg)
-  );
+  background: color-mix(in srgb, var(--acento, var(--navy)) 12%, var(--card-bg));
   color: color-mix(in srgb, var(--acento, var(--navy)) 70%, var(--text));
 }
 .prep-miniatura-img {
@@ -745,11 +741,7 @@ details.tarjeta > summary {
   align-items: center;
   justify-content: center;
   color: var(--acento, var(--navy));
-  background: color-mix(
-    in srgb,
-    var(--acento, var(--navy)) 14%,
-    var(--card-bg)
-  );
+  background: color-mix(in srgb, var(--acento, var(--navy)) 14%, var(--card-bg));
 }
 .chips-alergia {
   display: flex;
@@ -1028,88 +1020,83 @@ details.tarjeta > summary {
   color: var(--text-muted);
   opacity: 0.5;
 }
-[data-theme="oscuro"] .react-datepicker .react-datepicker__month-text:hover,
-[data-theme="oscuro"] .react-datepicker .react-datepicker__year-text:hover {
+[data-theme='oscuro'] .react-datepicker .react-datepicker__month-text:hover,
+[data-theme='oscuro'] .react-datepicker .react-datepicker__year-text:hover {
   background: var(--c-azul-810);
   color: var(--c-blanco);
 }
-[data-theme="oscuro"] .react-datepicker .react-datepicker__month-text--selected,
-[data-theme="oscuro"] .react-datepicker .react-datepicker__year-text--selected {
+[data-theme='oscuro'] .react-datepicker .react-datepicker__month-text--selected,
+[data-theme='oscuro'] .react-datepicker .react-datepicker__year-text--selected {
   background: var(--amber);
   color: var(--c-azul-875);
 }
-[data-theme="oscuro"] .campo-fecha {
+[data-theme='oscuro'] .campo-fecha {
   background: var(--c-azul-900);
   border-color: var(--border);
 }
-[data-theme="oscuro"]
-  .campo-fecha
-  .react-datepicker__input-container
-  input.campo-fecha-input,
-[data-theme="oscuro"] .campo-fecha .react-datepicker-wrapper,
-[data-theme="oscuro"] .campo-fecha .react-datepicker__input-container,
-[data-theme="oscuro"] .campo-fecha .react-datepicker__input-container input {
+[data-theme='oscuro'] .campo-fecha .react-datepicker__input-container input.campo-fecha-input,
+[data-theme='oscuro'] .campo-fecha .react-datepicker-wrapper,
+[data-theme='oscuro'] .campo-fecha .react-datepicker__input-container,
+[data-theme='oscuro'] .campo-fecha .react-datepicker__input-container input {
   background: transparent;
   background-color: transparent;
   color: var(--c-gris-85);
   border: none;
   box-shadow: none;
 }
-[data-theme="oscuro"] .campo-fecha .campo-fecha-icono {
+[data-theme='oscuro'] .campo-fecha .campo-fecha-icono {
   color: var(--c-gris-390);
 }
-[data-theme="oscuro"] .campo-fecha:focus-within {
+[data-theme='oscuro'] .campo-fecha:focus-within {
   border-color: var(--amber);
 }
-[data-theme="oscuro"] .react-datepicker-popper .react-datepicker {
+[data-theme='oscuro'] .react-datepicker-popper .react-datepicker {
   background: var(--c-azul-880);
   border-color: var(--c-azul-820);
 }
-[data-theme="oscuro"] .react-datepicker .react-datepicker__header {
+[data-theme='oscuro'] .react-datepicker .react-datepicker__header {
   background: var(--c-azul-880);
   border-bottom-color: var(--c-azul-820);
 }
-[data-theme="oscuro"] .react-datepicker .react-datepicker__day:hover {
+[data-theme='oscuro'] .react-datepicker .react-datepicker__day:hover {
   background: var(--c-azul-810);
   color: var(--c-blanco);
 }
-[data-theme="oscuro"] .react-datepicker .react-datepicker__day--selected,
-[data-theme="oscuro"]
-  .react-datepicker
-  .react-datepicker__day--keyboard-selected {
+[data-theme='oscuro'] .react-datepicker .react-datepicker__day--selected,
+[data-theme='oscuro'] .react-datepicker .react-datepicker__day--keyboard-selected {
   background: var(--amber);
   color: var(--c-azul-875);
 }
-[data-theme="oscuro"] .react-datepicker .react-datepicker__day--outside-month {
+[data-theme='oscuro'] .react-datepicker .react-datepicker__day--outside-month {
   color: var(--c-gris-650);
 }
-[data-theme="oscuro"] input::placeholder,
-[data-theme="oscuro"] textarea::placeholder {
+[data-theme='oscuro'] input::placeholder,
+[data-theme='oscuro'] textarea::placeholder {
   color: var(--c-gris-530);
   opacity: 1;
 }
-[data-theme="oscuro"] .campo input:focus,
-[data-theme="oscuro"] .campo select:focus,
-[data-theme="oscuro"] .campo textarea:focus,
-[data-theme="oscuro"] .tabla input:focus,
-[data-theme="oscuro"] .tabla select:focus,
-[data-theme="oscuro"] .en-linea input:focus,
-[data-theme="oscuro"] .prep-buscar:focus,
-[data-theme="oscuro"] .opinion-form textarea:focus,
-[data-theme="oscuro"] .stock-fila input:focus {
+[data-theme='oscuro'] .campo input:focus,
+[data-theme='oscuro'] .campo select:focus,
+[data-theme='oscuro'] .campo textarea:focus,
+[data-theme='oscuro'] .tabla input:focus,
+[data-theme='oscuro'] .tabla select:focus,
+[data-theme='oscuro'] .en-linea input:focus,
+[data-theme='oscuro'] .prep-buscar:focus,
+[data-theme='oscuro'] .opinion-form textarea:focus,
+[data-theme='oscuro'] .stock-fila input:focus {
   background: var(--c-azul-850);
   outline-color: var(--amber);
 }
-[data-theme="oscuro"] .campo-check input[type="checkbox"] {
+[data-theme='oscuro'] .campo-check input[type='checkbox'] {
   background: var(--c-azul-770);
 }
-[data-theme="oscuro"] .campo-check input[type="checkbox"]::after {
+[data-theme='oscuro'] .campo-check input[type='checkbox']::after {
   background: var(--c-gris-85);
 }
-[data-theme="oscuro"] .campo-check input[type="checkbox"]:checked {
+[data-theme='oscuro'] .campo-check input[type='checkbox']:checked {
   background: var(--amber);
 }
-[data-theme="oscuro"] .campo-check input[type="checkbox"]:checked::after {
+[data-theme='oscuro'] .campo-check input[type='checkbox']:checked::after {
   background: var(--c-blanco);
 }
 .panel-principal {
@@ -1154,10 +1141,7 @@ details.tarjeta > summary {
     justify-content: center;
     padding: 12px 2px 6px;
   }
-  .sidebar--panel
-    .sidebar-nav--compacta
-    .sidebar-nav-item:not(.active)
-    .sidebar-nav-texto {
+  .sidebar--panel .sidebar-nav--compacta .sidebar-nav-item:not(.active) .sidebar-nav-texto {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -1409,10 +1393,7 @@ details.tarjeta > summary {
   .sidebar--panel .sidebar-nav--compacta .sidebar-nav-item.active {
     flex: 2.2 1 0;
   }
-  .sidebar--panel
-    .sidebar-nav--compacta
-    .sidebar-nav-item.active
-    .sidebar-nav-texto {
+  .sidebar--panel .sidebar-nav--compacta .sidebar-nav-item.active .sidebar-nav-texto {
     max-width: none;
     overflow: visible;
     text-overflow: clip;
@@ -1541,11 +1522,7 @@ details.tarjeta > summary {
 }
 .mes-celda.sel-destino {
   border-color: var(--ok, var(--c-verde-640));
-  background: color-mix(
-    in srgb,
-    var(--ok, var(--c-verde-640)) 10%,
-    var(--card-bg)
-  );
+  background: color-mix(in srgb, var(--ok, var(--c-verde-640)) 10%, var(--card-bg));
 }
 .mes-etiqueta {
   position: absolute;
@@ -1564,12 +1541,12 @@ details.tarjeta > summary {
 .mes-etiqueta--destino {
   background: var(--ok, var(--c-verde-640));
 }
-[data-theme="oscuro"] .boton.boton-activo {
+[data-theme='oscuro'] .boton.boton-activo {
   background: var(--amber);
   color: var(--c-azul-830);
   border-color: var(--amber);
 }
-[data-theme="oscuro"] .mes-etiqueta--origen {
+[data-theme='oscuro'] .mes-etiqueta--origen {
   background: var(--amber);
   color: var(--c-azul-830);
 }
@@ -1590,7 +1567,7 @@ details.tarjeta > summary {
 .hx-hoja {
   background: var(--c-blanco);
   color: var(--c-azul-830);
-  font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif;
+  font-family: Calibri, Carlito, 'Segoe UI', Arial, sans-serif;
   padding: 28px 32px 24px;
   box-sizing: border-box;
 }
@@ -1796,7 +1773,7 @@ details.tarjeta > summary {
   text-transform: capitalize;
   white-space: nowrap;
 }
-[data-theme="oscuro"] .fecha-relativa.es-hoy {
+[data-theme='oscuro'] .fecha-relativa.es-hoy {
   border-color: var(--c-gris-605);
 }
 .modal.modal-dia {
@@ -2017,7 +1994,7 @@ details.tarjeta > summary {
   border: 1.5px solid var(--text-muted);
 }
 .ayuda-boton:hover,
-.ayuda-boton[aria-expanded="true"] {
+.ayuda-boton[aria-expanded='true'] {
   background: var(--navy-solid, var(--navy));
   color: var(--c-blanco);
   border-color: var(--navy-solid, var(--navy));
@@ -2139,15 +2116,15 @@ details.tarjeta > summary {
   background: var(--c-naranjo-90);
   color: var(--c-naranjo-735);
 }
-[data-theme="oscuro"] .indicador-etiqueta--bueno {
+[data-theme='oscuro'] .indicador-etiqueta--bueno {
   background: var(--c-verde-790);
   color: var(--c-verde-180);
 }
-[data-theme="oscuro"] .indicador-etiqueta--malo {
+[data-theme='oscuro'] .indicador-etiqueta--malo {
   background: var(--c-rojo-750);
   color: var(--c-rojo-130);
 }
-[data-theme="oscuro"] .indicador-etiqueta--aviso {
+[data-theme='oscuro'] .indicador-etiqueta--aviso {
   background: var(--c-naranjo-760);
   color: var(--c-naranjo-190);
 }
@@ -2368,7 +2345,7 @@ details.tarjeta > summary {
 .ha-hoja {
   background: var(--c-blanco);
   color: var(--c-azul-830);
-  font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif;
+  font-family: Calibri, Carlito, 'Segoe UI', Arial, sans-serif;
   padding: 28px 32px 26px;
   box-sizing: border-box;
 }
@@ -2824,7 +2801,7 @@ details.tarjeta > summary {
   padding: 16px 22px 6px;
   color: var(--text-muted);
 }
-.recorte-zoom input[type="range"] {
+.recorte-zoom input[type='range'] {
   flex: 1;
   accent-color: var(--navy-solid);
 }

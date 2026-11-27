@@ -53,6 +53,6 @@
   font-size: 0.88rem;
   color: var(--text-muted);
 }
-[data-theme="oscuro"] .opcion-boton strong {
+[data-theme='oscuro'] .opcion-boton strong {
   color: var(--text);
 }

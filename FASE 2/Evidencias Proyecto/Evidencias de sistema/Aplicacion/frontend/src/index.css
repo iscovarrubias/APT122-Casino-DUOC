@@ -131,7 +131,7 @@
   --shadow: 0 4px 18px rgba(31, 56, 100, 0.08);
   color-scheme: light;
 }
-[data-theme="oscuro"] {
+[data-theme='oscuro'] {
   --navy: #ffffff;
   --text: #ffffff;
   --text-muted: #8e8eaa;
@@ -160,7 +160,7 @@ body {
     background 0.2s,
     color 0.2s;
   margin: 0;
-  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
 }
 .app-layout {
   display: flex;
@@ -256,11 +256,11 @@ body {
 .sidebar-link:hover {
   background: var(--c-azul-50);
 }
-[data-theme="oscuro"] .sidebar-link {
+[data-theme='oscuro'] .sidebar-link {
   background: var(--amber);
   color: var(--c-azul-875);
 }
-[data-theme="oscuro"] .sidebar-link:hover {
+[data-theme='oscuro'] .sidebar-link:hover {
   background: var(--border);
   color: var(--text);
 }
@@ -321,11 +321,11 @@ body {
     background 0.15s,
     color 0.15s;
 }
-[data-theme="oscuro"] .tab:not(.active) {
+[data-theme='oscuro'] .tab:not(.active) {
   background: var(--c-azul-810);
   color: var(--c-gris-235);
 }
-[data-theme="oscuro"] .tab:not(.active):hover {
+[data-theme='oscuro'] .tab:not(.active):hover {
   background: var(--c-azul-760);
 }
 .tab-icon {
@@ -435,7 +435,7 @@ table.tabla-nutricional thead th {
   padding: 8px 10px;
   font-size: 0.75rem;
 }
-[data-theme="oscuro"] table.tabla-nutricional td {
+[data-theme='oscuro'] table.tabla-nutricional td {
   color: var(--c-gris-235);
   border-bottom-color: var(--border);
 }
@@ -477,7 +477,7 @@ table.tabla-nutricional td {
   flex-direction: column;
 }
 .card-incluye::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -636,14 +636,14 @@ table.tabla-nutricional td {
   display: none;
 }
 .pregunta-item summary::before {
-  content: "+";
+  content: '+';
   display: inline-block;
   width: 18px;
   color: var(--amber);
   font-weight: 700;
 }
 .pregunta-item[open] summary::before {
-  content: "−";
+  content: '−';
 }
 .pregunta-item p {
   margin: 10px 0 0 18px;
@@ -699,7 +699,7 @@ table.tabla-nutricional td {
   color: var(--c-blanco);
   font-weight: 700;
 }
-[data-theme="oscuro"] .sidebar-legal-link:hover {
+[data-theme='oscuro'] .sidebar-legal-link:hover {
   color: var(--text);
   font-weight: 700;
 }
@@ -755,7 +755,7 @@ table.tabla-nutricional td {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
-[data-theme="oscuro"] .app-toggle-tema {
+[data-theme='oscuro'] .app-toggle-tema {
   color: var(--text);
 }
 @media (max-width: 900px) {
@@ -785,18 +785,18 @@ table.tabla-nutricional td {
 .sidebar-panel-cta svg {
   flex-shrink: 0;
 }
-[data-theme="oscuro"] .sidebar-panel-cta {
+[data-theme='oscuro'] .sidebar-panel-cta {
   background: var(--amber);
   color: var(--c-azul-875);
 }
-[data-theme="oscuro"] .sidebar-panel-cta:hover {
+[data-theme='oscuro'] .sidebar-panel-cta:hover {
   background: var(--c-naranjo-515);
 }
 .hoja-opcion.hoja-panel-cta {
   background: var(--navy-solid);
   color: white;
 }
-[data-theme="oscuro"] .hoja-opcion.hoja-panel-cta {
+[data-theme='oscuro'] .hoja-opcion.hoja-panel-cta {
   background: var(--amber);
   color: var(--c-azul-875);
 }
