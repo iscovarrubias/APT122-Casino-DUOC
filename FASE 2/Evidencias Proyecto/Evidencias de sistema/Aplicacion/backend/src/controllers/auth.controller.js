@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const { esCorreoValido } = require('../utils/validarCorreo');
 const jwt = require('jsonwebtoken');
 const usuarioModel = require('../models/usuario.model');
 const { ApiError } = require('../middleware/errorHandler');
@@ -113,7 +114,7 @@ const correoValido = (valor) => (typeof valor === 'string' ? valor.trim().toLowe
 async function identificar(req, res, next) {
   try {
     const email = correoValido(req.body?.email);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new ApiError(400, 'Escribe un correo válido.');
+    if (!esCorreoValido(email)) throw new ApiError(400, 'Escribe un correo válido.');
 
     const usuario = await usuarioModel.buscarPorEmail(email);
     if (usuario && usuario.rol !== 'Estudiante') {

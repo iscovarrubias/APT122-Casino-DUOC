@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { rateLimit } = require('express-rate-limit');
 const { errorHandler } = require('./middleware/errorHandler');
 const { RUTA_UPLOADS } = require('./middleware/subida');
 const authRoutes = require('./routes/auth.routes');
@@ -66,6 +67,17 @@ const origenes = (process.env.CORS_ORIGIN || '')
 app.use(cors(origenes.length ? { origin: origenes } : undefined));
 
 app.use(express.json({ limit: '100kb' }));
+
+app.use(
+  '/api',
+  rateLimit({
+    windowMs: 60 * 1000,
+    limit: Number(process.env.LIMITE_API_POR_MINUTO) || 3000,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'Demasiadas solicitudes seguidas. Espera un momento antes de volver a intentar.' },
+  })
+);
 
 app.use(
   '/uploads',

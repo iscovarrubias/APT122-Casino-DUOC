@@ -1,8 +1,8 @@
 const bcrypt = require('bcrypt');
+const { esCorreoValido } = require('../utils/validarCorreo');
 const usuarioModel = require('../models/usuario.model');
 const { ApiError } = require('../middleware/errorHandler');
 
-const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LARGO_MINIMO_CLAVE = 8;
 
 function validarPassword(password) {
@@ -37,7 +37,7 @@ async function crear(req, res, next) {
     const { nombre, email, password, rol } = req.body;
 
     if (typeof nombre !== 'string' || !nombre.trim()) throw new ApiError(400, 'El nombre es obligatorio.');
-    if (typeof email !== 'string' || !EMAIL_VALIDO.test(email.trim())) throw new ApiError(400, 'El correo no es válido.');
+    if (typeof email !== 'string' || !esCorreoValido(email.trim())) throw new ApiError(400, 'El correo no es válido.');
     validarPassword(password);
     await validarRol(rol);
 
